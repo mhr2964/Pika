@@ -34,10 +34,8 @@ async function createRoom(req, res, next) {
 
 async function joinRoom(req, res, next) {
   try {
-    const result = await joinRoomById(
-      req.params.roomId,
-      normalizeJoinRoomInput(req.body || {})
-    );
+    const input = normalizeJoinRoomInput(req.body || {});
+    const result = await joinRoomById(req.params.roomId, input);
 
     if (!result) {
       throw createHttpError(404, 'Room not found.');
@@ -69,10 +67,8 @@ async function getRoom(req, res, next) {
 
 async function submitVote(req, res, next) {
   try {
-    const vote = await submitVoteForRoom(
-      req.params.roomId,
-      normalizeVoteInput(req.body || {})
-    );
+    const input = normalizeVoteInput(req.body || {});
+    const vote = await submitVoteForRoom(req.params.roomId, input);
 
     if (!vote) {
       throw createHttpError(404, 'Room not found.');
@@ -88,10 +84,8 @@ async function submitVote(req, res, next) {
 
 async function submitReaction(req, res, next) {
   try {
-    const reaction = await submitReactionForRoom(
-      req.params.roomId,
-      normalizeReactionInput(req.body || {})
-    );
+    const input = normalizeReactionInput(req.body || {});
+    const reaction = await submitReactionForRoom(req.params.roomId, input);
 
     if (!reaction) {
       throw createHttpError(404, 'Room not found.');

@@ -1,21 +1,19 @@
 # Pika Backend
 
-Minimal room-based Node/Express backend for the canonical local Pika room flow.
+Minimal room-based Node/Express backend for the canonical Pika flow.
 
 ## Features
 
-- Versioned API under `/api/v1`
-- Health endpoint
-- Create room
-- Join room
-- Get room state
-- Submit vote
-- Submit reaction
-- Get results
-- Stable JSON responses
-- Local validation contracts
+- Versioned REST API under `/api/v1`
+- Health check endpoint
+- Room creation and join flow
+- Room state retrieval
+- Vote and reaction submission
+- Result synthesis with winner selection
 - In-memory storage by default
-- Optional JSON file persistence via environment variables
+- Optional JSON file persistence
+- Local request validation contracts
+- Predictable JSON error responses
 
 ## Requirements
 

@@ -5,6 +5,12 @@ const { env } = require('../config/env');
 const roomsById = new Map();
 let hasLoadedPersistedRooms = false;
 
+function createStoreError(message, statusCode) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+}
+
 function createId(prefix) {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -22,12 +28,6 @@ function createRoomCode() {
 
 function cloneValue(value) {
   return JSON.parse(JSON.stringify(value));
-}
-
-function createStoreError(message, statusCode) {
-  const error = new Error(message);
-  error.statusCode = statusCode;
-  return error;
 }
 
 function getSafeStoragePath() {
@@ -82,9 +82,11 @@ async function persistRoomsIfEnabled() {
   }
 
   const storagePath = await ensureStorageFile();
-  const serializedRooms = JSON.stringify(Array.from(roomsById.values()), null, 2);
-
-  await fs.writeFile(storagePath, serializedRooms, 'utf8');
+  await fs.writeFile(
+    storagePath,
+    JSON.stringify(Array.from(roomsById.values()), null, 2),
+    'utf8'
+  );
 }
 
 function getRoomRecord(roomId) {
@@ -92,19 +94,19 @@ function getRoomRecord(roomId) {
 }
 
 function requirePlayerInRoom(room, playerId) {
-  const playerExists = room.players.some((player) => player.id === playerId);
+  const exists = room.players.some((player) => player.id === playerId);
 
-  if (!playerExists) {
+  if (!exists) {
     throw createStoreError('Player is not in this room.', 400);
   }
 }
 
 function buildResults(room) {
-  const totalsByTargetId = new Map();
+  const totalsByTarget = new Map();
   const reactionCounts = {};
 
   for (const vote of room.votes) {
-    const current = totalsByTargetId.get(vote.targetId) || {
+    const current = totalsByTarget.get(vote.targetId) || {
       targetId: vote.targetId,
       score: 0,
       voteCount: 0
@@ -112,14 +114,14 @@ function buildResults(room) {
 
     current.score += vote.value;
     current.voteCount += 1;
-    totalsByTargetId.set(vote.targetId, current);
+    totalsByTarget.set(vote.targetId, current);
   }
 
   for (const reaction of room.reactions) {
     reactionCounts[reaction.emoji] = (reactionCounts[reaction.emoji] || 0) + 1;
   }
 
-  const totals = Array.from(totalsByTargetId.values()).sort((left, right) => {
+  const totals = Array.from(totalsByTarget.values()).sort((left, right) => {
     if (right.score !== left.score) {
       return right.score - left.score;
     }

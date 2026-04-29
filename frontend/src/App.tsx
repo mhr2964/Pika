@@ -2,8 +2,17 @@ import React, { useMemo, useState } from 'react';
 import { WelcomeSplash } from './screens/onboarding/WelcomeSplash';
 import { ActiveRoomScreen } from './screens/room/ActiveRoomScreen';
 import { CreateRoomScreen } from './screens/room/CreateRoomScreen';
+import { JoinRoomScreen } from './screens/room/JoinRoomScreen';
+import { LobbyScreen } from './screens/room/LobbyScreen';
 import { OutcomeScreen } from './screens/room/OutcomeScreen';
-import { RoomActivity, RoomOption, RoomParticipant, RoomStage, RoomState } from './types/pika';
+import { createRoomClient } from './lib/roomClient';
+import {
+  RoomActivity,
+  RoomOption,
+  RoomParticipant,
+  RoomStage,
+  RoomState,
+} from './types/pika';
 
 const DEFAULT_OPTIONS: RoomOption[] = [
   { id: 'option-1', label: 'Tacos at midnight', votes: 4 },
@@ -44,164 +53,150 @@ function cloneRoomState(room: RoomState): RoomState {
   };
 }
 
-function getWinningOptionId(options: RoomOption[]): string | null {
-  if (options.length === 0) {
-    return null;
-  }
-
-  const winningOption = [...options].sort((left, right) => right.votes - left.votes)[0];
-  return winningOption ? winningOption.id : null;
-}
-
-function createReactionMessage(optionLabel: string) {
-  const reactionMessages = [
-    `just made a hard push for ${optionLabel}`,
-    `said ${optionLabel} has the best room energy`,
-    `dropped a dramatic vote for ${optionLabel}`,
-  ];
-
-  return reactionMessages[Math.floor(Math.random() * reactionMessages.length)];
-}
-
-function createEmptyRoom(currentRoom: RoomState): RoomState {
-  return {
-    ...cloneRoomState(currentRoom),
-    options: [],
-    participants: [],
-    activity: [],
-    selectedOptionId: null,
-    winningOptionId: null,
-  };
-}
-
 export default function App() {
+  const roomClient = useMemo(() => createRoomClient(cloneRoomState(INITIAL_ROOM)), []);
   const [stage, setStage] = useState<RoomStage>('welcome');
   const [hostName, setHostName] = useState(INITIAL_ROOM.hostName);
   const [prompt, setPrompt] = useState(INITIAL_ROOM.prompt);
+  const [guestName, setGuestName] = useState('Snack Scout');
+  const [roomCode, setRoomCode] = useState(INITIAL_ROOM.code);
   const [room, setRoom] = useState<RoomState>(cloneRoomState(INITIAL_ROOM));
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const [isJoiningRoom, setIsJoiningRoom] = useState(false);
+  const [isLobbyLoading, setIsLobbyLoading] = useState(false);
   const [isRoomLoading, setIsRoomLoading] = useState(false);
-  const [createError] = useState(false);
+  const [createError, setCreateError] = useState(false);
+  const [joinError, setJoinError] = useState(false);
+  const [lobbyError, setLobbyError] = useState(false);
   const [roomError, setRoomError] = useState(false);
 
-  const canResume = useMemo(() => stage !== 'welcome', [stage]);
+  const canResume = stage !== 'welcome';
+  const viewerName = stage === 'room-lobby' ? guestName : hostName;
 
   const handleStart = () => {
     setStage('room-setup');
   };
 
   const handleResume = () => {
-    setStage('room-active');
+    if (canResume) {
+      return;
+    }
+
+    setStage('room-setup');
   };
 
   const handleBackToWelcome = () => {
+    setCreateError(false);
+    setJoinError(false);
+    setLobbyError(false);
+    setRoomError(false);
     setStage('welcome');
   };
 
-  const handleCreateRoom = () => {
-    setIsCreatingRoom(true);
-    setRoomError(false);
+  const handleGoToCreateRoom = () => {
+    setJoinError(false);
+    setStage('room-setup');
+  };
 
-    window.setTimeout(() => {
-      const nextRoom = cloneRoomState(INITIAL_ROOM);
-      nextRoom.hostName = hostName.trim();
-      nextRoom.prompt = prompt.trim();
-      nextRoom.code = `PIKA${Math.floor(100 + Math.random() * 900)}`;
-      nextRoom.roundLabel = 'Round 1';
-      nextRoom.selectedOptionId = null;
-      nextRoom.winningOptionId = null;
+  const handleGoToJoinRoom = () => {
+    setCreateError(false);
+    setStage('room-join');
+  };
 
+  const handleCreateRoom = async () => {
+    try {
+      setCreateError(false);
+      setIsCreatingRoom(true);
+      const nextRoom = await roomClient.createRoom({
+        hostName: hostName.trim(),
+        prompt: prompt.trim(),
+      });
       setRoom(nextRoom);
-      setIsCreatingRoom(false);
       setStage('room-active');
       setIsRoomLoading(true);
-
-      window.setTimeout(() => {
-        setIsRoomLoading(false);
-      }, 700);
-    }, 650);
+      window.setTimeout(() => setIsRoomLoading(false), 600);
+    } catch {
+      setCreateError(true);
+    } finally {
+      setIsCreatingRoom(false);
+    }
   };
 
-  const handleSelectOption = (selectedOptionId: string) => {
-    setRoomError(false);
-
-    setRoom((currentRoom) => {
-      const nextRoom = cloneRoomState(currentRoom);
-      nextRoom.selectedOptionId = selectedOptionId;
-      nextRoom.winningOptionId = null;
-
-      nextRoom.options = nextRoom.options.map((option) =>
-        option.id === selectedOptionId
-          ? { ...option, votes: option.votes + 1 }
-          : option,
-      );
-
-      const selectedOption = nextRoom.options.find((option) => option.id === selectedOptionId);
-
-      if (selectedOption) {
-        nextRoom.activity = [
-          {
-            id: `a-${Date.now()}`,
-            actor: nextRoom.hostName,
-            message: createReactionMessage(selectedOption.label),
-          },
-          ...nextRoom.activity,
-        ];
-      }
-
-      return nextRoom;
-    });
+  const handleJoinRoom = async () => {
+    try {
+      setJoinError(false);
+      setIsJoiningRoom(true);
+      const joinedRoom = await roomClient.joinRoom({
+        guestName: guestName.trim(),
+        roomCode: roomCode.trim().toUpperCase(),
+      });
+      setRoom(joinedRoom);
+      setStage('room-lobby');
+      setIsLobbyLoading(true);
+      window.setTimeout(() => setIsLobbyLoading(false), 600);
+    } catch {
+      setJoinError(true);
+    } finally {
+      setIsJoiningRoom(false);
+    }
   };
 
-  const handleRevealOutcome = () => {
-    setRoom((currentRoom) => ({
-      ...currentRoom,
-      winningOptionId: getWinningOptionId(currentRoom.options),
-    }));
-    setStage('room-outcome');
+  const handleStartVoting = () => {
+    setLobbyError(false);
+    setIsRoomLoading(true);
+    setStage('room-active');
+    window.setTimeout(() => setIsRoomLoading(false), 450);
   };
 
-  const handlePlayAgain = () => {
-    setRoom((currentRoom) => ({
-      ...cloneRoomState(currentRoom),
-      roundLabel: currentRoom.roundLabel === 'Round 1' ? 'Round 2' : 'Bonus round',
-      winningOptionId: null,
-      selectedOptionId: null,
-      activity: [],
-    }));
-    setRoomError(false);
+  const handleSelectOption = async (selectedOptionId: string) => {
+    try {
+      setRoomError(false);
+      const nextRoom = await roomClient.selectOption({
+        room,
+        selectedOptionId,
+        actorName: viewerName,
+      });
+      setRoom(nextRoom);
+    } catch {
+      setRoomError(true);
+    }
+  };
+
+  const handleRevealOutcome = async () => {
+    try {
+      const nextRoom = await roomClient.revealOutcome(room);
+      setRoom(nextRoom);
+      setStage('room-outcome');
+    } catch {
+      setRoomError(true);
+    }
+  };
+
+  const handlePlayAgain = async () => {
+    const nextRoom = await roomClient.resetRound(room);
+    setRoom(nextRoom);
     setStage('room-active');
   };
 
   const handleStartOver = () => {
-    setRoom(cloneRoomState(INITIAL_ROOM));
     setHostName(INITIAL_ROOM.hostName);
     setPrompt(INITIAL_ROOM.prompt);
+    setGuestName('Snack Scout');
+    setRoomCode(INITIAL_ROOM.code);
+    setRoom(cloneRoomState(INITIAL_ROOM));
+    setCreateError(false);
+    setJoinError(false);
+    setLobbyError(false);
     setRoomError(false);
     setStage('welcome');
-  };
-
-  const handleResetRoom = () => {
-    setRoom(cloneRoomState(INITIAL_ROOM));
-    setRoomError(false);
-    setStage('room-setup');
-  };
-
-  const handleShowEmptyState = () => {
-    setRoom(createEmptyRoom(room));
-    setRoomError(false);
-  };
-
-  const handleTriggerErrorState = () => {
-    setRoomError(true);
   };
 
   if (stage === 'welcome') {
     return (
       <WelcomeSplash
+        canResume={canResume}
         onStart={handleStart}
         onResume={handleResume}
-        canResume={canResume}
       />
     );
   }
@@ -217,6 +212,36 @@ export default function App() {
         onPromptChange={setPrompt}
         onCreateRoom={handleCreateRoom}
         onBack={handleBackToWelcome}
+        onGoToJoinRoom={handleGoToJoinRoom}
+      />
+    );
+  }
+
+  if (stage === 'room-join') {
+    return (
+      <JoinRoomScreen
+        guestName={guestName}
+        roomCode={roomCode}
+        isSubmitting={isJoiningRoom}
+        hasError={joinError}
+        onGuestNameChange={setGuestName}
+        onRoomCodeChange={setRoomCode}
+        onJoinRoom={handleJoinRoom}
+        onBack={handleBackToWelcome}
+        onGoToCreateRoom={handleGoToCreateRoom}
+      />
+    );
+  }
+
+  if (stage === 'room-lobby') {
+    return (
+      <LobbyScreen
+        room={room}
+        viewerName={guestName}
+        isLoading={isLobbyLoading}
+        hasError={lobbyError}
+        onStartVoting={handleStartVoting}
+        onBackToWelcome={handleBackToWelcome}
       />
     );
   }
@@ -238,9 +263,7 @@ export default function App() {
       hasError={roomError}
       onSelectOption={handleSelectOption}
       onRevealOutcome={handleRevealOutcome}
-      onResetRoom={handleResetRoom}
-      onShowEmptyState={handleShowEmptyState}
-      onTriggerErrorState={handleTriggerErrorState}
+      onResetRoom={handleStartOver}
     />
   );
 }
