@@ -1,0 +1,9 @@
+{
+  "displayName": "Avery",
+  "prompt": "Best pizza spot?",
+  "options": [
+    "Corner Slice",
+    "Moon Pie",
+    "Brick Oven Lab"
+  ]
+}

@@ -19,6 +19,7 @@ Authoritative TypeScript contracts live in:
 - `workspace/packages/contracts/src/api.ts`
 - `workspace/packages/contracts/src/domain.ts`
 - `workspace/packages/contracts/src/errors.ts`
+- `workspace/packages/contracts/src/sessions.ts`
 
 Rule:
 - shared exported types/interfaces/schemas belong in `src/`
@@ -41,9 +42,9 @@ Preferred pattern:
 - `<domain>.<operation>.v<version>.<scenario>.json`
 
 Examples:
-- `rooms.create.v1.request-minimal.json`
-- `rooms.create.v1.response-success.json`
-- `rooms.get-state.v1.response-in-progress.json`
+- `sessions.create.v1.request-minimal.json`
+- `sessions.create.v1.response-success.json`
+- `sessions.get.v1.response-in-progress.json`
 
 ### 3) Mock data
 Canonical code-based mocks live in:
@@ -55,9 +56,16 @@ Rule:
 - export named constants/builders instead of default exports
 
 Examples:
-- `rooms-happy-path.ts`
-- `rooms-edge-cases.ts`
-- `rooms-failures.ts`
+- `sessions-happy-path.ts`
+- `sessions-edge-cases.ts`
+- `sessions-failures.ts`
+
+## Approved slice emphasis
+
+For the current vertical slice, treat the `/api/v1/sessions/*` surface as the primary shared contract lane:
+- source definitions: `workspace/packages/contracts/src/sessions.ts`
+- request examples: `workspace/packages/contracts/samples/requests/sessions.*.json`
+- response examples: `workspace/packages/contracts/samples/responses/sessions.*.json`
 
 ## Consumption guidance
 

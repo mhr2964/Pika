@@ -3,123 +3,135 @@
 ## 1) Landing Page Copy
 
 ### Hero
-**Rank with friends. See who agrees.**
+**Rank with friends. See where everyone lands.**
 
 ### Subhead
-Pika is a ranking room where people put their opinions in order, compare picks, and pull friends in to weigh in. Join the waitlist to get early access and move up by inviting your most opinionated people.
+Pika is a ranking room where people put their opinions in order, compare picks, and pull friends in to weigh in. Join the waitlist for early access, then move up by inviting the people you actually want in the room.
 
 ### Benefit Bullets
 - **Turn opinions into a shared game** — make ranked lists people can react to instead of dropping takes into a chat.
 - **See where your group lines up** — compare how different people order the same choices.
-- **Make every invite feel relevant** — bring in friends because their taste changes the outcome.
-- **Climb the waitlist by sharing** — move up when the right people join through you.
+- **Invite people who make it better** — bring in friends whose taste, debate, and disagreement actually matter.
+- **Climb the waitlist by sharing** — move up when your friends join through your link.
 
 ### How It Works
 1. **Join the waitlist** to save your spot for early access to Pika.
-2. **Invite friends who love having opinions** so you can move up the list.
-3. **Get into ranking rooms faster** with people ready to compare picks and argue their order.
+2. **Invite opinionated friends** with your personal link to move up the list.
+3. **Get into ranking rooms faster** with people ready to compare picks and defend their order.
 
 ### Waitlist CTA
 **Primary CTA:** Join the waitlist  
-**Supporting line:** Get your spot now, then move up by inviting friends who always have a ranking ready.
+**Supporting line:** Save your spot now, then move up by inviting friends who always have a ranking ready.
 
 ### Referral Section
-**Bring your best arguers. Move up together.**  
-Pika works better with people who care about the order. After you join, you’ll get a personal invite link. When friends sign up through your link, you move up the waitlist.
+#### Bring your ranking group with you
+Pika gets better when the people you actually debate with are in the room. After you join the waitlist, you’ll get a personal invite link to share with friends. When they join through your link, you move up the list.
+
+**Referral CTA:** Get your invite link  
+**Referral support line:** Don’t just wait for access. Move up by bringing in the people whose opinions you actually want in the room.
 
 ### FAQ
 
-**What is Pika?**  
-Pika is a ranking room: a place for people to rank choices, compare opinions, and see how their group stacks the same set differently.
+#### 1. What is Pika?
+Pika is a ranking room for opinionated groups. It’s built for putting choices in order, comparing picks, and seeing where people agree or clash.
 
-**How does the waitlist work?**  
-Join the waitlist to reserve your spot. You’ll get a referral link you can share with friends.
+#### 2. What happens when I join the waitlist?
+You save your spot for early access. After signing up, you’ll get a referral link you can share to help move up the list.
 
-**How do referrals help?**  
-When someone joins the waitlist through your link, you move up in line.
+#### 3. How do referrals work?
+When someone joins the waitlist through your personal link, your position improves. The idea is simple: bring in the people you want to rank with.
 
-**Do I need friends to join?**  
-No. You can join on your own, then share if you want to improve your position.
+#### 4. Who should I invite?
+Invite friends who love debating favorites, making lists, and defending their rankings. The best invites are people who will actually jump into the ranking room with you.
 
-**What should I invite friends to?**  
-Invite people who love comparing picks, debating order, and having strong opinions. Pika is built for that kind of participation.
+#### 5. Is Pika available now?
+Not yet. Pika is currently in prelaunch, and the waitlist is the way to get early access as spots open.
 
 ### Alternate Headline/Subhead Pairs
 
-**Alt 1 Headline:** Your group chat has opinions. Put them in order.  
-**Alt 1 Subhead:** Pika gives friends a ranking room to compare picks, defend their choices, and pull more people into the debate. Join the waitlist and move up by inviting others in.
+#### Option A
+**Headline:** Your group chat has opinions. Pika gives them a ranking room.  
+**Subhead:** Join the waitlist for the ranking room built for comparing picks, challenging friends, and moving up by inviting the people you want in the debate.
 
-**Alt 2 Headline:** The waitlist for people who always rank everything  
-**Alt 2 Subhead:** Join Pika to get early access to ranking rooms, then climb the line by inviting friends whose opinions are too strong to leave out.
+#### Option B
+**Headline:** The waitlist for people who rank everything  
+**Subhead:** Pika turns strong opinions into shared ranking rooms. Save your spot now, then move up by bringing in friends with taste, takes, and zero hesitation.
 
 ---
 
 ## 2) Waitlist / Referral Framing
 
 ### Core Mechanism Explanation
-Pika’s waitlist is simple: sign up, get your place in line, then receive a personal referral link. When someone joins through your link, your position improves. The goal is to bring in people who will actually make ranking rooms more active, competitive, and worth joining.
+Pika’s waitlist is designed around future participation, not passive signups. People join to save a spot, then get a personal referral link they can share with friends. Each referred signup improves their position. The logic is simple: the people who bring in the most relevant future participants get earlier access.
 
 ### Incentive Framing
-The incentive is better position, not prizes. Pika rewards relevance: invite friends who love ranking things, comparing taste, and arguing the order. Every signup through your link helps you move up the waitlist and makes your future ranking rooms more interesting.
+This should feel like **“build your room”**, not **“collect referrals.”** The reward is not generic status or arbitrary points. The reward is getting closer to access by bringing in the exact kind of people who make ranking fun: opinionated friends, rivals, taste-makers, and group-chat instigators. The message is: *if you already know who you want to rank with, invite them now and move up together.*
 
-### Confirmation Screen Copy
-**You’re on the list. Now bring in your strongest opinions.**  
-Your spot is saved. Want to move up? Share your invite link with friends who always have a ranking, a take, or a better order.  
-**Button:** Copy invite link
+### Confirmation-Screen Copy
+**Headline:** You’re on the waitlist. Now bring your people.  
+**Body:** Your spot is saved. Want to move up? Share your personal invite link with friends who always have a ranking, a favorite, or a strong disagreement. When they join through your link, you climb the list.  
+**Primary CTA:** Copy my invite link  
+**Secondary CTA:** Share with friends
 
 ### Referral Invite Copy
-I joined the Pika waitlist — it’s a ranking room for friends with opinions. If you join through my link, I move up the list, and we get closer to ranking everything properly.
+**Subject / Header:** I’m joining Pika — come rank with me  
+**Body:** Pika is a ranking room for people who actually have opinions. I joined the waitlist and thought of you immediately. Use my link to get on it too — and yes, it helps me move up.  
+**Link CTA:** Join Pika
 
 ### Lifecycle Messages
 
-**Signup Confirmation**  
-**Subject:** You’re on the Pika waitlist  
-You’re in. Pika is building ranking rooms for people who like to compare picks and argue the order.  
-Want to move up? Share your invite link with friends who always have something to rank.
+#### Message 1: Immediate Waitlist Confirmation
+**Subject:** You’re in for Pika  
+**Body:** Your waitlist spot is saved. Next move: invite the friends you actually want in your ranking room. Share your personal link and move up when they join.
 
-**Referral Progress**  
-**Subject:** You moved up — keep your ranking crew coming  
-Good news: someone joined Pika through your link. Your spot just improved.  
-Want to keep climbing? Invite the friends most likely to turn a ranking room into a real debate.
+#### Message 2: First Referral Prompt
+**Subject:** Your ranking room starts with who you invite  
+**Body:** Think of the people who always have a top 5 ready, the ones who argue over every order, the ones whose taste you trust. Send them your Pika link and move up as they join.
 
-**Milestone Unlock**  
-**Subject:** You just made a jump on the Pika waitlist  
-Nice work — your invites moved you up the list.  
-Keep going by sharing with more opinionated friends. The better your ranking crew, the better your future rooms will be.
+#### Message 3: Re-engagement Prompt
+**Subject:** Don’t wait quietly  
+**Body:** You’ve got a spot — but you can get closer to access by bringing in your most opinionated friends. Share your link, build your future ranking room, and move up the list.
 
 ---
 
 ## 3) Share Messaging
 
 ### 8 Short Share Lines
-1. I joined Pika. It’s for people who rank everything.
-2. If you’ve got strong opinions, this waitlist is for you.
-3. Pika is building ranking rooms. I’m in line.
-4. Join Pika through my link so we can compare our rankings properly.
-5. Finally, a waitlist built for opinionated people.
-6. Pika feels made for the friend who always says “wrong order.”
-7. I joined Pika because group opinions deserve better than a chaotic chat.
-8. If ranking things is your sport, get on this list.
+1. I joined the Pika waitlist. If you rank everything, you probably should too.
+2. Pika is basically a ranking room for opinionated people. I’m in.
+3. If your favorite hobby is putting things in order, here’s your waitlist.
+4. Joined Pika because some opinions deserve a proper ranking room.
+5. This feels made for people who turn every chat into a top 10 debate.
+6. I’m on the Pika waitlist. Come through if you’ve never kept a take to yourself.
+7. Pika is for ranking with friends, not just dropping opinions into the void.
+8. If you already know what belongs first, last, and why, join me on Pika.
 
 ### 4 Social Post Variants
-**Post 1**  
-My favorite kind of competition is arguing the correct order of things, so yes, I joined the Pika waitlist. It’s a ranking room for friends with opinions. Join through my link if you want in.
 
-**Post 2**  
-Pika is building ranking rooms for people who don’t just have opinions — they rank them. I’m on the waitlist now. If you join through my link, I move up, and we get closer to taking our debates out of the group chat.
+#### Variant 1
+Your group chat has opinions. Pika gives them a ranking room. I joined the waitlist — if you love putting things in order and defending your picks, get on here with me.
 
-**Post 3**  
-Some people scroll. Some people rank everything. Pika is for the second group. I joined the waitlist — come join through my link and help me climb.
+#### Variant 2
+I joined Pika because some people are clearly built to rank everything. If that includes you, use my link and get on the waitlist.
 
-**Post 4**  
-I signed up for Pika because “top 5” conversations deserve their own room. If you like comparing picks and defending your order, join the waitlist through my link.
+#### Variant 3
+Pika is a ranking room for people with taste, strong opinions, and zero fear of disagreement. I’m on the waitlist already — come join me.
+
+#### Variant 4
+Not another passive waitlist. Pika lets you move up by inviting the exact people you want to rank with. I joined — if you’re opinionated, you should too.
 
 ### 3 SMS / Invite Variants
-1. I joined Pika — it’s a ranking room for people with strong opinions. Join through my link?
-2. This feels very us: Pika lets people compare rankings instead of just dropping takes in chat. I’m on the waitlist if you want in too.
-3. If you love arguing the correct order of things, join Pika through my link. I move up, and we get closer to ranking together.
 
-### 3 CTA Button Options
+#### SMS 1
+I joined the Pika waitlist — it’s for ranking with friends and comparing picks. You’d be good on this. Join with my link?
+
+#### SMS 2
+This made me think of you immediately: Pika is a ranking room for opinionated people. I’m on the waitlist already. Use my link and come in with me.
+
+#### SMS 3
+If you’ve ever argued over the right order of anything, Pika is your kind of app. I joined the waitlist — want my invite link?
+
+### 3 CTA Buttons
 - Join the waitlist
-- Get your invite link
-- Move up the list
+- Get my invite link
+- Move up by inviting friends

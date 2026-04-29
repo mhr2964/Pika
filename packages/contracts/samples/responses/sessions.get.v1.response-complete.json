@@ -1,0 +1,40 @@
+{
+  "session": {
+    "id": "session_123",
+    "code": "P1KA",
+    "phase": "complete",
+    "prompt": "Best pizza spot?",
+    "participants": [
+      {
+        "id": "host_1",
+        "displayName": "Avery",
+        "isHost": true,
+        "hasJoined": true
+      },
+      {
+        "id": "user_2",
+        "displayName": "Jordan",
+        "isHost": false,
+        "hasJoined": true
+      }
+    ],
+    "options": [
+      {
+        "id": "opt_1",
+        "label": "Corner Slice"
+      },
+      {
+        "id": "opt_2",
+        "label": "Moon Pie"
+      },
+      {
+        "id": "opt_3",
+        "label": "Brick Oven Lab"
+      }
+    ],
+    "result": {
+      "winnerOptionId": "opt_2",
+      "shareText": "Moon Pie wins in Pika."
+    }
+  }
+}

@@ -17,7 +17,7 @@ Use descriptive domain filenames:
 - `api.ts`
 - `domain.ts`
 - `errors.ts`
-- future examples: `rooms.ts`, `votes.ts`, `results.ts`
+- `sessions.ts`
 
 ### Sample JSON payloads
 Format:
@@ -33,18 +33,18 @@ Where `<artifact>` is typically one of:
 - `event-received`
 
 Examples:
-- `rooms.create.v1.request-minimal.json`
-- `rooms.create.v1.response-success.json`
-- `rooms.state.v1.response-success.json`
-- `results.publish.v1.event-emitted.json`
+- `sessions.create.v1.request-minimal.json`
+- `sessions.create.v1.response-success.json`
+- `sessions.join.v1.request-minimal.json`
+- `sessions.get.v1.response-in-progress.json`
 
 ### Mock TypeScript files
 Format:
 - `<domain>-<scenario>.ts`
 
 Examples:
-- `rooms-happy-path.ts`
-- `rooms-failures.ts`
+- `sessions-happy-path.ts`
+- `sessions-failures.ts`
 - `results-shareable.ts`
 
 ## Required update discipline
@@ -66,6 +66,13 @@ When a shared API shape changes:
 - treat `samples/` as the canonical static artifact reference
 - use `src/mocks/` for local fixture composition and visual states
 - do not invent payload keys absent from `src/` and `samples/`
+
+## Approved current lane
+
+For the approved current slice, frontend and backend should align first on:
+- `src/sessions.ts`
+- `samples/requests/sessions.*.json`
+- `samples/responses/sessions.*.json`
 
 ## Minimal artifact completeness for a new endpoint
 
