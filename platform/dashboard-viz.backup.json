@@ -1,0 +1,35 @@
+{
+  "company": "Pika",
+  "generatedAt": "2026-04-29T21:19:42.650Z",
+  "northStar": {
+    "name": "Groups completing a full ranking round and sharing the result",
+    "value": 5,
+    "target": 20,
+    "trend": "up"
+  },
+  "metrics": [
+    {
+      "label": "Waitlist signups",
+      "value": 143,
+      "target": 250,
+      "trend": "up"
+    },
+    {
+      "label": "Referral share rate",
+      "value": "21%",
+      "target": "30%",
+      "trend": "flat"
+    },
+    {
+      "label": "Playable room completion",
+      "value": "42%",
+      "target": "60%",
+      "trend": "up"
+    }
+  ],
+  "notes": [
+    "Brand and growth launch lane assets are now aligned on the approved Pika message hierarchy.",
+    "Sprint 1 engineering is converging on canonical apps/frontend + apps/backend surfaces with @pika/contracts as the shared contract package.",
+    "Dashboard publication path remains inconsistent: latest live dept-scoped artifact is under workspace/pulse/viz.json."
+  ]
+}
