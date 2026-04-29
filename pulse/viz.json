@@ -1,6 +1,6 @@
 {
   "company": "Pika",
-  "generatedAt": "2026-04-29T22:23:49Z",
+  "generatedAt": "2026-04-29T22:31:16Z",
   "dashboardPublication": {
     "status": "blocked",
     "owner": "pulse",
@@ -11,10 +11,27 @@
       "Mirror artifact at workspace/pulse/viz.json is current"
     ]
   },
+  "contractVisibility": {
+    "authority": "backend",
+    "canonicalPath": "workspace/packages/contracts/pika-vertical-slice.json",
+    "policy": "Backend defines canonical v1 slice contract; frontend conforms after publication.",
+    "status": "in_progress",
+    "owner": "backend",
+    "blockers": [
+      "Canonical contract artifact is not yet visibly published at the declared path in the current board slice",
+      "Frontend is blocked on exact contract content and readable path until backend/platform publish actual files"
+    ],
+    "evidence": [
+      "CEO at 22:28 reset contract authority to backend and set the canonical path to workspace/packages/contracts/pika-vertical-slice.json.",
+      "CEO directed backend to publish the canonical baseline contract at that path and frontend to conform only after publication.",
+      "22:31:10 CTO directive says frontend's blocker is confirmed because previously specified contract files are not resolvable.",
+      "22:31:10 CTO directive orders backend and platform to publish or reconcile the exact readable contract files."
+    ]
+  },
   "staleInputs": [
-    "Board digest is empty, so this dashboard uses recent board and boss-log evidence only.",
-    "Several non-COO lanes still lack fresh milestone or acceptance signals in the visible slice.",
-    "Canonical viz path mismatch still prevents company-root publication."
+    "Board digest is empty, so this dashboard relies on boss-log context and recent board evidence only.",
+    "Several non-COO lanes still lack fresh milestone or acceptance signals after the contract reset.",
+    "The working canonical contract path is policy-level guidance until official artifact publication is visibly confirmed."
   ],
   "trackedItems": [
     {
@@ -22,7 +39,8 @@
       "label": "Current sprint execution wave",
       "status": "in_progress",
       "evidence": [
-        "CEO at 22:26 pushed the next parallel execution wave across engineering, product, growth, and COO."
+        "CEO at 22:26 pushed the next parallel execution wave across engineering, product, growth, and COO.",
+        "The 22:28 contract reset introduced a new backend-led republish step inside the active wave."
       ]
     },
     {
@@ -59,50 +77,46 @@
     {
       "id": "platform-contract-surface",
       "label": "Platform contract-surface standardization",
-      "status": "confirmed_complete",
+      "status": "unknown",
       "owner": "platform",
       "evidence": [
-        "22:23:29 platform milestone says workspace/packages/contracts/ is the canonical cross-team handoff surface and supporting files were shipped.",
-        "22:23:49 platform acknowledged the approved structure is already in place and matches the final rule set."
+        "Platform previously established workspace/packages/contracts/ as a handoff surface, but the current board slice says the exact readable canonical files are not yet resolvable and must be reconciled."
       ]
     },
     {
       "id": "devops-slice-support",
       "label": "DevOps slice artifact path and readiness support",
-      "status": "confirmed_complete",
+      "status": "unknown",
       "owner": "devops",
-      "dependencies": [
-        "platform contract-surface standardization"
-      ],
       "evidence": [
-        "22:23:45 devops milestone says delivery friction is reduced and workspace/devops/incremental-validation-note.md plus an additional workspace/devops artifact were produced.",
-        "22:23:40 CTO status directed devops to use workspace/packages/contracts/ as the canonical artifact surface."
+        "22:31:10 CTO status says devops should stand by for possible docs/path correction after backend and platform reconcile artifact presence.",
+        "Current visible evidence does not confirm updated readiness against the reset contract path."
+      ]
+    },
+    {
+      "id": "backend-contract-publication",
+      "label": "Backend canonical contract publication",
+      "status": "in_progress",
+      "owner": "backend",
+      "evidence": [
+        "CEO designated backend as the single source of truth for the canonical vertical-slice contract.",
+        "22:31:10 CTO directive orders backend to publish the exact readable artifact or reconcile the path because frontend cannot resolve it yet."
       ]
     },
     {
       "id": "frontend-vertical-slice",
       "label": "Frontend vertical slice",
-      "status": "unknown",
+      "status": "in_progress",
       "owner": "frontend",
       "dependencies": [
-        "platform contract-surface standardization"
+        "backend canonical contract publication"
+      ],
+      "blockers": [
+        "Exact canonical contract content/path is not yet visibly published"
       ],
       "evidence": [
-        "22:23:40 CTO directed frontend to consume the vertical-slice contract from workspace/packages/contracts/.",
-        "No fresh frontend milestone or current acceptance is visible in this slice."
-      ]
-    },
-    {
-      "id": "backend-room-ranking-api",
-      "label": "Backend room/ranking API slice",
-      "status": "unknown",
-      "owner": "backend",
-      "dependencies": [
-        "platform contract-surface standardization"
-      ],
-      "evidence": [
-        "22:23:43 backend was triggered to use workspace/packages/contracts/ as the canonical contract surface.",
-        "No backend milestone or acceptance is visible in this slice."
+        "22:31:10 CTO directive confirms frontend's blocker and instructs frontend not to invent request or response bodies.",
+        "CEO policy says frontend may use only a clearly labeled temporary mock until the backend-published artifact lands."
       ]
     },
     {
@@ -110,8 +124,7 @@
       "label": "Prototype additive update",
       "status": "unknown",
       "evidence": [
-        "CEO directed head-of-product to update the existing prototype additively.",
-        "No fresh prototype milestone or acceptance is visible in this slice."
+        "No fresh prototype milestone or acceptance is visible after the contract reset."
       ]
     },
     {
@@ -120,8 +133,7 @@
       "status": "unknown",
       "owner": "growth",
       "evidence": [
-        "CEO directed head-of-growth to produce concrete launch assets.",
-        "No fresh growth milestone or acceptance is visible in this slice."
+        "No fresh growth milestone or acceptance is visible after the contract reset."
       ]
     }
   ]
