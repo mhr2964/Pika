@@ -4,22 +4,26 @@ This note formalizes the minimum artifact contract between backend and frontend 
 
 ## Canonical path summary
 
-For the current finalized vertical slice, use these paths first:
+For the current `/api/v1/sessions/*` slice, use these paths first:
 
-- Final slice artifact: `workspace/packages/contracts/src/pika-vertical-slice.md`
-- Final slice samples: `workspace/packages/contracts/samples/pika/`
-- Shared code-facing definitions: `workspace/packages/contracts/src/`
+- Authoritative session contract: `workspace/packages/contracts/src/sessions.ts`
+- Authoritative session samples: `workspace/packages/contracts/samples/sessions/`
+- Additional shared code-facing definitions: `workspace/packages/contracts/src/`
 - Mock data modules: `workspace/packages/contracts/src/mocks/`
+- Reference markdown artifacts: `workspace/packages/contracts/src/*.md`
 
 ## Current priority order
 
-When frontend/backend need the approved slice contract, consume artifacts in this order:
+When frontend/backend need the approved session contract, consume artifacts in this order:
 
-1. `workspace/packages/contracts/src/pika-vertical-slice.md`
-2. `workspace/packages/contracts/samples/pika/`
-3. aligned exported TypeScript definitions in `workspace/packages/contracts/src/`
+1. `workspace/packages/contracts/src/sessions.ts`
+2. `workspace/packages/contracts/samples/sessions/`
+3. explanatory/reference markdown artifacts in `workspace/packages/contracts/src/`
 
-This package-level surface supersedes older guidance that implied backend-local contract files or older sample folders were the primary handoff source for the current slice.
+This means:
+- `src/sessions.ts` is authoritative
+- `samples/sessions/` is the authoritative example set
+- markdown artifacts are reference-only and must not redefine the binding session shape
 
 ## Naming conventions
 
@@ -30,63 +34,48 @@ Use descriptive domain filenames:
 - `errors.ts`
 - `sessions.ts`
 
-The finalized markdown artifact for this slice is:
-- `pika-vertical-slice.md`
-
 ### Sample JSON payloads
-For the finalized current slice:
-- place slice payload examples in `samples/pika/`
+For the authoritative current session slice:
+- place session payload examples in `samples/sessions/`
 - keep filenames scenario-oriented and stable
-- prefer descriptive names that match the finalized slice artifact terminology
+- prefer descriptive names that match exported session contract terminology
 
-If generalized sample folders are used for non-slice-specific artifacts, they may still appear under:
+Generalized sample folders may still appear under:
 - `samples/requests/`
 - `samples/responses/`
 - `samples/events/`
 
-But those should not be treated as the primary source for the finalized current slice when `samples/pika/` exists.
+But those should not be treated as the primary source for the current `/api/v1/sessions/*` slice when `samples/sessions/` exists.
 
-### Mock TypeScript files
-Format:
-- `<domain>-<scenario>.ts`
-
-Examples:
-- `sessions-happy-path.ts`
-- `sessions-failures.ts`
-- `results-shareable.ts`
+### Reference markdown artifacts
+Markdown files under `src/` may document the slice, summarize behavior, or aid review, but they are explanatory/reference-only.
 
 ## Required update discipline
 
-When the current shared slice contract changes:
-1. Update `src/pika-vertical-slice.md` first.
-2. Update matching artifacts in `samples/pika/`.
-3. Update any aligned exported definitions in `src/` such as `sessions.ts`.
+When the current shared session contract changes:
+1. Update `src/sessions.ts` first.
+2. Update matching artifacts in `samples/sessions/`.
+3. Update aligned exported definitions or barrel references in `src/index.ts` if needed.
 4. Update `src/mocks/` fixtures if frontend simulation depends on the changed shape.
-5. Remove or supersede stale guidance that points teams back to backend-local handoff files.
+5. Update reference markdown only after the authoritative code-facing contract and session samples are aligned.
 
 ## Backend/frontend expectation split
 
 ### Backend
-- treat `src/pika-vertical-slice.md` and `samples/pika/` as the canonical slice handoff
-- keep implementation payloads aligned with the package-level artifact set
-- do not rely on backend-local contract notes as the final source once the package artifact is present
+- treat `src/sessions.ts` as the canonical shared contract
+- treat `samples/sessions/` as the canonical example payload set
+- do not rely on markdown or backend-local contract notes as the final source when they conflict with the package session surface
 
 ### Frontend
-- treat `src/pika-vertical-slice.md` and `samples/pika/` as the canonical slice reference
-- use aligned exported definitions in `src/` where typed integration is needed
-- do not invent payload keys or states absent from the package-level artifact set
+- treat `src/sessions.ts` as the canonical typed source
+- treat `samples/sessions/` as the canonical static example set
+- use markdown for orientation only
+- do not invent payload keys or states absent from the package session contract and authoritative session samples
 
 ## Approved current lane
 
 For the approved current slice, frontend and backend should align first on:
-- `src/pika-vertical-slice.md`
-- `samples/pika/`
-- `src/sessions.ts` where shared TypeScript definitions are needed
+- `src/sessions.ts`
+- `samples/sessions/`
 
-## Minimal package-owned pointer requirement
-
-If `src/pika-vertical-slice.md` exists, `src/index.ts` should include a package-owned pointer comment directing consumers to:
-- `./pika-vertical-slice.md`
-- `../samples/pika/`
-
-This ensures the canonical slice surface is visible even from the package export entrypoint.
+Any markdown artifact in `src/` is supplementary and non-authoritative for binding contract decisions.

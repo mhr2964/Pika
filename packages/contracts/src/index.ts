@@ -4,12 +4,11 @@ export * from './errors';
 export * from './sessions';
 
 /**
- * Canonical vertical-slice reference artifact:
- * - ./pika-vertical-slice.md
+ * Authoritative current /api/v1/sessions/* shared surface:
+ * - ./sessions.ts
+ * - ../samples/sessions/
  *
- * Canonical supporting sample set:
- * - ../samples/pika/
- *
- * Use the markdown artifact plus samples/pika payloads as the finalized
- * cross-team handoff surface for the current Pika vertical slice.
+ * Any markdown artifact in this package is explanatory/reference-only and
+ * must not override the exported session contracts or the canonical session
+ * sample set.
  */

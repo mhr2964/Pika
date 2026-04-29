@@ -1,81 +1,90 @@
 # @pika/contracts
 
-Canonical cross-team handoff surface for shared contracts, finalized slice artifacts, sample JSON payloads, and mock data used by backend and frontend.
+Canonical cross-team handoff surface for shared contracts, session sample payloads, and supporting reference artifacts used by backend and frontend.
 
 ## Purpose
 
 This package is the single agreed workspace location for:
-- TypeScript contract definitions in `src/`
-- the finalized vertical-slice artifact in `src/pika-vertical-slice.md`
-- sample JSON payload artifacts in `samples/`
+- authoritative TypeScript contract definitions in `src/`
+- authoritative session example payloads in `samples/sessions/`
+- supporting sample JSON payload artifacts in `samples/`
 - reusable mock data modules in `src/mocks/`
+- explanatory/reference markdown artifacts in `src/`
 
 Backend and frontend should both reference this package when aligning on request/response shapes, fixture data, and the approved current slice behavior.
 
-## Finalized current-slice handoff
+## Precedence for the current session slice
 
-For the current Pika vertical slice, the canonical handoff surface is:
+For the current `/api/v1/sessions/*` vertical slice, use these sources in order:
 
-- `workspace/packages/contracts/src/pika-vertical-slice.md`
-- `workspace/packages/contracts/samples/pika/`
+1. `workspace/packages/contracts/src/sessions.ts`
+2. `workspace/packages/contracts/samples/sessions/`
+3. explanatory/reference markdown artifacts in `workspace/packages/contracts/src/`
 
-These supersede any older guidance that implied backend-local contract handoff documents or older sample locations as the primary source for this slice.
-
-### What each artifact is for
-
-- `src/pika-vertical-slice.md` — finalized human-readable slice contract/reference artifact
-- `samples/pika/` — payload-level examples that accompany the finalized slice artifact
-- `src/sessions.ts` — exported TypeScript session definitions that should stay aligned with the finalized slice artifact
-- `src/index.ts` — package export barrel plus package-owned pointer to the canonical slice artifact
+This precedence is binding for the current slice:
+- `src/sessions.ts` is the authoritative source of truth for the shared session contract
+- `samples/sessions/` is the authoritative example payload set
+- markdown artifacts are explanatory/reference-only and must not override the typed contract or canonical session samples
 
 ## Canonical locations
 
-### 1) Finalized vertical-slice artifact
-Primary slice reference lives in:
-- `workspace/packages/contracts/src/pika-vertical-slice.md`
+### 1) Authoritative session contracts
+Primary current session contract lives in:
+- `workspace/packages/contracts/src/sessions.ts`
 
 Rule:
-- treat this file as the finalized narrative/spec handoff for the current vertical slice
-- frontend/backend should reconcile implementation details against this file first for slice-specific behavior
-- if the slice contract changes, update this artifact and any affected typed contracts/samples together
+- treat this file as the authoritative shared code-facing contract for `/api/v1/sessions/*`
+- if the session contract changes, update this file first
+- keep `src/index.ts` exporting the session surface
 
-### 2) Contracts
-Authoritative shared code-facing definitions live in:
+### 2) Authoritative session examples
+Primary current session examples live in:
+- `workspace/packages/contracts/samples/sessions/`
+
+Rule:
+- treat this folder as the canonical example set for `/api/v1/sessions/*`
+- examples here should mirror the shapes defined in `src/sessions.ts`
+- when example payloads change, keep them aligned with the exported session contract
+
+### 3) Other shared contracts
+Additional shared code-facing definitions live in:
 - `workspace/packages/contracts/src/index.ts`
 - `workspace/packages/contracts/src/api.ts`
 - `workspace/packages/contracts/src/domain.ts`
 - `workspace/packages/contracts/src/errors.ts`
-- `workspace/packages/contracts/src/sessions.ts`
 
 Rule:
 - shared exported types/interfaces/schemas belong in `src/`
 - keep filenames noun-based and domain-specific where possible
 - re-export public code-facing contract surface from `src/index.ts`
 
-### 3) Sample JSON payloads
-Canonical JSON examples for the finalized slice live in:
-- `workspace/packages/contracts/samples/pika/`
+### 4) Reference markdown artifacts
+Reference/spec notes may live in:
+- `workspace/packages/contracts/src/*.md`
 
-Additional package sample folders may still exist for older/generalized artifacts, but for the current vertical slice frontend/backend should prefer `samples/pika/` first.
+Rule:
+- these files are explanatory/reference-only
+- they may summarize or narrate the slice, but they do not override `src/sessions.ts`
+- if reference markdown conflicts with exported contracts or canonical session samples, follow the exported contracts and session sample set
 
-### 4) Mock data
+### 5) Mock data
 Canonical code-based mocks live in:
 - `workspace/packages/contracts/src/mocks/`
 
 ## Consumption guidance
 
-- Frontend should use `src/pika-vertical-slice.md` plus `samples/pika/` as the primary slice reference set.
-- Backend should use `src/pika-vertical-slice.md` plus `samples/pika/` as the primary slice handoff set and keep emitted payloads aligned with them.
-- Both teams should keep `src/sessions.ts` aligned with the finalized slice artifact where shared TypeScript definitions are required.
-- Do not treat backend-local docs as the canonical source once the package-level artifact exists here.
+- Frontend should use `src/sessions.ts` for shared types and `samples/sessions/` for canonical session payload examples.
+- Backend should implement `/api/v1/sessions/*` against `src/sessions.ts` and keep emitted payloads aligned with `samples/sessions/`.
+- Markdown artifacts may be used for orientation, review, or explanation, but not as the binding contract source.
+- Do not treat backend-local docs as the canonical source once the package-level session contract exists here.
 
 ## Current structure
 
-- `src/` — shared TypeScript contracts and package-owned reference artifacts
-- `src/pika-vertical-slice.md` — finalized current slice artifact
-- `samples/pika/` — finalized current slice payload examples
-- `samples/requests/` — legacy/general request examples still present in package
-- `samples/responses/` — legacy/general response examples still present in package
+- `src/` — shared TypeScript contracts and reference artifacts
+- `src/sessions.ts` — authoritative current session contract
+- `samples/sessions/` — authoritative current session payload examples
+- `samples/requests/` — older/general request examples still present in package
+- `samples/responses/` — older/general response examples still present in package
 - `samples/events/` — example event payloads
 - `notes/` — convention notes and handoff guidance
 
