@@ -27,35 +27,35 @@ export function ActiveRoomScreen({
     <AppShell
       eyebrow={room.roundLabel}
       title={room.prompt}
-      subtitle="Fast choices, live reactions, and a room that reads itself out loud."
+      subtitle="Live reactions make the room readable before the verdict lands."
     >
       <div className="stack-lg">
         <RoomCodeCard code={room.code} />
 
         {hasError ? (
           <div className="state-card state-card--error">
-            <p className="state-card__title">The room blinked.</p>
-            <p>Try that tap one more time and Pika will snap back into place.</p>
+            <p className="state-card__title">Live room hiccup.</p>
+            <p>The vibe flickered. Tap a choice again and Pika will catch up.</p>
           </div>
         ) : null}
 
         {isLoading ? (
           <div className="state-card">
-            <p className="state-card__title">Room is gathering steam…</p>
-            <p>Syncing options, reactions, and the current front-runner.</p>
+            <p className="state-card__title">Room is waking up…</p>
+            <p>Syncing reactions and lining up the current front-runner.</p>
           </div>
         ) : (
           <>
             <section className="stack-sm">
               <div className="section-heading">
                 <h2>Choices</h2>
-                <p>Pick the option that deserves the room.</p>
+                <p>One dominant tap. Zero confusion.</p>
               </div>
               <div className="option-grid">
                 {room.options.length === 0 ? (
                   <div className="state-card state-card--empty">
-                    <p className="state-card__title">No options yet.</p>
-                    <p>The room needs choices before the chaos can organize itself.</p>
+                    <p className="state-card__title">No choices yet.</p>
+                    <p>Add options before the room can tilt toward a winner.</p>
                   </div>
                 ) : (
                   room.options.map((option) => (
@@ -75,15 +75,15 @@ export function ActiveRoomScreen({
             <section className="stack-sm">
               <div className="section-heading">
                 <h2>Live reactions</h2>
-                <p>Emotional legibility, immediately.</p>
+                <p>The room tells on itself fast.</p>
               </div>
               <ReactionPile participants={room.participants} />
             </section>
 
             <section className="stack-sm">
               <div className="section-heading">
-                <h2>Room feed</h2>
-                <p>A tiny blow-by-blow of the chaos.</p>
+                <h2>Feed</h2>
+                <p>Every little gasp, documented.</p>
               </div>
               <ActivityFeed items={room.activity} />
             </section>
@@ -92,7 +92,7 @@ export function ActiveRoomScreen({
 
         <div className="button-row">
           <button type="button" className="button button--ghost" onClick={onResetRoom}>
-            End round
+            End this round
           </button>
           <button
             type="button"

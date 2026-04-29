@@ -1,6 +1,8 @@
 export type RoomStage =
   | 'welcome'
   | 'room-setup'
+  | 'room-join'
+  | 'room-lobby'
   | 'room-active'
   | 'room-outcome';
 

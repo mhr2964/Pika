@@ -1,42 +1,60 @@
 # Sprint 1 DevOps Template Integration Guide
 
-This guide describes how to integrate the `workspace/devops/` template bundle into the live workspace without guessing beyond the current artifact tree.
+This guide describes how to integrate the `workspace/devops/` template bundle into the current live workspace.
 
 ## Why these templates are staged here
-Devops is currently scoped to:
+Devops write scope is currently limited to:
 - `workspace/devops/`
 - `workspace/shared/`
 
-So this directory is the approved source-of-truth staging area for root operational artifacts that platform will install.
+So this directory is the approved source-of-truth staging area for operational artifacts that may be copied into root-owned destinations by platform.
 
 ## Current workspace state this guide is based on
 
-### Present monorepo root
-Observed now:
+### Root-integrated workspace files now present
+Observed:
 - `workspace/package.json`
 - `workspace/pnpm-workspace.yaml`
 - `workspace/README.md`
+- `workspace/.gitignore`
+- `workspace/tsconfig.base.json`
+- `workspace/tsconfig.json`
+
+### Current monorepo scaffold present
+Observed:
 - `workspace/apps/frontend/package.json`
 - `workspace/apps/frontend/src/index.ts`
 - `workspace/apps/backend/package.json`
 - `workspace/apps/backend/src/index.ts`
 - `workspace/packages/contracts/package.json`
 - `workspace/packages/contracts/src/index.ts`
+- `workspace/packages/contracts/README.md`
 
-### Present legacy backend
-Observed now:
+### Current product implementation surfaces still present
+Observed:
+- `workspace/frontend/src/main.tsx`
+- `workspace/frontend/src/App.tsx`
 - `workspace/backend/package.json`
 - `workspace/backend/src/index.js`
 - `workspace/backend/src/config/env.js`
 - `workspace/backend/src/routes/health.js`
 - `workspace/backend/src/routes/rooms.js`
 
-### Important current-state note
-The workspace contains both:
-1. a new pnpm monorepo app layout under `apps/` and `packages/`
-2. a still-active standalone Node backend under `backend/`
+## Important current-state note
+The current workspace contains two different implementation shapes at once:
 
-Templates below therefore target the monorepo as the preferred path, while keeping explicit compatibility for the standalone backend.
+1. **Integrated monorepo scaffold**
+   - root `package.json`
+   - `pnpm-workspace.yaml`
+   - `apps/frontend`
+   - `apps/backend`
+   - `packages/contracts`
+
+2. **Active app implementation directories**
+   - `frontend/`
+   - `backend/`
+
+Because both shapes are live in the tree, these devops templates are written as operational source-of-truth references, not as claims that every script already runs exactly as templated. Platform should install or adapt them against the root-integrated files already present.
 
 ## Template-by-template integration map
 
@@ -45,133 +63,180 @@ Templates below therefore target the monorepo as the preferred path, while keepi
 - `workspace/.env.example`
 
 **Purpose**
-- establish one shared local env naming contract across monorepo apps and the legacy backend
+- provide one shared local env contract for frontend, backend, compose, CI, and future deploy wiring
 
 **Current-state note**
-- no root `workspace/.env.example` is visible in the current workspace tree
-- legacy backend likely still expects `PORT`, while monorepo services should converge on `BACKEND_PORT` / `API_PORT`
+- `workspace/.env.example` is not visible in the current tree
+- `workspace/backend/src/config/env.js` indicates the legacy backend still needs compatibility envs like `PORT`
+- root `README.md` already documents local ports, so env values should match that documentation
 
 **Install step**
 1. copy `workspace/devops/.env.example` to `workspace/.env.example`
-2. preserve both canonical variables and the compatibility `PORT=4000` line
-3. if platform adds app-specific wrappers later, map `BACKEND_PORT` into runtime-specific env injection
+2. preserve canonical values:
+   - `FRONTEND_PORT=3000`
+   - `BACKEND_PORT=4000`
+   - `API_PORT=4000`
+   - `WS_PORT=4001`
+   - `REDIS_PORT=6379`
+3. preserve compatibility line:
+   - `PORT=4000`
+4. use this env file as the reference for:
+   - root docs
+   - compose services
+   - CI env assumptions
 
 ### 2) `workspace/devops/docker-compose.yml`
 **Intended destination**
 - `workspace/docker-compose.yml`
 
 **Purpose**
-- provide a local stack for monorepo frontend/backend plus redis, with a gated legacy backend fallback profile
+- provide a local orchestration template for frontend, backend, and redis while both monorepo and legacy backend surfaces exist
 
 **Current-state note**
-- no root `workspace/docker-compose.yml` is visible
-- `workspace/apps/frontend/package.json` and `workspace/apps/backend/package.json` exist
-- `workspace/backend/package.json` also exists, so a legacy path is still needed
+- `workspace/docker-compose.yml` is not visible in the current tree
+- root `README.md` documents frontend `3000`, backend `4000`, and redis `6379`
+- there is a monorepo scaffold under `apps/`, but current active implementation files for app behavior still live under `frontend/` and `backend/`
 
 **Install step**
 1. copy `workspace/devops/docker-compose.yml` to `workspace/docker-compose.yml`
-2. keep `apps-backend` as the default backend service
-3. keep `apps-frontend` as the default frontend service
-4. keep `backend-legacy` behind the `legacy` profile only
-5. confirm package names in:
-   - `workspace/apps/frontend/package.json`
-   - `workspace/apps/backend/package.json`
-6. if names differ from template filters, update:
-   - `pnpm --filter @pika/frontend dev`
-   - `pnpm --filter @pika/backend dev`
+2. verify ports remain aligned with docs:
+   - frontend `3000`
+   - backend `4000`
+   - redis `6379`
+3. verify service commands against the current root `package.json` scripts and actual app package names before relying on them
+4. keep any legacy backend profile only while `workspace/backend/` remains operationally relevant
 
 ### 3) `workspace/devops/ci-workflow-template.yml`
 **Intended destination**
 - `workspace/.github/workflows/ci.yml`
 
 **Purpose**
-- create a safe CI baseline that verifies monorepo setup and separately checks the standalone backend while both exist
+- define a CI baseline that checks current workspace structure and runs package scripts only when present
 
 **Current-state note**
-- no root CI workflow is visible in the current tree
-- root `workspace/package.json` and `workspace/pnpm-workspace.yaml` exist
-- legacy backend has an independent `package.json`
+- no visible `workspace/.github/workflows/ci.yml` currently exists
+- root `workspace/package.json` exists and should be treated as the integration anchor
+- current app reality spans:
+  - `apps/frontend`
+  - `apps/backend`
+  - `packages/contracts`
+  - standalone `backend/`
+- CI should not pretend the `frontend/` implementation folder is already wired into the monorepo unless platform explicitly integrates it
 
 **Install step**
-1. create directories `workspace/.github/workflows/` if missing
+1. create `workspace/.github/workflows/` if missing
 2. copy `workspace/devops/ci-workflow-template.yml` to `workspace/.github/workflows/ci.yml`
-3. verify package names match the filters:
-   - `@pika/frontend`
-   - `@pika/backend`
-   - `@pika/contracts`
-4. keep `--if-present` script invocations until lint/typecheck/test/build scripts stabilize
+3. verify package names and script names in:
+   - `workspace/package.json`
+   - `workspace/apps/frontend/package.json`
+   - `workspace/apps/backend/package.json`
+   - `workspace/packages/contracts/package.json`
+   - `workspace/backend/package.json`
+4. keep all script execution guarded with `--if-present` or equivalent until runtime ownership is fully converged
 
 ### 4) `workspace/devops/deploy-skeleton.md`
 **Intended destination**
 - preferred: `workspace/docs/deploy-skeleton.md`
-- alternate: a platform-selected deployment runbook path
+- alternate: another platform-owned docs path
 
 **Purpose**
-- define a deployment pipeline skeleton without inventing final hosting decisions
+- define a deployment pipeline skeleton without inventing final hosting choices
 
 **Current-state note**
-- the workspace has no visible deploy runbook at the root docs level
-- both monorepo and legacy backend paths are still present, so deployment should prefer monorepo while documenting temporary fallback support
+- no root docs deployment runbook is visible
+- deployment planning must acknowledge that:
+  - monorepo scaffold exists
+  - current implemented backend still exists in `workspace/backend`
+  - current implemented frontend still exists in `workspace/frontend`
 
 **Install step**
 1. copy `workspace/devops/deploy-skeleton.md` to `workspace/docs/deploy-skeleton.md`
-2. mark `workspace/apps/frontend` and `workspace/apps/backend` as preferred deploy sources
-3. mark `workspace/backend` as temporary until parity/migration is complete
+2. update deployment source selections only after platform decides whether deploys come from:
+   - `apps/*`
+   - `frontend/` and `backend/`
+   - or a merged final layout
+3. keep the document explicitly marked as a skeleton until hosting targets are chosen
 
 ### 5) `workspace/devops/port-and-env-conventions.md`
 **Intended destination**
 - preferred: `workspace/docs/port-and-env-conventions.md`
-- acceptable temporary location: keep under `workspace/devops/`
+- acceptable temporary location: `workspace/devops/port-and-env-conventions.md`
 
 **Purpose**
-- define the canonical Sprint 1 naming contract for ports and env variables
+- define canonical env names and ports across docs, local run, CI, and future deploy work
 
 **Current-state note**
-- current tree shows multiple app surfaces and multiple possible runtime env conventions
-- this file is needed to prevent drift while platform performs root integration
+- current tree has multiple potential runtime entry surfaces
+- root `README.md` already states the canonical ports and should remain aligned with this file
 
 **Install step**
 1. copy to `workspace/docs/port-and-env-conventions.md` when platform is ready
-2. use it as the reference when editing:
+2. use this conventions file as the editing reference for:
    - `workspace/.env.example`
    - `workspace/docker-compose.yml`
    - `workspace/.github/workflows/ci.yml`
+   - root `README.md`
 
-## Install order
-1. install `.env.example`
-2. install `docker-compose.yml`
-3. install CI workflow
-4. publish port/env conventions doc
-5. publish deploy skeleton doc
+## Current ports and documented expectations
+These values are the current intended Sprint 1 defaults and should stay aligned across all integrated files:
+- frontend: `3000`
+- backend: `4000`
+- websocket reserve: `4001`
+- redis: `6379`
+
+Current public/local env names expected by templates:
+- `FRONTEND_PORT`
+- `BACKEND_PORT`
+- `API_PORT`
+- `WS_PORT`
+- `REDIS_PORT`
+- `API_HOST`
+- `CORS_ORIGIN`
+- `VITE_API_BASE_URL`
+- `NEXT_PUBLIC_API_BASE_URL`
+- `DATABASE_URL`
+- `REDIS_URL`
+- `PORT`
+- `SESSION_SECRET`
+- `JWT_SECRET`
+- `LOG_LEVEL`
+
+## Script and package-name handling note
+The live workspace contains root and app package manifests, but this guide should not invent script names beyond what platform verifies in:
+- `workspace/package.json`
+- `workspace/apps/frontend/package.json`
+- `workspace/apps/backend/package.json`
+- `workspace/packages/contracts/package.json`
+- `workspace/backend/package.json`
+
+If any package name or script differs from the current devops templates, platform should update the integrated root artifact to match the real manifest rather than forcing the manifest to match the template.
+
+## Recommended install order
+1. install `workspace/.env.example`
+2. install `workspace/docker-compose.yml`
+3. install `workspace/.github/workflows/ci.yml`
+4. publish `workspace/docs/port-and-env-conventions.md`
+5. publish `workspace/docs/deploy-skeleton.md`
 
 ## Post-install validation checklist
-After platform copies templates into root destinations, verify:
+After platform applies the templates, confirm:
 
+### Files
 - `workspace/.env.example` exists
 - `workspace/docker-compose.yml` exists
 - `workspace/.github/workflows/ci.yml` exists
 - `workspace/docs/deploy-skeleton.md` exists
-- `workspace/docs/port-and-env-conventions.md` exists or `workspace/devops/port-and-env-conventions.md` remains the referenced source
+- `workspace/docs/port-and-env-conventions.md` exists or `workspace/devops/port-and-env-conventions.md` remains the active reference
 
-Then verify current artifact alignment:
-- `workspace/package.json` still represents the pnpm workspace root
-- `workspace/pnpm-workspace.yaml` still exists
-- `workspace/apps/frontend/package.json` still exists
-- `workspace/apps/backend/package.json` still exists
-- `workspace/backend/package.json` still exists if legacy support is still needed
+### Alignment
+- ports in root docs match env and compose
+- root `package.json` remains the integration anchor
+- `pnpm-workspace.yaml` still reflects current workspace package layout
+- `apps/frontend`, `apps/backend`, and `packages/contracts` manifests still exist
+- `frontend/` and `backend/` implementation folders are handled explicitly, not implicitly assumed away
 
-## Known assumptions that must be checked during install
-- monorepo package names match:
-  - `@pika/frontend`
-  - `@pika/backend`
-  - `@pika/contracts`
-- `apps/frontend` exposes a `dev` script
-- `apps/backend` exposes a `dev` script
-- `workspace/backend` exposes `npm run dev`
-
-## Cleanup path after backend convergence
-Once `workspace/apps/backend` replaces `workspace/backend` operationally:
-- remove `PORT` from shared env templates if no longer needed
-- remove the `backend-legacy` compose profile
-- remove the legacy backend CI job
-- simplify deploy documentation to monorepo-only paths
+## Cleanup path after layout convergence
+Once platform settles the final runtime layout:
+- remove env compatibility entries that are no longer needed
+- remove duplicate runtime lanes from compose/CI
+- simplify deploy documentation to the final chosen app structure

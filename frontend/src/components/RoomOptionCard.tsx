@@ -16,7 +16,7 @@ export function RoomOptionCard({
   onSelect,
   disabled = false,
 }: RoomOptionCardProps) {
-  const className = [
+  const cardClassName = [
     'room-option-card',
     isSelected ? 'room-option-card--selected' : '',
     isWinner ? 'room-option-card--winner' : '',
@@ -27,12 +27,12 @@ export function RoomOptionCard({
   return (
     <button
       type="button"
-      className={className}
+      className={cardClassName}
       onClick={() => onSelect(option.id)}
       disabled={disabled}
     >
       <span className="room-option-card__label">{option.label}</span>
-      <span className="room-option-card__meta">{option.votes} votes moving</span>
+      <span className="room-option-card__meta">{option.votes} reactions in</span>
     </button>
   );
 }

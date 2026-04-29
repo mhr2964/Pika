@@ -10,6 +10,7 @@ type CreateRoomScreenProps = {
   onPromptChange: (value: string) => void;
   onCreateRoom: () => void;
   onBack: () => void;
+  onGoToJoinRoom: () => void;
 };
 
 export function CreateRoomScreen({
@@ -21,23 +22,24 @@ export function CreateRoomScreen({
   onPromptChange,
   onCreateRoom,
   onBack,
+  onGoToJoinRoom,
 }: CreateRoomScreenProps) {
   const isDisabled = isSubmitting || !hostName.trim() || !prompt.trim();
 
   return (
     <AppShell
-      eyebrow="Room setup"
-      title="Start the room before the energy drifts"
-      subtitle="Make the question obvious, invite instant reactions, and keep one dominant next step."
+      eyebrow="Create room"
+      title="Start the room. Make the choice obvious."
+      subtitle="A quick prompt, a room code, and everyone knows the assignment."
     >
       <div className="stack-lg">
         <div className="state-card">
-          <p className="state-card__title">Keep it quick-hit.</p>
-          <p>Pika sings when the prompt feels answerable in one gut reaction.</p>
+          <p className="state-card__title">Host the moment.</p>
+          <p>Keep it punchy. Pika works best when the question feels instantly answerable.</p>
         </div>
 
         <label className="field">
-          <span>Host name</span>
+          <span>Your host name</span>
           <input
             value={hostName}
             onChange={(event) => onHostNameChange(event.target.value)}
@@ -46,7 +48,7 @@ export function CreateRoomScreen({
         </label>
 
         <label className="field">
-          <span>Room prompt</span>
+          <span>What are we choosing?</span>
           <textarea
             value={prompt}
             onChange={(event) => onPromptChange(event.target.value)}
@@ -57,14 +59,17 @@ export function CreateRoomScreen({
 
         {hasError ? (
           <div className="state-card state-card--error">
-            <p className="state-card__title">Room launch failed.</p>
-            <p>Tap it again. Even beautiful chaos needs one retry sometimes.</p>
+            <p className="state-card__title">Room failed to start.</p>
+            <p>Give it one more tap. Even good chaos needs a retry.</p>
           </div>
         ) : null}
 
         <div className="button-row">
           <button type="button" className="button button--ghost" onClick={onBack}>
             Back
+          </button>
+          <button type="button" className="button button--ghost" onClick={onGoToJoinRoom}>
+            Join instead
           </button>
           <button
             type="button"

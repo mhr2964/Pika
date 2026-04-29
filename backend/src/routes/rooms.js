@@ -11,8 +11,8 @@ const {
 const roomsRouter = express.Router();
 
 roomsRouter.post('/', createRoom);
-roomsRouter.get('/:roomId', getRoom);
 roomsRouter.post('/:roomId/join', joinRoom);
+roomsRouter.get('/:roomId', getRoom);
 roomsRouter.post('/:roomId/votes', submitVote);
 roomsRouter.post('/:roomId/reactions', submitReaction);
 roomsRouter.get('/:roomId/results', getResults);

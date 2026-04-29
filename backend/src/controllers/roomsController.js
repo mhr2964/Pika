@@ -34,9 +34,10 @@ async function createRoom(req, res, next) {
 
 async function joinRoom(req, res, next) {
   try {
-    const { roomId } = req.params;
-    const input = normalizeJoinRoomInput(req.body || {});
-    const result = await joinRoomById(roomId, input);
+    const result = await joinRoomById(
+      req.params.roomId,
+      normalizeJoinRoomInput(req.body || {})
+    );
 
     if (!result) {
       throw createHttpError(404, 'Room not found.');
@@ -52,8 +53,7 @@ async function joinRoom(req, res, next) {
 
 async function getRoom(req, res, next) {
   try {
-    const { roomId } = req.params;
-    const room = await getRoomById(roomId);
+    const room = await getRoomById(req.params.roomId);
 
     if (!room) {
       throw createHttpError(404, 'Room not found.');
@@ -69,9 +69,10 @@ async function getRoom(req, res, next) {
 
 async function submitVote(req, res, next) {
   try {
-    const { roomId } = req.params;
-    const input = normalizeVoteInput(req.body || {});
-    const vote = await submitVoteForRoom(roomId, input);
+    const vote = await submitVoteForRoom(
+      req.params.roomId,
+      normalizeVoteInput(req.body || {})
+    );
 
     if (!vote) {
       throw createHttpError(404, 'Room not found.');
@@ -87,9 +88,10 @@ async function submitVote(req, res, next) {
 
 async function submitReaction(req, res, next) {
   try {
-    const { roomId } = req.params;
-    const input = normalizeReactionInput(req.body || {});
-    const reaction = await submitReactionForRoom(roomId, input);
+    const reaction = await submitReactionForRoom(
+      req.params.roomId,
+      normalizeReactionInput(req.body || {})
+    );
 
     if (!reaction) {
       throw createHttpError(404, 'Room not found.');
@@ -105,8 +107,7 @@ async function submitReaction(req, res, next) {
 
 async function getResults(req, res, next) {
   try {
-    const { roomId } = req.params;
-    const results = await getRoomResults(roomId);
+    const results = await getRoomResults(req.params.roomId);
 
     if (!results) {
       throw createHttpError(404, 'Room not found.');

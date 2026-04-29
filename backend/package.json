@@ -1,13 +1,11 @@
 {
   "name": "pika-backend",
   "version": "1.0.0",
-  "private": true,
-  "description": "Minimal runnable backend scaffold for local Pika flow development",
+  "description": "Minimal room-based Pika backend",
   "main": "src/index.js",
-  "type": "commonjs",
   "scripts": {
-    "dev": "node --watch src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

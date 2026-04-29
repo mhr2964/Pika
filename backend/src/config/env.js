@@ -8,7 +8,7 @@ function parseBoolean(value, defaultValue = false) {
     return defaultValue;
   }
 
-  return value === 'true';
+  return String(value).toLowerCase() === 'true';
 }
 
 function parsePort(value, defaultValue) {

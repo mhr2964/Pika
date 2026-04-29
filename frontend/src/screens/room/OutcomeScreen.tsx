@@ -19,9 +19,9 @@ export function OutcomeScreen({
 
   return (
     <AppShell
-      eyebrow="Outcome"
+      eyebrow="Results"
       title={winningOption ? `${winningOption.label} wins the room.` : 'No winner yet.'}
-      subtitle="The verdict should feel instant, obvious, and ready for the next move."
+      subtitle="Make the result feel instant, then tee up the next move while the energy is hot."
     >
       <div className="stack-lg">
         {winningOption ? (
@@ -32,23 +32,23 @@ export function OutcomeScreen({
           </div>
         ) : (
           <div className="state-card state-card--empty">
-            <p className="state-card__title">No outcome to reveal.</p>
-            <p>Head back into the room and let the group react a little louder.</p>
+            <p className="state-card__title">No result to show yet.</p>
+            <p>Let the room react a bit more, then come back for the reveal.</p>
           </div>
         )}
 
         <div className="state-card">
-          <p className="state-card__title">Next move</p>
+          <p className="state-card__title">Next step</p>
           <p>
             {winningOption
-              ? `Send everyone toward ${winningOption.label} or spin up another fast question while the energy is still hot.`
-              : 'Run another reaction pass, then come back when the room has made itself clear.'}
+              ? `Point everyone toward ${winningOption.label}, or spin up another round before the group cools off.`
+              : 'Kick off another pass and let the room become obvious.'}
           </p>
         </div>
 
         <div className="button-row">
           <button type="button" className="button button--ghost" onClick={onStartOver}>
-            Start fresh
+            Back to start
           </button>
           <button type="button" className="button" onClick={onPlayAgain}>
             Run another round
