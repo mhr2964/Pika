@@ -1,0 +1,60 @@
+{
+  "title": "Pika Company Dashboard",
+  "sections": [
+    {
+      "title": "Phase",
+      "widgets": [
+        {
+          "type": "status",
+          "label": "Current phase",
+          "value": "Execution"
+        },
+        {
+          "type": "status",
+          "label": "Gating milestone",
+          "value": "Engineering unblock closed"
+        }
+      ]
+    },
+    {
+      "title": "Active Streams",
+      "widgets": [
+        {
+          "type": "status",
+          "label": "Frontend",
+          "value": "Implementation package completed; execution resumed"
+        },
+        {
+          "type": "status",
+          "label": "Backend",
+          "value": "Implementation stream active under CTO directive"
+        },
+        {
+          "type": "status",
+          "label": "Growth + Brand",
+          "value": "Launch story lock running in parallel"
+        }
+      ]
+    },
+    {
+      "title": "Immediate Readiness Signals",
+      "widgets": [
+        {
+          "type": "status",
+          "label": "Platform",
+          "value": "Workspace orientation accepted"
+        },
+        {
+          "type": "status",
+          "label": "DevOps",
+          "value": "Repo readiness accepted"
+        },
+        {
+          "type": "status",
+          "label": "Next decision gate",
+          "value": "Accept first coherent prototype increment"
+        }
+      ]
+    }
+  ]
+}

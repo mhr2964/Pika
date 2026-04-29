@@ -1,0 +1,66 @@
+# Pika frontend state matrix
+
+| State ID | Screen name | Trigger | Required copy fields | Primary CTA slot | Secondary CTA slot |
+|---|---|---|---|---|---|
+| `onboarding.welcome.idle` | Welcome | First app open before player has entered a name | eyebrow, headline, body, nameFieldLabel, nameFieldPlaceholder, primaryCtaLabel, secondaryCtaLabel, helperText | Continue | I’m joining a room |
+| `onboarding.welcome.name_missing` | Welcome / validation | Player taps primary CTA with empty name field | eyebrow, headline, body, nameFieldLabel, nameFieldPlaceholder, fieldError, primaryCtaLabel, secondaryCtaLabel | Continue | I’m joining a room |
+| `onboarding.welcome.name_invalid` | Welcome / validation | Player enters disallowed name value | eyebrow, headline, body, nameFieldLabel, fieldError, helperText, primaryCtaLabel, secondaryCtaLabel | Continue | I’m joining a room |
+| `onboarding.welcome.resume_found` | Welcome / resume | Existing local player/session data detected on open | eyebrow, headline, body, resumeSummary, primaryCtaLabel, secondaryCtaLabel, tertiaryCtaLabel | Rejoin | Start fresh |
+| `onboarding.join_room.idle` | Join room | Player chooses join path | eyebrow, headline, body, codeFieldLabel, codeFieldPlaceholder, primaryCtaLabel, secondaryCtaLabel, helperText | Join room | Back |
+| `onboarding.join_room.code_missing` | Join room / validation | Player taps primary CTA with empty code field | eyebrow, headline, body, codeFieldLabel, codeFieldPlaceholder, fieldError, primaryCtaLabel, secondaryCtaLabel | Join room | Back |
+| `onboarding.join_room.code_invalid_format` | Join room / validation | Code fails client-side format check | eyebrow, headline, body, codeFieldLabel, fieldError, helperText, primaryCtaLabel, secondaryCtaLabel | Join room | Back |
+| `onboarding.join_room.loading` | Join room / loading | Join request in flight | headline, body, loadingLabel, primaryCtaLabel | Joining… | Cancel |
+| `onboarding.join_room.not_found` | Join room / error | Server reports room does not exist | headline, body, errorTitle, errorBody, codeFieldLabel, primaryCtaLabel, secondaryCtaLabel | Try again | Start a new room |
+| `onboarding.join_room.full` | Join room / error | Server reports room capacity reached | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Enter a different code | Back |
+| `onboarding.join_room.closed` | Join room / error | Server reports room no longer accepting joins | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Back to home | Try a different room |
+| `onboarding.join_room.network_error` | Join room / error | Request fails due to network/server issue | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Try again | Back |
+| `onboarding.reconnect.prompt` | Reconnect prompt | App relaunches with recoverable in-progress session | eyebrow, headline, body, recoverySummary, primaryCtaLabel, secondaryCtaLabel | Reconnect | Leave game |
+| `onboarding.reconnect.loading` | Reconnect / loading | Reconnect request in flight | headline, body, loadingLabel, primaryCtaLabel | Reconnecting… | Cancel |
+| `onboarding.reconnect.failed` | Reconnect / error | Recoverable session exists but reconnect fails | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Try again | Start over |
+| `room.create.idle` | Create room | Named player chooses create path | eyebrow, headline, body, roomSummaryLabel, primaryCtaLabel, secondaryCtaLabel | Create room | Back |
+| `room.create.loading` | Create room / loading | Create-room request in flight | headline, body, loadingLabel, primaryCtaLabel | Creating room… | Cancel |
+| `room.create.success_waiting` | Room lobby / host | Room successfully created; waiting for players | eyebrow, headline, body, roomCodeLabel, shareLabel, playerCountLabel, statusLabel, primaryCtaLabel, secondaryCtaLabel, helperText | Copy code | Start game |
+| `room.create.empty` | Room lobby / empty | Host is alone in room and game cannot start yet | eyebrow, headline, body, roomCodeLabel, shareHint, statusLabel, primaryCtaLabel, secondaryCtaLabel | Copy code | Back |
+| `room.create.start_locked` | Room lobby / disabled start | Host has room open but minimum player threshold not met | eyebrow, headline, body, roomCodeLabel, statusLabel, disabledPrimaryLabel, secondaryCtaLabel | Start game (disabled) | Copy code |
+| `room.create.network_error` | Create room / error | Create-room request fails | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Try again | Back |
+| `room.lobby.guest_waiting` | Room lobby / guest | Guest joined room; waiting for host action | eyebrow, headline, body, roomCodeLabel, hostStatusLabel, playerListLabel, primaryCtaLabel, secondaryCtaLabel | Ready | Leave room |
+| `room.lobby.player_joined` | Room lobby / update | Another player joins room | eyebrow, headline, body, playerListLabel, statusLabel, primaryCtaLabel, secondaryCtaLabel | Continue | Copy code |
+| `room.lobby.player_left` | Room lobby / update | A player leaves room before match starts | eyebrow, headline, body, playerListLabel, statusLabel, primaryCtaLabel, secondaryCtaLabel | Got it | Copy code |
+| `room.lobby.syncing` | Room lobby / loading | Lobby state is refetching after realtime gap or reconnect | headline, body, loadingLabel, primaryCtaLabel | Refreshing… | Leave room |
+| `room.lobby.closed` | Room closed | Host ends room or backend closes room before start | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Back to home | Start a new room |
+| `room.lobby.rejoin_offer` | Rejoin lobby | Player returns to an unstarted room they were in | eyebrow, headline, body, roomCodeLabel, recoverySummary, primaryCtaLabel, secondaryCtaLabel | Rejoin room | Leave it |
+| `match.progress.match_found` | Match found | System pairs player into active matchup | eyebrow, headline, body, matchupSummary, timerLabel, primaryCtaLabel, secondaryCtaLabel | I’m ready | Leave game |
+| `match.progress.waiting_for_pairing` | Waiting for matchup | Player is in active game but not yet paired | eyebrow, headline, body, statusLabel, loadingLabel, primaryCtaLabel, secondaryCtaLabel | Keep waiting | Leave game |
+| `match.progress.round_intro` | Round intro | New round begins before interaction starts | eyebrow, headline, body, roundLabel, opponentLabel, instructionLabel, primaryCtaLabel, secondaryCtaLabel | Start round | Not now |
+| `match.progress.turn_active` | Active matchup | Player can make current move/response | eyebrow, headline, body, instructionLabel, timerLabel, helperText, primaryCtaLabel, secondaryCtaLabel | Submit | Leave game |
+| `match.progress.turn_incomplete` | Active matchup / validation | Player attempts submit without required input | eyebrow, headline, body, instructionLabel, fieldError, helperText, primaryCtaLabel, secondaryCtaLabel | Submit | Keep editing |
+| `match.progress.turn_submitting` | Active matchup / loading | Turn submission request in flight | headline, body, loadingLabel, primaryCtaLabel | Sending… | Cancel |
+| `match.progress.waiting_for_opponent` | Waiting on opponent | Player submitted; opponent still active | eyebrow, headline, body, statusLabel, loadingLabel, primaryCtaLabel, secondaryCtaLabel | Stay here | Leave game |
+| `match.progress.opponent_disconnected` | Match interruption | Opponent connection drops during matchup | headline, body, statusLabel, recoveryHint, primaryCtaLabel, secondaryCtaLabel | Keep waiting | Return to lobby |
+| `match.progress.sync_error` | Match sync error | Live updates fail or state drift detected | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Refresh state | Leave game |
+| `match.progress.reconnect_loading` | Match reconnect / loading | In-progress match is restoring after app reconnect | headline, body, loadingLabel, recoverySummary, primaryCtaLabel | Reconnecting… | Leave game |
+| `match.progress.reconnect_failed` | Match reconnect / error | In-progress match cannot be restored automatically | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Try again | Back to home |
+| `match.progress.round_complete` | Round complete | Round resolves and next step is pending | eyebrow, headline, body, roundSummary, primaryCtaLabel, secondaryCtaLabel | Next round | Leave game |
+| `match.progress.game_paused` | Game paused | Host/system pauses progression | headline, body, statusLabel, recoveryHint, primaryCtaLabel, secondaryCtaLabel | Stay ready | Leave game |
+| `results.reveal.loading` | Results reveal / loading | Final results request in flight or reveal animation prep | headline, body, loadingLabel, primaryCtaLabel | Loading results… | Back to lobby |
+| `results.reveal.standard` | Results reveal | Game finishes with valid winner/ranking data | eyebrow, headline, body, winnerLabel, scoreSummary, placementLabel, primaryCtaLabel, secondaryCtaLabel | Play again | Back to lobby |
+| `results.reveal.tie` | Results reveal / tie | Final results end in tie state | eyebrow, headline, body, tieSummary, scoreSummary, primaryCtaLabel, secondaryCtaLabel | Run it back | Back to lobby |
+| `results.reveal.personal_win` | Results reveal / personalized | Current player wins overall result set | eyebrow, headline, body, celebrationLine, scoreSummary, primaryCtaLabel, secondaryCtaLabel | Play again | Share result |
+| `results.reveal.personal_loss` | Results reveal / personalized | Current player does not win overall result set | eyebrow, headline, body, consolationLine, scoreSummary, primaryCtaLabel, secondaryCtaLabel | Play again | Back to lobby |
+| `results.reveal.partial_data` | Results reveal / degraded | Some rankings or details unavailable but session completed | eyebrow, headline, body, scoreSummary, fallbackNote, primaryCtaLabel, secondaryCtaLabel | Back to lobby | Play again |
+| `results.reveal.rematch_waiting` | Rematch lobby | Player opts into replay and is waiting on others | eyebrow, headline, body, readyCountLabel, statusLabel, primaryCtaLabel, secondaryCtaLabel | Stay ready | Cancel rematch |
+| `results.reveal.rematch_ready` | Rematch ready | All required players ready for instant restart | eyebrow, headline, body, readyCountLabel, statusLabel, primaryCtaLabel, secondaryCtaLabel | Start rematch | Back to results |
+| `results.reveal.rematch_declined` | Rematch declined | One or more players reject rematch | headline, body, statusLabel, primaryCtaLabel, secondaryCtaLabel | Back to lobby | Start a new room |
+| `results.reveal.network_error` | Results reveal / error | Results fetch fails | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Try again | Back to lobby |
+| `system.empty.no_rooms` | Empty state / no room context | User lands in join flow without recent rooms or active invites | headline, body, helperText, primaryCtaLabel, secondaryCtaLabel | Create room | Enter code |
+| `system.empty.no_match_history` | Empty state / no prior sessions | Results/history surface has no completed matches | headline, body, helperText, primaryCtaLabel, secondaryCtaLabel | Start a game | Back |
+| `system.loading.global` | Full-screen loading | App bootstraps required session/game data | headline, body, loadingLabel | Loading… | — |
+| `system.loading.inline` | Inline loading | Section-level content refresh without route change | loadingLabel, assistiveText | — | — |
+| `system.error.network` | Generic network error | Request fails and no more specific state applies | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Try again | Back |
+| `system.error.server` | Generic server error | Backend returns unexpected 5xx or malformed response | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Try again | Back to home |
+| `system.error.unknown` | Generic unknown error | Unclassified client/runtime failure reaches UI boundary | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Reload | Back to home |
+| `system.recovery.offline` | Offline recovery | Client detects offline state during active use | headline, body, statusLabel, recoveryHint, primaryCtaLabel, secondaryCtaLabel | Retry now | Keep waiting |
+| `system.recovery.connection_restored` | Connection restored | Client returns online after offline interruption | headline, body, statusLabel, primaryCtaLabel, secondaryCtaLabel | Resume | Refresh |
+| `system.recovery.session_expired` | Session expired | Auth/session token or room membership expires | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Start again | Back to home |
+| `system.recovery.desynced_state` | State recovery | Client detects stale or conflicting game state | headline, body, errorTitle, errorBody, recoveryHint, primaryCtaLabel, secondaryCtaLabel | Refresh state | Leave game |
+| `system.recovery.kicked` | Removed from room/game | Host or system removes player from active room | headline, body, errorTitle, errorBody, primaryCtaLabel, secondaryCtaLabel | Back to home | Start a new room |
