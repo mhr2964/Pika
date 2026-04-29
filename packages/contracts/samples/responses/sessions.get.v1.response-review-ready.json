@@ -32,11 +32,5 @@
         "label": "Brick Oven Lab"
       }
     ]
-  },
-  "participant": {
-    "id": "user_2",
-    "displayName": "Jordan",
-    "isHost": false,
-    "hasJoined": true
   }
 }

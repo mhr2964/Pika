@@ -1,4 +1,9 @@
-export type SessionPhase = 'waiting' | 'ready' | 'in_progress' | 'complete';
+export type SessionPhase =
+  | 'waiting'
+  | 'ready'
+  | 'review_ready'
+  | 'in_progress'
+  | 'complete';
 
 export interface SessionParticipant {
   id: string;
