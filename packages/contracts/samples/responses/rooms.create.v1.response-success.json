@@ -1,0 +1,29 @@
+{
+  "room": {
+    "id": "room_123",
+    "code": "P1KA",
+    "status": "lobby",
+    "prompt": "Best pizza spot?",
+    "options": [
+      {
+        "id": "opt_1",
+        "label": "Corner Slice"
+      },
+      {
+        "id": "opt_2",
+        "label": "Moon Pie"
+      },
+      {
+        "id": "opt_3",
+        "label": "Brick Oven Lab"
+      }
+    ],
+    "participants": [
+      {
+        "id": "host_1",
+        "displayName": "Avery",
+        "isHost": true
+      }
+    ]
+  }
+}

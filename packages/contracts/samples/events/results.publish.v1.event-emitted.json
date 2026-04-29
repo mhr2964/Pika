@@ -1,0 +1,7 @@
+{
+  "type": "results.publish",
+  "version": 1,
+  "roomId": "room_123",
+  "winnerOptionId": "opt_2",
+  "shareText": "Moon Pie wins in Pika."
+}

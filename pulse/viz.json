@@ -1,25 +1,117 @@
 {
-  "sections": [
+  "company": "Pika",
+  "generatedAt": "2026-04-29T22:33:00Z",
+  "dashboardPublication": {
+    "status": "blocked",
+    "owner": "pulse",
+    "blockers": [
+      "Canonical viz.json publication at company-root is blocked by the known viz-path write-scope mismatch"
+    ],
+    "notes": [
+      "Mirror artifact at workspace/pulse/viz.json is current"
+    ]
+  },
+  "staleInputs": [
+    "Board digest is empty, so reconciliation relies on recent board and run evidence only.",
+    "Several non-COO lanes have active or completed runs without a visible current COO-slice decision confirming deliverable state.",
+    "Canonical viz path mismatch prevents publishing this same dashboard to the company-root location."
+  ],
+  "trackedItems": [
     {
-      "id": "operating-friction",
-      "title": "Operating Friction",
-      "type": "status-list",
-      "items": [
-        {
-          "label": "Active",
-          "status": "active",
-          "summary": "Devops hit a manager-side HTTP 502 and had to restart via escalation."
-        },
-        {
-          "label": "Monitoring",
-          "status": "monitoring",
-          "summary": "Workspace path enforcement is still being watched after earlier out-of-scope write attempts; canonical app paths remain in force."
-        },
-        {
-          "label": "Resolved",
-          "status": "resolved",
-          "summary": "A burst of out-of-scope file writes was blocked before it landed."
-        }
+      "id": "sprint-state",
+      "label": "Current sprint execution wave",
+      "status": "in_progress",
+      "evidence": [
+        "CEO at 22:26 pushed the next parallel execution wave across engineering, product, growth, and COO."
+      ]
+    },
+    {
+      "id": "archivist-current-phase-snapshot",
+      "label": "Archivist current-phase snapshot",
+      "status": "confirmed_complete",
+      "owner": "archivist",
+      "evidence": [
+        "22:23:20 archivist milestone says archive/silent-completion-audit.md was shipped.",
+        "The shipped audit classifies visible items into confirmed_complete, complete_pending_signoff, and ambiguous."
+      ]
+    },
+    {
+      "id": "efficiency-operating-audit",
+      "label": "Efficiency operating audit/report",
+      "status": "confirmed_complete",
+      "owner": "efficiency",
+      "evidence": [
+        "22:33:00 efficiency milestone says archive/efficiency/2026-04-29-report.md was shipped with an operating audit."
+      ]
+    },
+    {
+      "id": "silent-completion-reconciliation",
+      "label": "Silent completion and pending-signoff reconciliation",
+      "status": "confirmed_complete",
+      "owner": "pulse",
+      "dependencies": [
+        "archivist current-phase snapshot",
+        "efficiency operating audit/report"
+      ],
+      "evidence": [
+        "Current COO reconciliation instruction explicitly promotes archivist and efficiency items to confirmed_complete.",
+        "No currently evidenced complete_pending_signoff items remain in the visible COO slice."
+      ]
+    },
+    {
+      "id": "frontend-vertical-slice",
+      "label": "Frontend vertical slice",
+      "status": "unknown",
+      "owner": "frontend",
+      "evidence": [
+        "Older frontend milestone and CTO acceptance exist in prior board activity, but no current COO-slice reconciliation confirms it should remain pending signoff."
+      ]
+    },
+    {
+      "id": "backend-room-ranking-api",
+      "label": "Backend room/ranking API slice",
+      "status": "unknown",
+      "owner": "backend",
+      "evidence": [
+        "CEO directed backend to produce the minimum room/session plus matchup/result contract.",
+        "No visible backend milestone is present in the current board slice."
+      ]
+    },
+    {
+      "id": "prototype-update",
+      "label": "Prototype additive update",
+      "status": "unknown",
+      "evidence": [
+        "CEO directed head-of-product to update the existing prototype additively.",
+        "No visible prototype completion or current COO reconciliation status is present in the board slice."
+      ]
+    },
+    {
+      "id": "growth-launch-assets",
+      "label": "Growth launch assets",
+      "status": "unknown",
+      "owner": "growth",
+      "evidence": [
+        "CEO directed head-of-growth to produce concrete launch assets.",
+        "No visible growth milestone is present in the current board slice."
+      ]
+    },
+    {
+      "id": "platform-continuity",
+      "label": "Platform workspace continuity support",
+      "status": "confirmed_complete",
+      "owner": "platform",
+      "evidence": [
+        "22:23:29 platform milestone says workspace/packages/contracts/ was designated as the canonical cross-team handoff surface and files were shipped."
+      ]
+    },
+    {
+      "id": "devops-repo-deploy-artifacts",
+      "label": "DevOps repo/deploy artifacts",
+      "status": "unknown",
+      "owner": "devops",
+      "evidence": [
+        "Runs index shows a completed devops run, but no visible board milestone or artifact is present in the current board slice."
       ]
     }
   ]

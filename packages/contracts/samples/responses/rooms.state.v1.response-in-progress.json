@@ -1,0 +1,25 @@
+{
+  "room": {
+    "id": "room_123",
+    "code": "P1KA",
+    "status": "in_progress",
+    "prompt": "Best pizza spot?",
+    "participants": [
+      {
+        "id": "host_1",
+        "displayName": "Avery",
+        "isHost": true
+      },
+      {
+        "id": "user_2",
+        "displayName": "Jordan",
+        "isHost": false
+      }
+    ],
+    "currentMatchup": {
+      "leftOptionId": "opt_1",
+      "rightOptionId": "opt_2",
+      "round": 2
+    }
+  }
+}
