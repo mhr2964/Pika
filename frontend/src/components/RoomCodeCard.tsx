@@ -9,7 +9,7 @@ export function RoomCodeCard({ code }: RoomCodeCardProps) {
     <div className="room-code-card">
       <p className="room-code-card__label">Room code</p>
       <p className="room-code-card__code">{code}</p>
-      <p className="room-code-card__hint">Drop it in chat and let the chaos assemble.</p>
+      <p className="room-code-card__hint">Post it once and watch the room get loud.</p>
     </div>
   );
 }

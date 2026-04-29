@@ -20,29 +20,29 @@ export function OutcomeScreen({
   return (
     <AppShell
       eyebrow="Outcome"
-      title={winningOption ? `${winningOption.label} takes it.` : 'The room needs a verdict.'}
-      subtitle="No mystery, no spreadsheet energy — just a clear next move."
+      title={winningOption ? `${winningOption.label} wins the room.` : 'No winner yet.'}
+      subtitle="The verdict should feel instant, obvious, and ready for the next move."
     >
       <div className="stack-lg">
         {winningOption ? (
           <div className="winner-card">
             <p className="winner-card__eyebrow">Room verdict</p>
             <h2>{winningOption.label}</h2>
-            <p>{winningOption.votes} people pushed it over the line.</p>
+            <p>{winningOption.votes} votes pushed it over the line.</p>
           </div>
         ) : (
           <div className="state-card state-card--empty">
-            <p className="state-card__title">No winning option yet.</p>
-            <p>Run one more reaction wave before calling the result.</p>
+            <p className="state-card__title">No outcome to reveal.</p>
+            <p>Head back into the room and let the group react a little louder.</p>
           </div>
         )}
 
         <div className="state-card">
-          <p className="state-card__title">What happens next?</p>
+          <p className="state-card__title">Next move</p>
           <p>
             {winningOption
-              ? `Send the room toward ${winningOption.label} and spin up another question if the group still has energy.`
-              : 'Head back to the room, give people something to react to, and let the winner emerge.'}
+              ? `Send everyone toward ${winningOption.label} or spin up another fast question while the energy is still hot.`
+              : 'Run another reaction pass, then come back when the room has made itself clear.'}
           </p>
         </div>
 

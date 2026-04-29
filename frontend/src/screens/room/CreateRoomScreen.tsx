@@ -27,17 +27,17 @@ export function CreateRoomScreen({
   return (
     <AppShell
       eyebrow="Room setup"
-      title="Start a room people can read in one glance"
-      subtitle="A quick prompt, a room code, and everyone knows the assignment."
+      title="Start the room before the energy drifts"
+      subtitle="Make the question obvious, invite instant reactions, and keep one dominant next step."
     >
       <div className="stack-lg">
         <div className="state-card">
-          <p className="state-card__title">Host the moment.</p>
-          <p>Keep it punchy. Pika works best when the question feels instantly answerable.</p>
+          <p className="state-card__title">Keep it quick-hit.</p>
+          <p>Pika sings when the prompt feels answerable in one gut reaction.</p>
         </div>
 
         <label className="field">
-          <span>Your host name</span>
+          <span>Host name</span>
           <input
             value={hostName}
             onChange={(event) => onHostNameChange(event.target.value)}
@@ -46,7 +46,7 @@ export function CreateRoomScreen({
         </label>
 
         <label className="field">
-          <span>What are we choosing?</span>
+          <span>Room prompt</span>
           <textarea
             value={prompt}
             onChange={(event) => onPromptChange(event.target.value)}
@@ -57,8 +57,8 @@ export function CreateRoomScreen({
 
         {hasError ? (
           <div className="state-card state-card--error">
-            <p className="state-card__title">Room failed to start.</p>
-            <p>Give it one more tap. Even good chaos needs a retry.</p>
+            <p className="state-card__title">Room launch failed.</p>
+            <p>Tap it again. Even beautiful chaos needs one retry sometimes.</p>
           </div>
         ) : null}
 

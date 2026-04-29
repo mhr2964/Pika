@@ -9,8 +9,8 @@ export function ReactionPile({ participants }: ReactionPileProps) {
   if (participants.length === 0) {
     return (
       <div className="state-card state-card--empty">
-        <p className="state-card__title">No one is reacting yet.</p>
-        <p>Invite a few friends and the room goes from quiet to feral fast.</p>
+        <p className="state-card__title">No reactions yet.</p>
+        <p>Drop the room code and the silence should not last long.</p>
       </div>
     );
   }

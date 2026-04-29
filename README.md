@@ -7,15 +7,16 @@ Pika helps groups rank choices fast through playful head-to-head matchups, then 
 ### Existing department directories
 These remain intact and are preserved alongside the engineering monorepo scaffold.
 
-- `frontend/` — existing frontend department artifacts
-- `backend/` — existing backend department artifacts
+- `frontend/` — existing frontend department artifacts and recovery implementation work
+- `backend/` — existing backend department artifacts and recovery implementation work
 - `brand/` — brand artifacts
 - `growth/` — growth artifacts
 - `pulse/` — pulse artifacts
+- `devops/` — operational templates and integration guidance
 
 ### Canonical engineering paths
-- `apps/frontend/` — canonical frontend app package
-- `apps/backend/` — canonical backend app package
+- `apps/frontend/` — canonical frontend app package in the pnpm workspace
+- `apps/backend/` — canonical backend app package in the pnpm workspace
 - `packages/contracts/` — canonical shared TypeScript room-flow contract
 
 ## Requirements
@@ -23,11 +24,11 @@ These remain intact and are preserved alongside the engineering monorepo scaffol
 - pnpm 9+
 
 ## Local setup
-1. Copy the root example env file if you need local overrides:
+1. Copy local environment defaults if needed:
    ```bash
    cp .env.example .env
    ```
-2. Install dependencies:
+2. Install dependencies from the workspace root:
    ```bash
    pnpm install
    ```

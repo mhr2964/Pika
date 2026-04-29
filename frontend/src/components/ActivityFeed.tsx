@@ -9,8 +9,8 @@ export function ActivityFeed({ items }: ActivityFeedProps) {
   if (items.length === 0) {
     return (
       <div className="state-card">
-        <p className="state-card__title">No plot twists yet.</p>
-        <p>The feed wakes up the moment someone taps an option.</p>
+        <p className="state-card__title">No feed updates yet.</p>
+        <p>The room log starts the second someone picks a side.</p>
       </div>
     );
   }

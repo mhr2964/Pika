@@ -1,6 +1,6 @@
 # Pika Sprint 1 CI workflow template
-# Intended root destination: `workspace/.github/workflows/ci.yml`
-# Source of truth while devops is path-scoped: `workspace/devops/ci-workflow-template.yml`
+# Intended destination after platform integration: `workspace/.github/workflows/ci.yml`
+# Current source-of-truth path: `workspace/devops/ci-workflow-template.yml`
 
 name: CI
 
@@ -10,7 +10,7 @@ on:
   pull_request:
 
 jobs:
-  verify-workspace:
+  verify-monorepo:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -34,21 +34,29 @@ jobs:
       - name: Install monorepo dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Verify scaffold files exist
+      - name: Verify workspace scaffold
         run: |
           test -f package.json
           test -f pnpm-workspace.yaml
-          test -f tsconfig.base.json
+          test -f .env.example
           test -f apps/frontend/package.json
           test -f apps/backend/package.json
           test -f packages/contracts/package.json
 
       - name: Run monorepo checks when scripts exist
         run: |
-          pnpm -r --if-present lint
-          pnpm -r --if-present typecheck
-          pnpm -r --if-present test
-          pnpm -r --if-present build
+          pnpm --filter @pika/frontend run lint --if-present
+          pnpm --filter @pika/frontend run typecheck --if-present
+          pnpm --filter @pika/frontend run test --if-present
+          pnpm --filter @pika/frontend run build --if-present
+          pnpm --filter @pika/backend run lint --if-present
+          pnpm --filter @pika/backend run typecheck --if-present
+          pnpm --filter @pika/backend run test --if-present
+          pnpm --filter @pika/backend run build --if-present
+          pnpm --filter @pika/contracts run lint --if-present
+          pnpm --filter @pika/contracts run typecheck --if-present
+          pnpm --filter @pika/contracts run test --if-present
+          pnpm --filter @pika/contracts run build --if-present
 
   verify-legacy-backend:
     runs-on: ubuntu-latest
@@ -68,6 +76,12 @@ jobs:
 
       - name: Install legacy backend dependencies
         run: npm install
+
+      - name: Verify legacy backend scaffold
+        run: |
+          test -f package.json
+          test -f src/index.js
+          test -f src/config/env.js
 
       - name: Run legacy backend checks when scripts exist
         run: |

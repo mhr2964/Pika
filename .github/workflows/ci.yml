@@ -1,4 +1,4 @@
-name: ci
+name: CI
 
 on:
   push:
@@ -7,11 +7,16 @@ on:
   pull_request:
 
 jobs:
-  checks:
+  workspace-checks:
+    name: Workspace checks
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: workspace
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup pnpm
@@ -24,16 +29,13 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-          cache-dependency-path: workspace/pnpm-workspace.yaml
+          cache-dependency-path: workspace/pnpm-lock.yaml
 
       - name: Install dependencies
-        working-directory: workspace
         run: pnpm install --no-frozen-lockfile
 
       - name: Lint
-        working-directory: workspace
         run: pnpm lint
 
       - name: Typecheck
-        working-directory: workspace
         run: pnpm typecheck
