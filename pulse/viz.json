@@ -1,0 +1,26 @@
+{
+  "sections": [
+    {
+      "id": "operating-friction",
+      "title": "Operating Friction",
+      "type": "status-list",
+      "items": [
+        {
+          "label": "Active",
+          "status": "active",
+          "summary": "Devops hit a manager-side HTTP 502 and had to restart via escalation."
+        },
+        {
+          "label": "Monitoring",
+          "status": "monitoring",
+          "summary": "Workspace path enforcement is still being watched after earlier out-of-scope write attempts; canonical app paths remain in force."
+        },
+        {
+          "label": "Resolved",
+          "status": "resolved",
+          "summary": "A burst of out-of-scope file writes was blocked before it landed."
+        }
+      ]
+    }
+  ]
+}

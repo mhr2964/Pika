@@ -1,24 +1,35 @@
 # API v1 First Playable Contract
 
 Base path: `/api/v1`  
-Content type: `application/json`  
-Response envelope:
-- success:
-  - `{ "ok": true, "data": ... }`
-- error:
-  - `{ "ok": false, "error": { "code": "ERROR_CODE", "message": "Human readable message", "details": { ...optional } } }`
+Content type: `application/json; charset=utf-8`
 
-## Goals
-This contract defines the first playable backend slice for room creation, player join, option collection, matchup voting, ranking progression, and results retrieval. All endpoints are predictable, room-code based where useful for sharing, and return stable JSON intended for a lightweight frontend.
+This contract defines the Sprint 1 vertical slice only.
 
-## Canonical Room Phases
-- `collecting`
-- `ready`
-- `voting`
-- `ranking`
-- `results`
-- `closed`
+## Scope
 
-## Core Entities
+Required endpoints:
+- `POST /api/v1/rooms`
+- `POST /api/v1/rooms/{roomId}/join`
+- `GET /api/v1/rooms/{roomId}`
+- `POST /api/v1/rooms/{roomId}/options`
+- `POST /api/v1/rooms/{roomId}/start`
+- `GET /api/v1/rooms/{roomId}/matchup`
+- `POST /api/v1/rooms/{roomId}/votes`
+- `GET /api/v1/rooms/{roomId}/results`
 
-### Room
+## Room state machine
+
+Room `state` values are exact and closed:
+- `waiting`
+- `collecting_options`
+- `active`
+- `completed`
+
+Valid progression:
+- `waiting -> collecting_options -> active -> completed`
+
+No other state names are valid in v1. Frontend should not infer hidden phases.
+
+## Global response envelopes
+
+### Success
