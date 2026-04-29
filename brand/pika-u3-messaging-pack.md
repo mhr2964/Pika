@@ -7,13 +7,13 @@ Canonical U3 messaging file for launch surfaces, acquisition experiments, and ea
 ## 1) Recommended Primary Launch Hook
 
 **Headline**  
-**Stop comparing in circles. Rank it with Pika.**
+**Build your room. Rank with friends.**
 
 **Subhead**  
-Pika turns a messy shortlist into a clear order, so you can stop reopening tabs, rehashing the same pros and cons, and just decide.
+Pika is where you compare picks, see what your friends think, and turn a messy group chat debate into an actual order.
 
 **Primary CTA**  
-**Start ranking**
+**Build your room**
 
 **Secondary CTA**  
 **See how it works**
@@ -22,14 +22,14 @@ Pika turns a messy shortlist into a clear order, so you can stop reopening tabs,
 - Landing page hero
 - Product Hunt/gallery-style listings
 - Waitlist header
-- Social profile bio line
 - Launch announcement image copy
+- Social profile bio line
 
 **Why this is the lead**
-- It names the pain in human language
-- It quickly explains what Pika does
-- It sounds useful without sounding stiff
-- It feels specific enough to remember
+- It introduces the product through a distinct action
+- It makes the social behavior clear right away
+- It sounds inviting instead of transactional
+- It supports invite-driven growth without sounding like a referral program
 
 ---
 
@@ -37,108 +37,109 @@ Pika turns a messy shortlist into a clear order, so you can stop reopening tabs,
 
 ### Variant A
 **Headline**  
-**Your AI ranking room for better decisions.**
+**Your ranking room for friend-fueled decisions.**
 
 **Subhead**  
-Bring your options into one place, compare them side by side, and let Pika help you sort the obvious winner from the almosts.
+Bring in your options, invite your people, and let Pika help turn a pile of opinions into a clearer order.
 
 **Primary CTA**  
-**Try Pika**
+**Start a room**
 
 **Use when**
-- The audience is seeing the product category for the first time
-- You need the most descriptive version
-- You want “AI” visible above the fold
+- The audience needs a slightly more descriptive intro
+- You want the social angle immediately visible
+- You need a lighter product-category explanation
 
 ---
 
 ### Variant B
 **Headline**  
-**From messy shortlist to clear winner.**
+**Stop debating in the group chat. Start ranking.**
 
 **Subhead**  
-Pika helps you rank options, pressure-test the tradeoffs, and land on a choice without the usual back-and-forth spiral.
+Pika gives your picks a room of their own, so everyone can weigh in without the usual scroll, chaos, and circular takes.
 
 **Primary CTA**  
-**Rank your options**
+**Rank together**
 
 **Use when**
-- The page needs a sharper outcome-oriented message
-- The audience already understands comparison tools
-- You want a calmer, more confidence-heavy tone
+- The channel is social-first or mobile-first
+- The audience already knows the pain of group indecision
+- You want a punchier, more conversational hook
 
 ---
 
 ### Variant C
 **Headline**  
-**Less overthinking. Better picks.**
+**Pick together, without the chaos.**
 
 **Subhead**  
-Whether you're choosing tools, plans, ideas, or next steps, Pika gives your shortlist a structure and an order you can actually trust.
+From dinner spots to weekend plans to biggish life choices, Pika helps friends compare options and land on an order that feels real.
 
 **Primary CTA**  
-**Make a ranking**
+**Build a room**
 
 **Use when**
-- The channel is short-form
-- You want a punchier ad or social line
-- You need broad applicability across multiple decision types
+- You want a softer, broader entry point
+- The audience may not respond to stronger “debate” language
+- You need copy that works across casual and meaningful decisions
 
 ---
 
 ## 3) Acquisition Message Hierarchy
 
 ### One-line category definition
-**Pika is an AI ranking room for comparing options and choosing faster.**
+**Pika is a ranking room where friends compare options and choose together.**
 
 ### Value prop stack
 
 #### Core value prop
-**Pika helps people turn an overloaded shortlist into a confident decision.**
+**Pika helps people build a room around a decision, rank options with friends, and actually make the call.**
 
 #### Functional benefits
-- Gather options in one place
-- Compare tradeoffs without losing the thread
-- See a clearer ranking instead of a pile of maybe's
-- Move from discussion to decision faster
+- Put all your options in one place
+- Invite friends into the same decision space
+- Compare reactions without losing the thread
+- Turn a loose pile of opinions into a clearer order
+- Move from “what do you think?” to “okay, that's the one”
 
 #### Emotional benefits
-- Relief from decision fatigue
-- More confidence in the final pick
-- Less second-guessing after choosing
-- A sense that the process was thoughtful, not chaotic
+- Less pressure to decide alone
+- Less chaos than a busy group chat
+- More confidence because everyone relevant got a say
+- More momentum when a decision keeps stalling
 
 #### Why it feels different
-- It is built around ranking, not endless note-hoarding
-- It feels like a decision space, not another blank document
-- It helps create momentum when people are stuck
-- It makes comparison feel lighter, faster, and less annoying
+- It is built for shared ranking, not passive collecting
+- It turns invites into participation, not referral chores
+- It gives decisions a room instead of scattering them across messages
+- It feels social, useful, and surprisingly clarifying
 
 ### Audience pain statements
-- “We have good options, but no clean way to decide.”
-- “Every choice turns into a swirl of tabs, notes, and opinions.”
-- “We keep comparing the same few things without getting closer.”
-- “I don't need more information. I need help making the call.”
+- “We keep sending options around, but nobody actually picks one.”
+- “The group chat is full of opinions and somehow still not helpful.”
+- “I want input from friends without making this a whole production.”
+- “We don't need more links. We need a better way to choose.”
 
 ### Message hierarchy for landing/acquisition surfaces
 
 #### Tier 1: Grab attention
-**Stop comparing in circles. Rank it with Pika.**
+**Build your room. Rank with friends.**
 
 #### Tier 2: Explain the product
-**Pika is an AI ranking room that helps you compare options, sort tradeoffs, and choose with more confidence.**
+**Pika is a ranking room where you compare picks with friends and turn scattered opinions into a decision.**
 
 #### Tier 3: Clarify the practical value
-**Instead of juggling tabs, notes, and half-finished pros-and-cons lists, you bring your shortlist into one place and get to a clearer order faster.**
+**Instead of dropping links into the chat and hoping the answer appears, you build a room, bring in your people, and see the order get clearer together.**
 
 #### Tier 4: Reinforce emotional payoff
-**Less drag. Less second-guessing. More “okay, this is the one.”**
+**Less “any thoughts?” More “cool, we picked.”**
 
 ### Proof-style support lines
-- Built for shortlists, tradeoffs, and actual decisions
-- Helpful when everything looks pretty good and that's the problem
-- Great for tools, plans, purchases, ideas, and next-step decisions
-- For people who are tired of doing one more round of “let's compare again”
+- Built for plans, picks, shortlists, and group decisions
+- Great when everyone has opinions and nobody has a process
+- Invites are for joining your room, not farming referrals
+- Helpful for trips, restaurants, gifts, purchases, ideas, and next-step choices
 
 ---
 
@@ -146,13 +147,13 @@ Whether you're choosing tools, plans, ideas, or next steps, Pika gives your shor
 
 ### Hero
 **Headline**  
-**Stop comparing in circles. Rank it with Pika.**
+**Build your room. Rank with friends.**
 
 **Subhead**  
-Pika turns a messy shortlist into a clear order, so you can stop reopening tabs, rehashing the same pros and cons, and just decide.
+Pika is where you compare picks, see what your friends think, and turn a messy group chat debate into an actual order.
 
 **Primary CTA**  
-**Start ranking**
+**Build your room**
 
 **Secondary CTA**  
 **See how it works**
@@ -160,39 +161,39 @@ Pika turns a messy shortlist into a clear order, so you can stop reopening tabs,
 ---
 
 ### “How it works” intro
-**Bring in your options. Compare what matters. Let the order get clearer.**
+**Start with a decision. Add your options. Invite your people. Watch the order take shape.**
 
-Pika gives your decision a room of its own, so instead of scattered notes and recurring debates, you get one place to sort the tradeoffs and move forward.
+Pika gives your choice a room of its own, so instead of scattered messages and repeated takes, everyone can weigh in around the same set of options.
 
 ---
 
 ### Problem block
-**The hard part usually isn't finding options. It's choosing one.**
+**Group decisions are rarely short on opinions. They're short on structure.**
 
-Most decision tools help you collect. Pika helps you rank. That's the difference between “we've got a shortlist” and “we're done here.”
+The hard part usually is not finding options. It's getting everyone's input into one place without making the process weird, messy, or exhausting.
 
 ---
 
 ### Benefit trio
 
-#### 1. Make the shortlist usable
-Stop bouncing between tabs, screenshots, docs, and half-remembered opinions.
+#### 1. Give the decision a room
+Stop scattering links, screenshots, and half-votes across the chat.
 
-#### 2. Compare without the chaos
-Keep the tradeoffs in one place instead of restarting the same conversation every time.
+#### 2. Let friends weigh in clearly
+Keep everyone's reactions around the same picks instead of losing them in the scroll.
 
-#### 3. Decide with more confidence
-Get to a clearer order so picking feels earned, not random.
+#### 3. Get to a real choice
+Turn the noise into an order that feels easier to trust.
 
 ---
 
 ### Closing CTA block
-**Your shortlist is not the finish line.**
+**Don't collect referrals. Build your room.**
 
-Pika helps you do the part that usually drags: compare, rank, and make the call.
+Pika grows best when people invite friends into a real decision, not because they were told to recruit somebody.
 
 **CTA**  
-**Start ranking**
+**Build your room**
 
 ---
 
@@ -200,54 +201,66 @@ Pika helps you do the part that usually drags: compare, rank, and make the call.
 
 ### Waitlist page hero
 **Headline**  
-**Get early access to Pika.**
+**Join Pika and build your first room.**
 
 **Subhead**  
-If your tabs are full, your shortlist is messy, and the decision still isn't made, you're exactly who Pika is for.
+Pika is for decisions that get stuck in the chat. Bring your picks, invite your people, and we'll let you know when it's your turn to start ranking together.
 
 **CTA**  
 **Join the waitlist**
 
 ### Waitlist reassurance line
-We're opening access in waves and prioritizing people actively making decisions with real tradeoffs.
+We're opening access in waves and prioritizing people who already have a real decision they want to bring friends into.
 
 ### Short waitlist form helper text
-Tell us what you're trying to choose. We'll use it to shape the first experience and prioritize invites.
+What are you trying to decide, and who would you want in the room? We use that to shape the first experience and prioritize invites.
 
 ### Waitlist confirmation message
-**You're in.**  
-We'll email you when your spot opens up. Until then, congratulations on doing something productive with your indecision.
+**You're on the list.**  
+When your spot opens, you'll be able to build a room and invite people into something more useful than another chaotic thread.
+
+### Waitlist share/invite prompt
+**Want to move up? Start with a room mindset.**  
+Pika isn't about collecting referrals. It's about building a room around a real decision. Share Pika with the friends you'd actually invite when it's time to rank together.
+
+### Waitlist share CTA options
+- **Share with future room members**
+- **Invite friends you'd rank with**
+- **Build your future room**
+
+### Waitlist referral explainer line
+The fastest-moving waitlist spots tend to come from real future rooms: people joining with an actual decision and actual friends in mind.
 
 ---
 
 ## 6) Invite Email Messages
 
 ### Invite email subject line options
-- You're in: Pika is ready for you
-- Your Pika invite has arrived
-- Come rank your first decision with Pika
-- Your shortlist has a new home
-- Good news for your overthinking
+- You're in: build your room on Pika
+- Your Pika invite is here
+- Time to rank with friends
+- Your decision room is ready
+- Good news for your group chat
 
 ### Invite email preview text options
-- Start your first ranking and see how quickly the decision gets clearer.
-- Pika is open for you. Bring a shortlist.
-- Less circling, more choosing.
+- Bring your picks, invite your people, and start ranking together.
+- Pika is open for you. Build a room and make the call.
+- Less chat sprawl, more actual choosing.
 
 ### Invite email body
-**Subject:** You're in: Pika is ready for you
+**Subject:** You're in: build your room on Pika
 
 Hi {{first_name}},
 
-You made it in.
+You're in.
 
-Pika is built for the moment when you already have options, but the decision still won't land. Instead of reopening the same tabs and replaying the same debate, you can bring your shortlist into one place and rank it out.
+Pika is built for decisions that need more than one brain and a lot more structure than a group chat usually provides. Add the options you're considering, invite your people, and start ranking together in one place.
 
-Use it for tools, plans, purchases, ideas, or whatever is currently eating your brain.
+This could be dinner. A trip. A gift. A tool. A plan. A surprisingly consequential tiny life choice. If friends should weigh in, it belongs in a room.
 
 **Start here:** {{invite_link}}
 
-If you try it, we'd love to hear what decision you used it for and where the experience felt especially sharp or especially wobbly.
+Once you're in, build a room around something real and invite the people you'd actually want opinions from. That's how Pika works best.
 
 — Team Pika
 
@@ -256,23 +269,21 @@ If you try it, we'd love to hear what decision you used it for and where the exp
 ## 7) Waitlist Nudge Email
 
 ### Subject line options
-- Still deciding? Same.
-- Your future best pick would like a word
-- Pika can help with that shortlist
-- This is your sign to stop comparing in circles
+- Build your room, then we'll talk
+- Still stuck in the chat?
+- Your future room members are probably already texting
+- Pika is for this exact kind of group indecision
 
 ### Email body
 Hi {{first_name}},
 
 Quick nudge from Pika.
 
-If you're sitting on a shortlist and still haven't made the call, that's exactly the kind of mess we built this for. Pika helps you compare options, sort the tradeoffs, and get to a decision without doing three more laps first.
+If a decision keeps bouncing around the chat without landing, that's exactly what we built this for. Pika gives your picks a room of their own, so friends can weigh in without the usual scroll, repetition, and “wait, what are the options again?” energy.
 
-Want in when access opens?
+Join the waitlist, and when access opens, come in ready to build a room around something real.
 
 **Join here:** {{waitlist_link}}
-
-We'll save you a spot.
 
 — Team Pika
 
@@ -281,59 +292,65 @@ We'll save you a spot.
 ## 8) Onboarding Touchpoints
 
 ### First-run welcome headline
-**Let's turn that shortlist into an actual decision.**
+**Build a room around a real decision.**
 
 ### First-run welcome subhead
-Add the options you're weighing, and Pika will help you compare them without the usual tab soup.
+Start with the options you're weighing, then invite the friends whose opinions you actually want in the mix.
+
+### Onboarding explainer line
+Pika works best when it's built around a real choice and real people, not a blank test room you'll never come back to.
 
 ### Empty state
-**No ranking yet.**
-Start with something real: a tool you're picking, a plan you're comparing, a purchase you're circling, or an idea you can't stop rearranging.
+**No room yet.**
+Start with something you're actually trying to decide: where to go, what to buy, what to plan, or which option deserves the win.
 
 **CTA**  
-**Create your first ranking**
+**Build your first room**
 
-### First ranking helper line
-The more real your options, the more useful the ranking gets.
+### First room helper line
+The best rooms start with real options and the right people.
+
+### Invite step helper line
+Invite friends who you'd genuinely want weighing in, not just whoever answers texts fastest.
 
 ### Success state message
-**Nice. You have a ranking.**
-Which is already more progress than most decision spirals ever make.
+**Nice. Your room is live.**
+Now let the rankings, opinions, and surprisingly strong takes roll in.
 
 ### Post-first-action encouragement
-Good start. Keep refining the shortlist until the winner feels obvious enough to trust.
+Good start. The more real the decision, the more useful the room becomes.
 
 ### Feedback prompt
-**How did Pika feel?**  
-Useful, confusing, weirdly calming? We'd genuinely like to know.
+**How did your room feel?**  
+Helpful, chaotic in a good way, weirdly clarifying? We'd love to know.
 
 ---
 
 ## 9) In-product Microcopy Options
 
 ### Generic CTA options
-- Start ranking
-- Rank your options
-- Make a ranking
-- Compare choices
+- Build your room
+- Start a room
+- Rank with friends
+- Invite your people
 - See the order
 
 ### Empty/loading helper lines
-- Getting your ranking room ready...
-- Warming up the decision engine
-- Organizing the chaos
-- Making room for your options
+- Getting your room ready...
+- Making space for the picks
+- Gathering the decision chaos
+- Warming up the ranking room
 
 ### Positive reinforcement lines
-- That's a strong shortlist
+- That's a solid room
 - Now we're getting somewhere
-- Much clearer already
-- Fewer maybes, more signal
+- The order is taking shape
+- Strong opinions, useful progress
 
 ### Friendly fallback/error tone
-- That didn't work. Your indecision is not to blame.
+- That didn't work. Your friends are innocent.
 - Something got tangled. Try again.
-- We hit a snag, not a verdict.
+- We hit a snag, not a social crisis.
 - Couldn't load that just now. One more go?
 
 ---
@@ -341,74 +358,74 @@ Useful, confusing, weirdly calming? We'd genuinely like to know.
 ## 10) Voice Guardrails for U3 Use
 
 ### We are
-- Witty, but not gag-heavy
+- Witty, but not wink-at-the-camera exhausting
 - Warm, but not gushy
+- Social, but not try-hard
 - Specific, not abstract
-- Helpful, not preachy
-- Confident, not grandiose
+- Helpful, not managerial
 
 ### We are not
 - Corporate
-- Mystical
+- Referral-brained
 - Hyper-technical in headline moments
+- Generic collaboration-software bland
 - Productivity-bro intense
-- Generic “optimize your workflow” mush
 
 ### Good phrases
-- comparing in circles
-- messy shortlist
-- clear order
-- make the call
-- tab soup
-- decision spiral
-- actual decision
+- build your room
+- rank with friends
+- messy group chat debate
+- actual order
+- invite your people
+- room around a decision
+- scattered opinions
 
 ### Phrases to avoid
+- referral engine
+- unlock viral growth
+- frictionless social coordination
 - seamless decision intelligence
-- unlock better outcomes
-- leverage AI-powered prioritization
-- supercharge your workflow
-- frictionless collaboration
-- transformative platform
+- leverage your network
+- supercharge collaborative ranking
 
 ---
 
 ## 11) Recommended Defaults for Immediate Use
 
 ### Default homepage set
-- **Headline:** Stop comparing in circles. Rank it with Pika.
-- **Subhead:** Pika turns a messy shortlist into a clear order, so you can stop reopening tabs, rehashing the same pros and cons, and just decide.
-- **Primary CTA:** Start ranking
+- **Headline:** Build your room. Rank with friends.
+- **Subhead:** Pika is where you compare picks, see what your friends think, and turn a messy group chat debate into an actual order.
+- **Primary CTA:** Build your room
 - **Secondary CTA:** See how it works
 
 ### Default waitlist set
-- **Headline:** Get early access to Pika.
-- **Subhead:** If your tabs are full, your shortlist is messy, and the decision still isn't made, you're exactly who Pika is for.
+- **Headline:** Join Pika and build your first room.
+- **Subhead:** Pika is for decisions that get stuck in the chat. Bring your picks, invite your people, and we'll let you know when it's your turn to start ranking together.
 - **CTA:** Join the waitlist
 
 ### Default invite email set
-- **Subject:** You're in: Pika is ready for you
-- **Preview text:** Start your first ranking and see how quickly the decision gets clearer.
+- **Subject:** You're in: build your room on Pika
+- **Preview text:** Bring your picks, invite your people, and start ranking together.
 
 ### Default onboarding set
-- **Welcome headline:** Let's turn that shortlist into an actual decision.
-- **Empty state CTA:** Create your first ranking
+- **Welcome headline:** Build a room around a real decision.
+- **Empty state CTA:** Build your first room
 
 ---
 
 ## 12) Short Copy Snippets for Fast Placement
 
 ### Product bio
-Pika is an AI ranking room that helps you compare options and choose faster.
+Pika is a ranking room where friends compare options and choose together.
 
 ### Social bio
-Stop comparing in circles. Rank it with Pika.
+Build your room. Rank with friends.
 
 ### App store / directory description
-Pika helps you turn a messy shortlist into a clear order, so choosing feels faster and less maddening.
+Pika helps you bring picks into one place, invite friends to weigh in, and turn group indecision into an actual order.
 
 ### Launch post opener
-You know the part where the shortlist is solid, but the decision still won't happen? That's the part Pika is for.
+If the group chat has plenty of opinions and somehow still no answer, that's the part Pika is for.
 
 ### Founder-style one-liner
-We built Pika for people who don't need more options. They need help picking one.
+We built Pika for decisions that need friends, structure, and a little less chat chaos.
