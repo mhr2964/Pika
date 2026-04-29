@@ -22,7 +22,10 @@ Witty, warm, specific, lightly exasperated about group indecision, and always on
 
 This document maps approved launch copy to specific surfaces and states.  
 Where product mechanics are not yet confirmed, copy has been kept neutral and launch-safe.  
-Do not reintroduce specific promises about ranking, priority, rewards, access order, or referral outcomes unless those mechanics are explicitly defined in product.
+Do not reintroduce specific promises about ranking, priority, rewards, access order, referrals, or share outcomes unless those mechanics are explicitly defined in product.
+
+**Undefined mechanics intentionally not referenced:**  
+This kit intentionally avoids mentioning queue position, waitlist movement, reward logic, friend-joined effects, referral benefits, milestone unlocks, access acceleration, or any guaranteed result from sharing.
 
 ---
 
@@ -118,7 +121,7 @@ Friends, roommates, casual groups, and anyone who regularly tries to coordinate 
 No. Pika is especially useful for lightweight plans—the kinds of decisions that should be easy but somehow never are.
 
 **Why join the waitlist now?**  
-You’ll hear when Pika launches and get early access updates as we get closer.
+You’ll hear when Pika launches and get updates as we get closer.
 
 ---
 
@@ -133,7 +136,7 @@ Convert interest into signup with minimal friction.
 Be first in when Pika launches.
 
 **Body:**  
-We’re building Pika for everyone who has ever tried to make a simple plan with four other humans. Join the waitlist and get launch updates, early access news, and a first look when it’s ready.
+We’re building Pika for everyone who has ever tried to make a simple plan with four other humans. Join the waitlist and get updates and a first look when it’s ready.
 
 ### Field copy
 
@@ -197,7 +200,7 @@ Back to site
 **Secondary CTA:** Back to site
 
 ### Notes
-- Avoid copy that implies queue movement, unlocks, or improved access unless confirmed in product.
+- Avoid copy that implies queue movement, unlocks, or improved access.
 - “Invite friends” is safe when the action simply shares a link.
 
 ---
@@ -268,14 +271,14 @@ I just joined the waitlist for Pika, aka help for every chat that keeps circling
 If “I’m good with anything” has ever delayed your plans, Pika might be for you.
 
 ### Safe-use note
-Do not mention rewards, priority, placement, or status improvements in share copy unless those mechanics are confirmed.
+Do not mention rewards, priority, placement, status improvements, participation tracking, or any promised result from sharing.
 
 ---
 
 ## 6) Referred-friend state
 
 ### Purpose
-Welcome a friend arriving from someone else’s link without claiming a benefit that may not exist.
+Welcome a friend arriving from someone else’s link without claiming a benefit or assumed follow-up flow.
 
 ### Recommended state
 
@@ -309,7 +312,7 @@ Back to site
 **Primary CTA:** Join the waitlist
 
 ### Safe-use note
-Do not claim “you’ve been moved up,” “you unlocked access,” or any equivalent benefit unless implemented and approved.
+Do not claim access changes, list movement, unlocks, benefits, or any next step beyond landing on the site and joining the waitlist.
 
 ---
 
@@ -328,19 +331,20 @@ Do not write copy that assumes any of the following unless product confirms them
 - Waitlist ranking
 - Queue position
 - Priority access
-- Moving up the list
 - Referral rewards
 - Milestone unlocks
-- “X friends joined” states tied to benefits
+- Friend-joined effects
 - Exclusive access tiers
-- Guaranteed early entry based on sharing
+- Guaranteed outcomes from sharing
+- Defined post-share state changes
+- Any required follow-up flow after invite receipt
 
 ### Replacement guidance
 If a flow needs copy before mechanics are finalized:
 - Say “share with friends” instead of “earn rewards”
 - Say “join the waitlist” instead of “claim your spot before it rises”
 - Say “get launch updates” instead of “get priority access”
-- Say “your friend invited you” instead of “your friend helped unlock your access”
+- Say “your friend invited you” instead of any copy that implies benefit or status change
 
 ### Escalation note
 If product later defines referral or waitlist logic, this document should be revised with a mechanics-specific layer rather than patching promotional claims into existing surfaces ad hoc.
