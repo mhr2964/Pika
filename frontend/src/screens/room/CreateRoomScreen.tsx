@@ -1,5 +1,4 @@
-import React from 'react';
-import { AppShell } from '../../components/AppShell';
+import React, { useMemo } from 'react';
 
 type CreateRoomScreenProps = {
   hostName: string;
@@ -13,6 +12,9 @@ type CreateRoomScreenProps = {
   onGoToJoinRoom: () => void;
 };
 
+const MIN_NAME_LENGTH = 2;
+const MIN_PROMPT_LENGTH = 8;
+
 export function CreateRoomScreen({
   hostName,
   prompt,
@@ -24,63 +26,75 @@ export function CreateRoomScreen({
   onBack,
   onGoToJoinRoom,
 }: CreateRoomScreenProps) {
-  const isDisabled = isSubmitting || !hostName.trim() || !prompt.trim();
+  const trimmedHostName = hostName.trim();
+  const trimmedPrompt = prompt.trim();
+
+  const validationMessage = useMemo(() => {
+    if (trimmedHostName.length < MIN_NAME_LENGTH) {
+      return 'Give your host name at least 2 characters.';
+    }
+
+    if (trimmedPrompt.length < MIN_PROMPT_LENGTH) {
+      return 'Prompt needs a little more juice — try 8+ characters.';
+    }
+
+    return '';
+  }, [trimmedHostName, trimmedPrompt]);
+
+  const isDisabled = Boolean(validationMessage) || isSubmitting;
 
   return (
-    <AppShell
-      eyebrow="Create room"
-      title="Set the prompt, start the swirl"
-      subtitle="Give the room one sharp question and let Pika do the emotional sorting."
-    >
-      <div className="stack-lg">
-        <div className="state-card">
-          <p className="state-card__title">Host energy matters.</p>
-          <p>Start with a prompt people can answer on instinct, not a spreadsheet.</p>
-        </div>
+    <main className="screen-shell">
+      <section className="panel-card">
+        <p className="eyebrow">Create room</p>
+        <h1>Set the question. Keep the energy crisp.</h1>
+        <p className="lede">One room, one deliciously overqualified decision.</p>
 
-        <label className="field">
-          <span>Host name</span>
-          <input
-            value={hostName}
-            onChange={(event) => onHostNameChange(event.target.value)}
-            placeholder="Chaos Captain"
-          />
-        </label>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!isDisabled) {
+              onCreateRoom();
+            }
+          }}
+        >
+          <label className="field">
+            <span>Host name</span>
+            <input
+              value={hostName}
+              onChange={(event) => onHostNameChange(event.target.value)}
+              placeholder="Chaos Captain"
+            />
+          </label>
 
-        <label className="field">
-          <span>Prompt</span>
-          <textarea
-            value={prompt}
-            onChange={(event) => onPromptChange(event.target.value)}
-            placeholder="Best late-night snack run?"
-            rows={4}
-          />
-        </label>
+          <label className="field">
+            <span>What are we deciding?</span>
+            <textarea
+              value={prompt}
+              onChange={(event) => onPromptChange(event.target.value)}
+              rows={3}
+              placeholder="Best late-night snack run?"
+            />
+          </label>
 
-        {hasError ? (
-          <div className="state-card state-card--error">
-            <p className="state-card__title">Room did not spin up.</p>
-            <p>Give it another shot. Even the best rooms need one dramatic retry.</p>
+          {validationMessage ? <p className="hint error-text">{validationMessage}</p> : null}
+          {hasError ? (
+            <p className="hint error-text">Pika dropped the marker. Try creating the room again.</p>
+          ) : null}
+
+          <div className="stacked-actions">
+            <button type="submit" disabled={isDisabled}>
+              {isSubmitting ? 'Creating room…' : 'Create room'}
+            </button>
+            <button type="button" className="ghost-button" onClick={onGoToJoinRoom}>
+              I have a code instead
+            </button>
+            <button type="button" className="text-button" onClick={onBack}>
+              Back
+            </button>
           </div>
-        ) : null}
-
-        <div className="button-row">
-          <button type="button" className="button button--ghost" onClick={onBack}>
-            Back
-          </button>
-          <button type="button" className="button button--ghost" onClick={onGoToJoinRoom}>
-            Join instead
-          </button>
-          <button
-            type="button"
-            className="button"
-            onClick={onCreateRoom}
-            disabled={isDisabled}
-          >
-            {isSubmitting ? 'Creating room…' : 'Create room'}
-          </button>
-        </div>
-      </div>
-    </AppShell>
+        </form>
+      </section>
+    </main>
   );
 }
