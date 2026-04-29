@@ -1,279 +1,376 @@
 # Pika Prelaunch Manual Ops Runbook
 
-Purpose: operate the current Pika prelaunch waitlist and referral lane manually, with no dependence on external automation tools, paid systems, or implementation-specific dashboards.
+Purpose: run the current Pika prelaunch waitlist and referral lane manually, without relying on any specific vendor, automation suite, or analytics platform.
 
-Use this runbook when:
-- the launch lane is live but still manually supervised
-- the team needs a repeatable daily/weekly operating rhythm
-- product, design, and engineering need a shared go/no-go reference without locking into a specific stack
-
-Operating principles:
-- Keep the loop useful, not spammy
-- Prioritize signal quality over raw signup volume
-- Treat every exported list as sensitive user data
-- Make changes in small steps so performance shifts can be attributed
-- Preserve a clear manual audit trail for every operator action
+Use this artifact as the single source of truth for day-of-launch operations, data handling, QA checks, metrics review, and escalation.
 
 ---
 
-## 1) Operating Assumptions and Roles
+## 1) Daily Pre-Launch Checklist
 
-### Assumptions
-- Pika’s prelaunch flow collects waitlist submissions and may include referral attribution or share-source attribution.
-- Operators can view or export core submission records from the product or admin surface.
-- Outreach, if any, is limited, intentional, and tied to launch readiness or user value.
-- There is no always-on automated anomaly detection; manual review is required.
-- Metrics are reviewed on a fixed cadence using exported data or product-visible counts.
-- The launch goal is not maximum lead count at any cost; the goal is qualified early interest aligned with Pika’s social planning use case.
+Complete this checklist before traffic is intentionally sent to the prelaunch funnel each day.
 
-### Minimum fields to preserve in exports
-Preserve these if available:
-- submission timestamp
-- contact identifier
-- referral code or referral source
-- landing page or entry path
-- message or variant shown
-- share action count or invitation count
-- region/time zone if captured
-- status notes added by operators
+### Operator readiness
+- Confirm the named operator-on-duty is available for the day.
+- Confirm the issue owner/escalation owner is reachable.
+- Confirm yesterday’s open issues have an owner and status.
+- Confirm today’s intended message/variant/path is documented before any checks begin.
 
-### Suggested manual roles
-One person may cover multiple roles if needed.
+### Live funnel smoke test
+Run one manual test through the current public flow:
+1. Open the active prelaunch entry point.
+2. Confirm the expected page/message/variant is shown.
+3. Submit a test waitlist entry.
+4. Confirm the post-submit confirmation state appears.
+5. If referral/share is exposed, open the referral/share path from the confirmation state.
+6. Confirm the referral/share destination resolves and is not broken.
+7. If referral attribution is expected, complete one referred test entry using the generated referral path.
+8. Confirm the referred entry is distinguishable from the direct test entry.
 
-| Role | Core responsibility |
+### Required visible funnel states
+Before launch activity begins, confirm these states can be reached and are understandable:
+- `landing_view`
+- `waitlist_form_view`
+- `waitlist_submit_success`
+- `waitlist_submit_error` (at minimum, verify the error state exists or can be triggered safely in a controlled way)
+- `referral_prompt_view` if shown after signup
+- `referral_link_generated` if referral is enabled
+- `referral_visit` via a referral path
+- `referred_waitlist_submit_success` for a valid referred signup
+- `duplicate_submission_detected` if duplicate handling is implemented
+- `self_referral_rejected` if self-referral handling is implemented
+
+### Content and routing checks
+- Confirm headline/body/CTA copy matches today’s planned variant.
+- Confirm any launch-date or benefit language matches current product reality.
+- Confirm primary CTA routes to the intended waitlist form state.
+- Confirm any share/referral prompt does not promise rewards or access rules that are not actually active.
+- Confirm all visible links resolve to expected destinations.
+
+### Data readiness checks
+Confirm operators can see or manually extract these fields for new records:
+- `entry_id`
+- `submitted_at`
+- `contact_value`
+- `contact_type`
+- `entry_status`
+- `source_path`
+- `source_medium`
+- `source_campaign`
+- `message_variant`
+- `referral_code`
+- `referrer_entry_id`
+- `attributed_referral_flag`
+- `duplicate_flag`
+- `self_referral_flag`
+- `operator_notes`
+
+### Stop/hold conditions
+Do not start or continue active traffic-driving if any of the following is true:
+- A new waitlist submission cannot be confirmed.
+- Referral visits occur but referred submissions cannot be attributed.
+- Confirmation state is broken or misleading.
+- Exportable records are missing core fields needed for manual counting.
+- Duplicate or self-referral logic behaves unpredictably enough to invalidate daily metrics.
+
+---
+
+## 2) Manual Capture/Export Process for Waitlist Entries and Attributed Referrals
+
+Perform this process at least once daily; twice daily if volume is high or launch changes are active.
+
+### Canonical record types
+Treat all captured rows as one of these record types:
+- `direct_waitlist_entry`
+- `referred_waitlist_entry`
+- `duplicate_waitlist_entry`
+- `self_referral_attempt`
+- `test_entry`
+
+### Required fields for each exported row
+Preserve these exact fields when available:
+- `entry_id` — unique row identifier
+- `submitted_at` — timestamp of submission
+- `contact_value` — email/phone/other collected contact
+- `contact_type` — type of contact collected
+- `entry_status` — `valid`, `duplicate`, `rejected`, `test`, or equivalent
+- `source_path` — entry page or route
+- `source_medium` — direct/share/community/etc.
+- `source_campaign` — current launch label if used
+- `message_variant` — active message or page variant
+- `referral_code` — code/token used by the new entrant, if any
+- `referrer_entry_id` — originating referrer’s entry id, if known
+- `attributed_referral_flag` — `true`/`false`
+- `duplicate_flag` — `true`/`false`
+- `self_referral_flag` — `true`/`false`
+- `operator_notes` — free-text notes column maintained manually
+
+If a field is unavailable, leave it blank and note the missing field in the daily issue log rather than inventing a value.
+
+### Daily capture steps
+1. Pull the current set of new entries since the last successful export.
+2. Save the raw extract using a date-based filename, for example: `pika-prelaunch-raw-YYYY-MM-DD-HHMM`.
+3. Do not edit the raw file.
+4. Create a separate working copy for classification, deduping, and metric totals.
+5. Append the export time and operator name to the daily log.
+
+### Referral attribution rules
+Count an entry as an attributed referral only if all are true:
+- the entry contains a non-empty `referral_code` or equivalent referral marker
+- a valid `referrer_entry_id` can be associated or inferred from the referral marker
+- the submitted contact does not match the referrer’s contact
+- the row is not marked as duplicate/rejected/test
+- the entry completed the same waitlist submission state as a normal valid signup
+
+If any of the above fails, do not count it as an attributed referral.
+
+### Duplicate handling rules
+Mark `duplicate_flag = true` when any of the following is true:
+- the same `contact_value` appears more than once
+- the same person clearly re-submitted through multiple paths
+- a retry created multiple rows for one person without distinct new intent
+
+Handling:
+- Keep the earliest valid submission as the canonical row.
+- Mark later rows as duplicates in the working copy.
+- Exclude duplicate rows from net waitlist totals.
+- Do not count duplicates as successful referrals.
+
+### Self-referral handling rules
+Mark `self_referral_flag = true` when:
+- the referred `contact_value` matches the referrer’s `contact_value`, or
+- operator review makes it clear the same person used their own referral path to create the credited entry
+
+Handling:
+- Retain the row for audit purposes.
+- Do not count self-referrals as attributed referrals.
+- Do not award referral credit in the working counts.
+- Log repeated self-referral attempts if they appear systematic.
+
+### Test entry handling
+- Clearly mark all operator-created or QA-created rows as `test_entry` where possible.
+- Exclude test entries from reporting totals.
+- If test rows cannot be flagged in-product, annotate them immediately in `operator_notes`.
+
+### End-of-day output
+At the end of each operating day, produce:
+- raw export file
+- cleaned working copy
+- daily totals summary
+- issue log update
+- note of any field gaps or attribution ambiguity
+
+---
+
+## 3) QA Checklist for Funnel States and Stubbed Referral/Share Paths
+
+Run this once before launch traffic and again after any meaningful change.
+
+### Funnel state QA
+Confirm each of the following states is reachable and understandable:
+
+| State | What to verify |
 | --- | --- |
-| Launch operator | Executes daily checklist, exports data, updates manual logs |
-| QA reviewer | Checks flow integrity, attribution sanity, and obvious breakage |
-| Metrics owner | Reviews conversion, referral, and source quality trends |
-| Decision owner | Approves copy/variant changes, pauses, and escalation actions |
+| `landing_view` | page loads, primary message is legible, CTA is present |
+| `waitlist_form_view` | form fields appear, submission affordance works |
+| `waitlist_submit_success` | success state confirms signup clearly |
+| `waitlist_submit_error` | failed submission shows a visible error state |
+| `referral_prompt_view` | referral/share prompt appears only where intended |
+| `referral_link_generated` | generated link/code is present and usable |
+| `referral_visit` | referral link resolves to the intended landing/form path |
+| `referred_waitlist_submit_success` | referred signup can complete end to end |
+| `duplicate_submission_detected` | duplicate path is handled clearly if supported |
+| `self_referral_rejected` | self-referral is blocked or flagged if supported |
 
-### Decision thresholds
-Use explicit thresholds before changing anything:
-- Do not react to a single-hour fluctuation unless it is severe.
-- Do react immediately to broken capture, broken sharing, or corrupted exports.
-- Only ship one meaningful launch-lane change at a time unless a fix is urgent.
+### Stubbed referral/share path QA
+If any share/referral paths are partially stubbed, manually verify:
+- the share/referral CTA does not dead-end
+- the path resolves to a stable destination
+- the destination still contains enough context to preserve intent
+- any generated referral token/code remains attached through the landing path
+- the flow does not imply incentives, rewards, or mechanics that are not actually active
 
----
+If a stub exists but attribution cannot survive the path, mark referral as non-operational and do not use referral metrics for decision-making that day.
 
-## 2) Daily and Weekly Manual Operations
+### Manual QA scenarios
+Run these scenarios:
+1. Direct signup from the default path
+2. Referred signup from a valid referral path
+3. Duplicate signup using the same contact twice
+4. Self-referral attempt using the original signup’s own referral path
+5. Broken/invalid referral path if safely testable
+6. Mobile-sized viewport pass for readability and CTA visibility
+7. Desktop-sized viewport pass for layout sanity
 
-### Daily opening checklist
-Run at the start of the operating day:
-1. Submit one fresh test signup through the live flow.
-2. Confirm the submission appears in the visible admin/product record.
-3. If referrals are active, open the share path and verify the referral token/source appears as expected.
-4. Confirm the current message/variant shown to users matches the intended launch plan.
-5. Review the previous day’s operator notes for unresolved anomalies.
-6. Confirm any manual outreach queue is current and deduplicated.
+### QA pass/fail rule
+Pass only if:
+- direct signup works
+- success state is clear
+- referral path, if exposed, resolves and can be manually checked
+- attributed referrals can be identified or referral is explicitly treated as inactive
+- duplicate/self-referral handling is understandable enough for manual counting
 
-### Daily monitoring checklist
-Run once or twice per day depending on volume:
-- record total new submissions since last check
-- record top visible traffic/referral sources
-- note referral-share activity level if visible
-- scan for duplicate bursts, malformed submissions, or suspicious source spikes
-- compare today’s pace to the most recent 3–7 day baseline
-- capture any user replies or qualitative comments that indicate message mismatch
-
-### Daily closing checklist
-At end of day:
-1. Export the current dataset or record the latest visible totals.
-2. Append a dated entry to the manual ops log.
-3. Note any changes made today, including copy, placement, or traffic routing.
-4. Flag anything requiring next-day QA.
-5. Save exports in the agreed secure team location with date in filename.
-
-### Weekly review cadence
-Once per week:
-- review total signup volume
-- review source mix quality, not just quantity
-- review referral participation rate
-- review conversion differences between active messages/variants
-- review qualitative feedback themes
-- decide whether to hold, iterate, or pause the current lane
-
-### Change control rule
-If a launch-lane change is made:
-- log the exact date/time
-- log what changed
-- log why it changed
-- wait long enough to observe impact before making another non-urgent change
+Fail if any core state is broken or ambiguous enough that operators cannot classify rows reliably.
 
 ---
 
-## 3) Manual Export and Data Handling Procedure
+## 4) Daily Metrics Review Template Using Canonical Event Names/Mechanics
 
-### Export procedure
-When exporting waitlist/referral records:
-1. Export only the fields needed for launch operations.
-2. Name the file with product, dataset, and date, for example: `pika-waitlist-YYYY-MM-DD`.
-3. Keep the raw export unchanged.
-4. If a working version is needed, create a separate clearly labeled copy.
-5. Add an operator note stating when the export was pulled and by whom.
+Use these canonical event names for manual counting and notes, even if the underlying product implementation uses different labels.
 
-### Data hygiene rules
-- Deduplicate records by the most reliable stable identifier available.
-- Do not overwrite original timestamps.
-- If source labels are inconsistent, normalize them in a separate analysis copy only.
-- Mark suspicious or incomplete records instead of deleting them immediately.
-- Keep manual annotations in a separate notes column or companion log.
+### Canonical event names
+- `landing_view`
+- `waitlist_form_view`
+- `waitlist_submit_attempt`
+- `waitlist_submit_success`
+- `waitlist_submit_error`
+- `referral_prompt_view`
+- `referral_link_generated`
+- `referral_visit`
+- `referred_waitlist_submit_success`
+- `duplicate_submission_detected`
+- `self_referral_rejected`
 
-### Sensitive-data handling
-- Restrict access to people actively operating the launch.
-- Do not paste full contact lists into chat threads or informal docs.
-- Share aggregates and patterns by default; share row-level data only when necessary.
-- If a file is accidentally over-shared, record the incident and rotate to a tighter access practice immediately.
+### Counting mechanics
+For the daily metrics pass, calculate:
+- `unique_landing_views` — manual visible count if available; otherwise mark unavailable
+- `waitlist_submit_attempts` — number of observed/recorded attempts if available
+- `net_waitlist_submits` — valid waitlist rows excluding `duplicate_waitlist_entry`, `self_referral_attempt`, and `test_entry`
+- `direct_waitlist_entries` — valid rows with `attributed_referral_flag = false`
+- `attributed_referral_entries` — valid rows with `attributed_referral_flag = true`
+- `duplicate_entries` — rows with `duplicate_flag = true`
+- `self_referral_attempts` — rows with `self_referral_flag = true`
+- `referral_visits` — count only if visible and manually supportable; otherwise mark unavailable
 
-### Manual log template
-Maintain a simple dated log with:
-- date/time
-- operator name
-- exports taken
-- checks performed
-- changes made
-- anomalies found
-- follow-up owner
-- status
+### Daily review template
+Fill this once per day.
 
----
+| Field | Value |
+| --- | --- |
+| Date |  |
+| Operator |  |
+| Active `message_variant` |  |
+| Active `source_campaign` |  |
+| `unique_landing_views` |  |
+| `waitlist_submit_attempts` |  |
+| `net_waitlist_submits` |  |
+| `direct_waitlist_entries` |  |
+| `attributed_referral_entries` |  |
+| `duplicate_entries` |  |
+| `self_referral_attempts` |  |
+| `referral_visits` |  |
+| Top `source_path` values |  |
+| Top `source_medium` values |  |
+| Notes on qualitative feedback |  |
+| Decision for next day: `hold` / `iterate` / `pause` / `escalate` |  |
 
-## 4) QA Checks Before and During Launch
-
-### Core functional QA
-Verify manually:
-- waitlist submission succeeds
-- confirmation state/message appears correctly
-- referral/share entry points can be reached
-- referral attribution persists into resulting submissions if the lane promises this
-- key links resolve to the correct destination
-- no obvious copy mismatch exists between landing page, confirmation, and share prompt
-
-### Experience QA
-Check for:
-- broken layouts or unreadable states on common screen sizes
-- confusing or overly aggressive referral prompts
-- message consistency with Pika’s actual value proposition
-- any step that asks for more information than is necessary at prelaunch stage
-
-### Data QA
-Check for:
-- missing timestamps
-- blank contact identifiers where they should exist
-- sudden loss of source attribution
-- duplicate spikes from the same path in a short window
-- impossible referral counts or source distributions
-
-### Variant QA
-If multiple messages or lanes are in use:
-- confirm each variant is still reachable as intended
-- confirm the naming convention used in exports is understandable
-- confirm there is no accidental overlap that prevents interpretation
-- pause variants that are not trackable enough to evaluate cleanly
-
-### QA failure rule
-Pause promotion or traffic-driving actions if:
-- submissions are not being captured reliably
-- attribution is broken enough to invalidate learnings
-- users are landing in a visibly broken flow
-- operators cannot export or verify records
-
----
-
-## 5) Metrics Review and Decision Rules
-
-### Core launch metrics
-Track the smallest useful set:
-- total waitlist submissions
-- submission rate by day
-- source mix
-- referral participation rate
-- referred submission share
-- conversion by active message or entry path
-- qualitative feedback themes
-
-### Signal interpretation
-Use these interpretations:
-- Rising volume with falling referral participation may indicate weak share motivation.
-- Rising referrals with weak downstream qualified interest may indicate low-quality propagation.
-- Strong source concentration may indicate channel dependence risk.
-- High submission volume with repeated confusion feedback may mean messaging is overselling or unclear.
-- Flat volume but strong qualitative resonance may justify holding the lane while improving reach.
+### Derived checks
+Compute these if the inputs exist:
+- waitlist conversion rate = `net_waitlist_submits / unique_landing_views`
+- referral share of net signups = `attributed_referral_entries / net_waitlist_submits`
+- duplicate rate = `duplicate_entries / waitlist_submit_attempts`
+- self-referral rate = `self_referral_attempts / referral_visits` or note unavailable
 
 ### Decision rules
-- Hold when metrics are stable and quality remains acceptable.
-- Iterate messaging when volume is acceptable but resonance or share behavior is weak.
-- Iterate source/channel emphasis when one path clearly drives higher-quality signups.
-- Pause and investigate when data integrity is compromised.
-- Escalate when the lane appears to produce demand that product readiness cannot support.
+- `hold` when counts are stable and classification confidence is high
+- `iterate` when conversion or referral behavior is weak but data quality is intact
+- `pause` when funnel states or attribution break
+- `escalate` when quality issues, unexpected spikes, or unclear mechanics make the numbers unreliable
 
-### Minimum review note after each metrics pass
-Record:
-- what changed since last review
-- what likely caused the change
-- confidence level: low / medium / high
-- action for next period: hold / iterate / pause / escalate
+Always include a confidence note: `high`, `medium`, or `low`.
 
 ---
 
-## 6) Anomaly Handling and Escalation
+## 5) Issue Logging/Escalation Template
 
-### Common anomaly types
-- sudden drop to near-zero submissions
-- sudden unexplained spike in submissions
-- referral/share activity no longer matching downstream captures
-- exports missing expected fields
-- obvious duplicate or low-quality bursts
-- user feedback indicating the promise does not match the product reality
+Create one issue entry for every operational problem, metric anomaly, or data ambiguity that could affect launch decisions.
 
-### First-response procedure
-1. Do not make multiple simultaneous fixes.
-2. Confirm whether the anomaly is real by rechecking the live flow and latest records.
-3. Compare against the last known healthy period.
-4. Log the anomaly with timestamp, symptoms, and suspected scope.
-5. If user-facing breakage is confirmed, pause traffic-driving actions first.
-6. Escalate to the appropriate owner with the smallest reproducible description available.
+### Log immediately when
+- a core funnel state fails
+- referral attribution becomes unclear
+- duplicate handling breaks
+- self-referral handling appears absent or inconsistent
+- a required field disappears from exports
+- a sudden spike/drop cannot be explained by a known planned change
+- visible copy/flow promises something the product cannot support
 
-### Severity guide
-| Severity | Description | Action |
-| --- | --- | --- |
-| Low | noisy but non-blocking inconsistency | log, monitor next cycle |
-| Medium | metrics interpretation is impaired | hold changes, investigate same day |
-| High | capture, attribution, or core UX is broken | pause promotion, escalate immediately |
+### Issue log template
+| Field | Required content |
+| --- | --- |
+| `issue_id` | unique manual ID |
+| `reported_at` | timestamp |
+| `reported_by` | operator name |
+| `severity` | `low` / `medium` / `high` |
+| `issue_type` | `funnel`, `referral`, `data`, `duplicate`, `self_referral`, `content`, `metrics`, or `other` |
+| `summary` | one-sentence description |
+| `expected_behavior` | what should have happened |
+| `observed_behavior` | what actually happened |
+| `affected_state_or_event` | canonical state/event name |
+| `first_seen_at` | earliest known time |
+| `sample_entry_id` | one affected row if available |
+| `temporary_mitigation` | what was done immediately |
+| `owner` | who must follow up |
+| `status` | `open` / `monitoring` / `resolved` |
+| `next_update_due` | next check time |
 
-### Escalation packet template
-When handing off an issue, include:
-- when it started
-- what was expected
-- what happened instead
-- how it was detected
-- whether it affects capture, attribution, UX, or reporting
-- whether traffic-driving activity has been paused
-- latest export or evidence reference
-- named owner for next update
+### Severity rules
+- `low`: cosmetic or minor issue; counting still reliable
+- `medium`: classification or attribution is impaired; proceed cautiously
+- `high`: launch decisions or capture integrity are compromised; pause active traffic-driving and escalate immediately
 
-### Resume rule
-Resume normal launch operations only when:
-- the issue has been rechecked manually
-- the affected metric or flow is understandable again
-- the operator log reflects what changed and why
-- the decision owner agrees the lane is safe to continue
+### Escalation steps
+1. Log the issue using the template above.
+2. Attach or reference one reproducible example.
+3. State whether traffic-driving has been paused.
+4. State whether metrics for the day are still decision-usable.
+5. Route to the named owner.
+6. Add a next update time.
+7. Do not close the issue until the flow is rechecked manually.
+
+### Resolution note template
+When resolved, append:
+- `resolved_at`
+- `resolved_by`
+- root cause summary
+- what changed
+- whether backfilled recounting is needed
+- whether the next day’s metrics should be considered comparable or not
 
 ---
 
-## Lightweight Appendices
+## 6) Assumptions/Dependencies
 
-### A. Daily ops log starter
-| Date | Operator | New submissions | Top sources | Referrals active? | Issues found | Changes made | Next action |
-| --- | --- | ---: | --- | --- | --- | --- | --- |
+### Assumptions
+- The prelaunch lane collects at least one contact method and stores one row per submission attempt or valid entry.
+- Operators can manually inspect or export records at least daily.
+- A referral path exists or is being publicly shown only if it can be checked manually.
+- Message variants and source labels are stable enough to be recorded in a daily log.
+- The team prefers conservative counting over inflated counts.
 
-### B. Weekly review starter
-| Week | Total signups | Best source | Referral participation | Main feedback theme | Decision |
-| --- | ---: | --- | ---: | --- | --- |
+### Dependencies
+This runbook depends on the following being available:
+- a visible live prelaunch funnel
+- a way to identify new waitlist records
+- a way to see or preserve the required exported fields
+- a documented operator/owner for launch-day decisions
+- a secure shared location for raw exports, working copies, and issue logs
 
-### C. Go / no-go gate before any push
-Proceed only if all are true:
-- capture works
-- attribution is understandable enough to learn
-- message matches product reality
-- export process works
-- operator coverage exists for anomaly response
+### Non-dependencies
+This runbook does not require:
+- any specific analytics vendor
+- any specific CRM or email platform
+- automated attribution modeling
+- automated dedupe tooling
+- reward fulfillment or incentive systems
+
+### Manual classification dependency
+If a field is absent, operators must be able to infer classification conservatively from the remaining record context. If they cannot, those rows must be marked ambiguous and excluded from attributed referral totals.
+
+### Referral-operational dependency
+Referral should be treated as operational only when all are true:
+- referral path is publicly reachable
+- referral token/code survives the path
+- referred submissions can be distinguished from direct submissions
+- duplicate and self-referral handling are understandable enough for manual review
+
+If any of the above is false, keep the waitlist live if appropriate but treat referral metrics as non-decisionable until fixed.
