@@ -7,8 +7,8 @@ const {
 
 const pikaItemsRouter = express.Router();
 
-pikaItemsRouter.get('/', listPikaItems);
 pikaItemsRouter.post('/', createPikaItem);
+pikaItemsRouter.get('/', listPikaItems);
 pikaItemsRouter.patch('/:id/status', updatePikaItemStatus);
 
 module.exports = {

@@ -1,0 +1,14 @@
+{
+  "name": "@pika/frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --enable-source-maps ./src/index.ts",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@pika/contracts": "workspace:*"
+  }
+}

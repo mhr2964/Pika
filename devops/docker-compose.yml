@@ -1,0 +1,85 @@
+# Pika Sprint 1 local stack template
+# Intended root destination: `workspace/docker-compose.yml`
+# Source of truth while devops is path-scoped: `workspace/devops/docker-compose.yml`
+
+version: "3.9"
+
+services:
+  apps-backend:
+    image: node:20-alpine
+    working_dir: /workspace
+    command: >
+      sh -lc "
+      if [ -f apps/backend/package.json ]; then
+        corepack enable &&
+        pnpm install &&
+        pnpm --filter @pika/backend dev
+      else
+        echo 'apps/backend placeholder: expected package.json is missing' && tail -f /dev/null;
+      fi"
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+    environment:
+      PORT: 4000
+      BACKEND_PORT: 4000
+      API_PORT: 4000
+      API_HOST: 0.0.0.0
+      CORS_ORIGIN: http://localhost:3000
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+    volumes:
+      - ./:/workspace
+
+  apps-frontend:
+    image: node:20-alpine
+    working_dir: /workspace
+    command: >
+      sh -lc "
+      if [ -f apps/frontend/package.json ]; then
+        corepack enable &&
+        pnpm install &&
+        pnpm --filter @pika/frontend dev
+      else
+        echo 'apps/frontend placeholder: expected package.json is missing' && tail -f /dev/null;
+      fi"
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      PORT: 3000
+      FRONTEND_PORT: 3000
+      VITE_API_BASE_URL: http://localhost:4000
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:4000
+    volumes:
+      - ./:/workspace
+    depends_on:
+      - apps-backend
+
+  backend-legacy:
+    image: node:20-alpine
+    profiles: ["legacy"]
+    working_dir: /workspace/backend
+    command: >
+      sh -lc "
+      if [ -f package.json ]; then
+        npm install &&
+        npm run dev
+      else
+        echo 'legacy backend placeholder: expected package.json is missing' && tail -f /dev/null;
+      fi"
+    ports:
+      - "4100:4000"
+    environment:
+      PORT: 4000
+      API_PORT: 4000
+      API_HOST: 0.0.0.0
+      CORS_ORIGIN: http://localhost:3000
+      REDIS_URL: redis://redis:6379
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+    volumes:
+      - ./backend:/workspace/backend
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"

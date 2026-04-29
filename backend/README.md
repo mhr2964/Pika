@@ -1,17 +1,23 @@
 # Pika Backend
 
-Minimal local Node/Express backend scaffold for the Pika flow.
+Minimal local Node/Express backend scaffold for the room-based Pika flow.
 
 ## Features
 
 - Express app bootstrap
 - Versioned API under `/api/v1`
 - Health endpoint
-- Pika item create/list/update-status endpoints
+- Create room
+- Join room
+- Get room state
+- Submit vote
+- Submit reaction
+- Get results
 - JSON request parsing
 - Config/env loading with `dotenv`
 - In-memory storage by default
-- Optional file-backed persistence
+- Optional file-backed persistence via environment variables
+- Predictable JSON success and error responses
 
 ## Requirements
 
@@ -19,7 +25,7 @@ Minimal local Node/Express backend scaffold for the Pika flow.
 
 ## Setup
 
-1. Copy env file:
+1. Copy the env file:
    ```bash
    cp .env.example .env
    ```
@@ -32,12 +38,21 @@ Minimal local Node/Express backend scaffold for the Pika flow.
    npm run dev
    ```
 
-Server defaults to `http://localhost:3000`.
+Base URL: `http://localhost:3000`
+
+## Environment Variables
+
+| Name | Default | Description |
+| --- | --- | --- |
+| `PORT` | `3000` | Port for the local HTTP server |
+| `NODE_ENV` | `development` | Runtime environment |
+| `PERSIST_ROOMS` | `false` | Enables JSON-file persistence when `true` |
+| `ROOMS_FILE` | `./data/rooms.json` | File path used for room persistence |
 
 ## API
 
+All endpoints are versioned under `/api/v1`.
+
 ### Health
 
-- `GET /api/v1/health`
-
-Response:
+**GET** `/api/v1/health`

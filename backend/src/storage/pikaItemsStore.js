@@ -1,84 +1,79 @@
 const fs = require('fs/promises');
 const path = require('path');
 const { env } = require('../config/env');
-const { PIKA_ITEM_STATUSES } = require('../types/pikaItems');
 
-const items = new Map();
-let hasLoadedFromDisk = false;
+const itemsById = new Map();
+let hasLoadedPersistedItems = false;
 
-function isValidStatus(status) {
-  return PIKA_ITEM_STATUSES.includes(status);
-}
-
-function createId() {
+function createItemId() {
   return `item_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function serializeItems() {
-  return Array.from(items.values());
+function getAllItems() {
+  return Array.from(itemsById.values());
 }
 
 function getSafeStoragePath() {
-  const resolvedFilePath = env.pikaItemsFile;
-  const safeBaseDirectory = path.resolve(process.cwd()) + path.sep;
+  const resolvedPath = env.pikaItemsFile;
+  const workspaceRoot = `${path.resolve(process.cwd())}${path.sep}`;
 
-  if (!resolvedFilePath.startsWith(safeBaseDirectory)) {
+  if (!resolvedPath.startsWith(workspaceRoot)) {
     throw new Error('Resolved storage path is outside the allowed workspace.');
   }
 
-  return resolvedFilePath;
+  return resolvedPath;
 }
 
 async function ensureStorageFile() {
-  const storageFilePath = getSafeStoragePath();
-  const storageDirectory = path.dirname(storageFilePath);
+  const storagePath = getSafeStoragePath();
+  const storageDirectory = path.dirname(storagePath);
 
   await fs.mkdir(storageDirectory, { recursive: true });
 
   try {
-    await fs.access(storageFilePath);
+    await fs.access(storagePath);
   } catch (_error) {
-    await fs.writeFile(storageFilePath, '[]', 'utf8');
+    await fs.writeFile(storagePath, '[]', 'utf8');
   }
 
-  return storageFilePath;
+  return storagePath;
 }
 
-async function loadFromDiskIfNeeded() {
-  if (!env.persistPikaItems || hasLoadedFromDisk) {
+async function loadPersistedItemsIfNeeded() {
+  if (!env.persistPikaItems || hasLoadedPersistedItems) {
     return;
   }
 
-  const storageFilePath = await ensureStorageFile();
-  const rawContent = await fs.readFile(storageFilePath, 'utf8');
+  const storagePath = await ensureStorageFile();
+  const rawContent = await fs.readFile(storagePath, 'utf8');
   const parsedItems = JSON.parse(rawContent);
 
-  items.clear();
+  itemsById.clear();
 
   for (const item of parsedItems) {
     if (item && typeof item.id === 'string') {
-      items.set(item.id, item);
+      itemsById.set(item.id, item);
     }
   }
 
-  hasLoadedFromDisk = true;
+  hasLoadedPersistedItems = true;
 }
 
-async function persistToDisk() {
+async function persistItemsIfEnabled() {
   if (!env.persistPikaItems) {
     return;
   }
 
-  const storageFilePath = await ensureStorageFile();
-  await fs.writeFile(storageFilePath, JSON.stringify(serializeItems(), null, 2), 'utf8');
+  const storagePath = await ensureStorageFile();
+  await fs.writeFile(storagePath, JSON.stringify(getAllItems(), null, 2), 'utf8');
 }
 
 async function createItem({ name, description }) {
-  await loadFromDiskIfNeeded();
+  await loadPersistedItemsIfNeeded();
 
   const timestamp = new Date().toISOString();
   const item = {
-    id: createId(),
+    id: createItemId(),
     name,
     description,
     status: 'pending',
@@ -86,28 +81,28 @@ async function createItem({ name, description }) {
     updatedAt: timestamp
   };
 
-  items.set(item.id, item);
-  await persistToDisk();
+  itemsById.set(item.id, item);
+  await persistItemsIfEnabled();
 
   return item;
 }
 
 async function listItems({ status } = {}) {
-  await loadFromDiskIfNeeded();
+  await loadPersistedItemsIfNeeded();
 
-  const allItems = serializeItems();
+  const items = getAllItems();
 
   if (!status) {
-    return allItems;
+    return items;
   }
 
-  return allItems.filter((item) => item.status === status);
+  return items.filter((item) => item.status === status);
 }
 
 async function updateItemStatus(id, status) {
-  await loadFromDiskIfNeeded();
+  await loadPersistedItemsIfNeeded();
 
-  const existingItem = items.get(id);
+  const existingItem = itemsById.get(id);
 
   if (!existingItem) {
     return null;
@@ -119,8 +114,8 @@ async function updateItemStatus(id, status) {
     updatedAt: new Date().toISOString()
   };
 
-  items.set(id, updatedItem);
-  await persistToDisk();
+  itemsById.set(id, updatedItem);
+  await persistItemsIfEnabled();
 
   return updatedItem;
 }
@@ -128,6 +123,5 @@ async function updateItemStatus(id, status) {
 module.exports = {
   createItem,
   listItems,
-  updateItemStatus,
-  isValidStatus
+  updateItemStatus
 };

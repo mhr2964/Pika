@@ -11,11 +11,21 @@ function parseBoolean(value, defaultValue = false) {
   return value === 'true';
 }
 
+function parsePort(value, defaultValue) {
+  const parsedValue = Number(value);
+
+  if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
+    return defaultValue;
+  }
+
+  return parsedValue;
+}
+
 const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
-  port: Number(process.env.PORT || 3000),
-  persistPikaItems: parseBoolean(process.env.PERSIST_PIKA_ITEMS, false),
-  pikaItemsFile: path.resolve(process.cwd(), process.env.PIKA_ITEMS_FILE || './data/pika-items.json')
+  port: parsePort(process.env.PORT, 3000),
+  persistRooms: parseBoolean(process.env.PERSIST_ROOMS, false),
+  roomsFile: path.resolve(process.cwd(), process.env.ROOMS_FILE || './data/rooms.json')
 };
 
 module.exports = {
