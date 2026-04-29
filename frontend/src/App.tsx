@@ -1,268 +1,460 @@
-import React, { useMemo, useState } from 'react';
-import { WelcomeSplash } from './screens/onboarding/WelcomeSplash';
-import { ActiveRoomScreen } from './screens/room/ActiveRoomScreen';
-import { CreateRoomScreen } from './screens/room/CreateRoomScreen';
-import { JoinRoomScreen } from './screens/room/JoinRoomScreen';
-import { LobbyScreen } from './screens/room/LobbyScreen';
-import { OutcomeScreen } from './screens/room/OutcomeScreen';
-import { createRoomClient } from './lib/roomClient';
-import {
-  RoomActivity,
-  RoomOption,
-  RoomParticipant,
-  RoomStage,
-  RoomState,
-} from './types/pika';
+import { useMemo, useState } from 'react';
+import './App.css';
 
-const DEFAULT_OPTIONS: RoomOption[] = [
-  { id: 'option-1', label: 'Tacos at midnight', votes: 4 },
-  { id: 'option-2', label: 'Diner pancakes', votes: 3 },
-  { id: 'option-3', label: 'Drive-thru fries', votes: 2 },
-];
+type Stage = 'entry' | 'lobby' | 'matchups' | 'result';
 
-const DEFAULT_PARTICIPANTS: RoomParticipant[] = [
-  { id: 'p-1', name: 'Maya', reaction: 'Already campaigning for tacos.', tone: 'hype' },
-  { id: 'p-2', name: 'Jules', reaction: 'Pancakes feel emotionally correct.', tone: 'locked-in' },
-  { id: 'p-3', name: 'Dev', reaction: 'Fries are chaos-neutral and I respect that.', tone: 'side-eye' },
-];
+type RoomMode = 'join' | 'create';
 
-const DEFAULT_ACTIVITY: RoomActivity[] = [
-  { id: 'a-1', actor: 'Maya', message: 'threw early weight behind tacos' },
-  { id: 'a-2', actor: 'Jules', message: 'declared pancakes the healing path' },
-  { id: 'a-3', actor: 'Dev', message: 'asked whether fries count as a philosophy' },
-];
-
-const INITIAL_ROOM: RoomState = {
-  code: 'PIKA42',
-  prompt: 'Best late-night snack run?',
-  hostName: 'Chaos Captain',
-  roundLabel: 'Round 1',
-  participants: DEFAULT_PARTICIPANTS,
-  options: DEFAULT_OPTIONS,
-  activity: DEFAULT_ACTIVITY,
-  selectedOptionId: null,
-  winningOptionId: null,
+type Participant = {
+  id: string;
+  name: string;
+  isYou?: boolean;
 };
 
-function cloneRoomState(room: RoomState): RoomState {
-  return {
-    ...room,
-    participants: room.participants.map((participant) => ({ ...participant })),
-    options: room.options.map((option) => ({ ...option })),
-    activity: room.activity.map((item) => ({ ...item })),
-  };
+type Option = {
+  id: string;
+  label: string;
+  addedBy: string;
+};
+
+type Matchup = {
+  id: string;
+  leftOptionId: string;
+  rightOptionId: string;
+};
+
+const INITIAL_PARTICIPANTS: Participant[] = [
+  { id: 'you', name: 'You', isYou: true },
+  { id: 'mia', name: 'Mia' },
+  { id: 'leo', name: 'Leo' },
+];
+
+const INITIAL_OPTIONS: Option[] = [
+  { id: '1', label: 'Sushi train', addedBy: 'You' },
+  { id: '2', label: 'Karaoke room', addedBy: 'Mia' },
+  { id: '3', label: 'Rooftop tacos', addedBy: 'Leo' },
+  { id: '4', label: 'Late-night gelato', addedBy: 'You' },
+];
+
+const ROOM_CODE = 'PIKA42';
+
+function makeId(prefix: string) {
+  return `${prefix}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export default function App() {
-  const roomClient = useMemo(() => createRoomClient(cloneRoomState(INITIAL_ROOM)), []);
-  const [stage, setStage] = useState<RoomStage>('welcome');
-  const [hostName, setHostName] = useState(INITIAL_ROOM.hostName);
-  const [prompt, setPrompt] = useState(INITIAL_ROOM.prompt);
-  const [guestName, setGuestName] = useState('Snack Scout');
-  const [roomCode, setRoomCode] = useState(INITIAL_ROOM.code);
-  const [room, setRoom] = useState<RoomState>(cloneRoomState(INITIAL_ROOM));
-  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
-  const [isJoiningRoom, setIsJoiningRoom] = useState(false);
-  const [isLobbyLoading, setIsLobbyLoading] = useState(false);
-  const [isRoomLoading, setIsRoomLoading] = useState(false);
-  const [createError, setCreateError] = useState(false);
-  const [joinError, setJoinError] = useState(false);
-  const [lobbyError] = useState(false);
-  const [roomError, setRoomError] = useState(false);
+function buildMatchups(options: Option[]): Matchup[] {
+  const pairs: Matchup[] = [];
 
-  const canResume = stage !== 'welcome';
-  const viewerName = stage === 'room-lobby' ? guestName : hostName;
+  for (let index = 0; index < options.length - 1; index += 1) {
+    const left = options[index];
+    const right = options[index + 1];
 
-  const handleStart = () => {
-    setStage('room-setup');
-  };
+    if (left && right) {
+      pairs.push({
+        id: `matchup-${left.id}-${right.id}`,
+        leftOptionId: left.id,
+        rightOptionId: right.id,
+      });
+    }
+  }
 
-  const handleResume = () => {
-    if (!canResume) {
-      setStage('room-setup');
+  if (pairs.length === 0 && options.length >= 2) {
+    pairs.push({
+      id: `matchup-${options[0].id}-${options[1].id}`,
+      leftOptionId: options[0].id,
+      rightOptionId: options[1].id,
+    });
+  }
+
+  return pairs;
+}
+
+function getOptionLabel(optionId: string, options: Option[]) {
+  return options.find((option) => option.id === optionId)?.label ?? 'Unknown option';
+}
+
+function App() {
+  const [stage, setStage] = useState<Stage>('entry');
+  const [roomMode, setRoomMode] = useState<RoomMode>('join');
+  const [displayName, setDisplayName] = useState('Avery');
+  const [roomCodeInput, setRoomCodeInput] = useState(ROOM_CODE);
+  const [participants] = useState<Participant[]>(INITIAL_PARTICIPANTS);
+  const [options, setOptions] = useState<Option[]>(INITIAL_OPTIONS);
+  const [optionDraft, setOptionDraft] = useState('');
+  const [editingOptionId, setEditingOptionId] = useState<string | null>(null);
+  const [currentMatchupIndex, setCurrentMatchupIndex] = useState(0);
+  const [selectedWinners, setSelectedWinners] = useState<string[]>([]);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const matchups = useMemo(() => buildMatchups(options), [options]);
+  const currentMatchup = matchups[currentMatchupIndex];
+
+  const winnerOption = useMemo(() => {
+    if (selectedWinners.length > 0) {
+      const mostRecentWinnerId = selectedWinners[selectedWinners.length - 1];
+      return options.find((option) => option.id === mostRecentWinnerId) ?? options[0] ?? null;
+    }
+
+    return options[0] ?? null;
+  }, [options, selectedWinners]);
+
+  const optionCountLabel = `${options.length} option${options.length === 1 ? '' : 's'}`;
+  const participantCountLabel = `${participants.length} people in the room`;
+
+  function handleEnterRoom() {
+    setStage('lobby');
+  }
+
+  function handleSaveOption() {
+    const cleanedLabel = optionDraft.trim();
+
+    if (!cleanedLabel) {
       return;
     }
 
-    setStage('room-active');
-  };
-
-  const handleBackToWelcome = () => {
-    setCreateError(false);
-    setJoinError(false);
-    setRoomError(false);
-    setStage('welcome');
-  };
-
-  const handleGoToCreateRoom = () => {
-    setJoinError(false);
-    setStage('room-setup');
-  };
-
-  const handleGoToJoinRoom = () => {
-    setCreateError(false);
-    setStage('room-join');
-  };
-
-  const handleCreateRoom = async () => {
-    try {
-      setCreateError(false);
-      setIsCreatingRoom(true);
-      const nextRoom = await roomClient.createRoom({
-        hostName: hostName.trim(),
-        prompt: prompt.trim(),
-      });
-      setRoom(nextRoom);
-      setStage('room-active');
-      setIsRoomLoading(true);
-      window.setTimeout(() => setIsRoomLoading(false), 600);
-    } catch {
-      setCreateError(true);
-    } finally {
-      setIsCreatingRoom(false);
+    if (editingOptionId) {
+      setOptions((currentOptions) =>
+        currentOptions.map((option) =>
+          option.id === editingOptionId ? { ...option, label: cleanedLabel } : option,
+        ),
+      );
+      setEditingOptionId(null);
+      setOptionDraft('');
+      return;
     }
-  };
 
-  const handleJoinRoom = async () => {
-    try {
-      setJoinError(false);
-      setIsJoiningRoom(true);
-      const joinedRoom = await roomClient.joinRoom({
-        guestName: guestName.trim(),
-        roomCode: roomCode.trim().toUpperCase(),
-      });
-      setRoom(joinedRoom);
-      setStage('room-lobby');
-      setIsLobbyLoading(true);
-      window.setTimeout(() => setIsLobbyLoading(false), 600);
-    } catch {
-      setJoinError(true);
-    } finally {
-      setIsJoiningRoom(false);
+    setOptions((currentOptions) => [
+      ...currentOptions,
+      { id: makeId('option'), label: cleanedLabel, addedBy: 'You' },
+    ]);
+    setOptionDraft('');
+  }
+
+  function handleEditOption(optionId: string) {
+    const option = options.find((item) => item.id === optionId);
+
+    if (!option) {
+      return;
     }
-  };
 
-  const handleStartVoting = () => {
-    setIsRoomLoading(true);
-    setStage('room-active');
-    window.setTimeout(() => setIsRoomLoading(false), 450);
-  };
+    setEditingOptionId(option.id);
+    setOptionDraft(option.label);
+  }
 
-  const handleSelectOption = async (selectedOptionId: string) => {
-    try {
-      setRoomError(false);
-      const nextRoom = await roomClient.selectOption({
-        room,
-        selectedOptionId,
-        actorName: viewerName,
-      });
-      setRoom(nextRoom);
-    } catch {
-      setRoomError(true);
+  function handleRemoveOption(optionId: string) {
+    setOptions((currentOptions) => currentOptions.filter((option) => option.id !== optionId));
+
+    if (editingOptionId === optionId) {
+      setEditingOptionId(null);
+      setOptionDraft('');
     }
-  };
+  }
 
-  const handleRevealOutcome = async () => {
-    try {
-      setRoomError(false);
-      const nextRoom = await roomClient.revealOutcome(room);
-      setRoom(nextRoom);
-      setStage('room-outcome');
-    } catch {
-      setRoomError(true);
+  function handleStartMatchups() {
+    if (options.length < 2) {
+      return;
     }
-  };
 
-  const handlePlayAgain = async () => {
-    const nextRoom = await roomClient.resetRound(room);
-    setRoom(nextRoom);
-    setStage('room-active');
-  };
-
-  const handleStartOver = () => {
-    setHostName(INITIAL_ROOM.hostName);
-    setPrompt(INITIAL_ROOM.prompt);
-    setGuestName('Snack Scout');
-    setRoomCode(INITIAL_ROOM.code);
-    setRoom(cloneRoomState(INITIAL_ROOM));
-    setCreateError(false);
-    setJoinError(false);
-    setRoomError(false);
-    setStage('welcome');
-  };
-
-  if (stage === 'welcome') {
-    return (
-      <WelcomeSplash
-        canResume={canResume}
-        onStart={handleStart}
-        onResume={handleResume}
-      />
-    );
+    setCurrentMatchupIndex(0);
+    setSelectedWinners([]);
+    setShareCopied(false);
+    setStage('matchups');
   }
 
-  if (stage === 'room-setup') {
-    return (
-      <CreateRoomScreen
-        hostName={hostName}
-        prompt={prompt}
-        isSubmitting={isCreatingRoom}
-        hasError={createError}
-        onHostNameChange={setHostName}
-        onPromptChange={setPrompt}
-        onCreateRoom={handleCreateRoom}
-        onBack={handleBackToWelcome}
-        onGoToJoinRoom={handleGoToJoinRoom}
-      />
-    );
+  function handleChooseWinner(optionId: string) {
+    const nextWinners = [...selectedWinners, optionId];
+    const isLastMatchup = currentMatchupIndex >= matchups.length - 1;
+
+    setSelectedWinners(nextWinners);
+
+    if (isLastMatchup) {
+      setStage('result');
+      return;
+    }
+
+    setCurrentMatchupIndex((currentIndex) => currentIndex + 1);
   }
 
-  if (stage === 'room-join') {
-    return (
-      <JoinRoomScreen
-        guestName={guestName}
-        roomCode={roomCode}
-        isSubmitting={isJoiningRoom}
-        hasError={joinError}
-        onGuestNameChange={setGuestName}
-        onRoomCodeChange={setRoomCode}
-        onJoinRoom={handleJoinRoom}
-        onBack={handleBackToWelcome}
-        onGoToCreateRoom={handleGoToCreateRoom}
-      />
-    );
+  function handleCopyShare() {
+    setShareCopied(true);
   }
 
-  if (stage === 'room-lobby') {
-    return (
-      <LobbyScreen
-        room={room}
-        viewerName={guestName}
-        isLoading={isLobbyLoading}
-        hasError={lobbyError}
-        onStartVoting={handleStartVoting}
-        onBackToWelcome={handleBackToWelcome}
-      />
-    );
-  }
-
-  if (stage === 'room-outcome') {
-    return (
-      <OutcomeScreen
-        room={room}
-        onPlayAgain={handlePlayAgain}
-        onStartOver={handleStartOver}
-      />
-    );
-  }
+  const progressValue = matchups.length === 0 ? 0 : ((currentMatchupIndex + 1) / matchups.length) * 100;
 
   return (
-    <ActiveRoomScreen
-      room={room}
-      isLoading={isRoomLoading}
-      hasError={roomError}
-      onSelectOption={handleSelectOption}
-      onRevealOutcome={handleRevealOutcome}
-      onResetRoom={handleStartOver}
-    />
+    <div className="app-shell">
+      <div className="phone-frame">
+        <div className="app-panel">
+          <header className="topbar">
+            <div>
+              <p className="eyebrow">Pika proto</p>
+              <h1>Pika picks the vibe fast.</h1>
+            </div>
+            {stage !== 'entry' ? <span className="room-chip">Room {ROOM_CODE}</span> : null}
+          </header>
+
+          {stage === 'entry' ? (
+            <section className="screen">
+              <div className="hero-card">
+                <p className="hero-kicker">Stop the “anything works” spiral.</p>
+                <h2>Make one room. Toss in options. Let the room feel the winner.</h2>
+                <p className="hero-copy">
+                  Pika turns messy group indecision into one obvious next move.
+                </p>
+              </div>
+
+              <div className="segmented-control" role="tablist" aria-label="Room mode">
+                <button
+                  type="button"
+                  className={roomMode === 'join' ? 'segment active' : 'segment'}
+                  onClick={() => setRoomMode('join')}
+                >
+                  Join room
+                </button>
+                <button
+                  type="button"
+                  className={roomMode === 'create' ? 'segment active' : 'segment'}
+                  onClick={() => setRoomMode('create')}
+                >
+                  Create room
+                </button>
+              </div>
+
+              <div className="card stack">
+                <label className="field">
+                  <span>Your name</span>
+                  <input
+                    value={displayName}
+                    onChange={(event) => setDisplayName(event.target.value)}
+                    placeholder="Avery"
+                  />
+                </label>
+
+                <label className="field">
+                  <span>{roomMode === 'join' ? 'Room code' : 'Starter room code'}</span>
+                  <input
+                    value={roomCodeInput}
+                    onChange={(event) => setRoomCodeInput(event.target.value.toUpperCase())}
+                    placeholder="PIKA42"
+                  />
+                </label>
+
+                <button type="button" className="primary-button" onClick={handleEnterRoom}>
+                  {roomMode === 'join' ? 'Join the room' : 'Create and enter'}
+                </button>
+
+                <p className="support-copy">
+                  {roomMode === 'join'
+                    ? 'Jump straight into the lobby and see what the room is circling.'
+                    : 'Start the room, drop the first option, and become the spark.'}
+                </p>
+              </div>
+            </section>
+          ) : null}
+
+          {stage === 'lobby' ? (
+            <section className="screen">
+              <div className="room-summary">
+                <div>
+                  <p className="eyebrow">Lobby</p>
+                  <h2>{participantCountLabel}</h2>
+                </div>
+                <div className="summary-stats">
+                  <span>{optionCountLabel}</span>
+                  <span>Host energy: high</span>
+                </div>
+              </div>
+
+              <div className="card stack">
+                <div className="section-header">
+                  <div>
+                    <h3>Who’s here</h3>
+                    <p>The room already has enough chaos to make this fun.</p>
+                  </div>
+                </div>
+                <div className="participant-list">
+                  {participants.map((participant) => (
+                    <div className="participant-pill" key={participant.id}>
+                      <span>{participant.name}</span>
+                      {participant.isYou ? <strong>You</strong> : null}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="card stack">
+                <div className="section-header">
+                  <div>
+                    <h3>Add options</h3>
+                    <p>Give the room a few contenders. Pika can do the rest.</p>
+                  </div>
+                </div>
+
+                <div className="option-composer">
+                  <input
+                    value={optionDraft}
+                    onChange={(event) => setOptionDraft(event.target.value)}
+                    placeholder="Add a place, plan, or chaos pick"
+                  />
+                  <button type="button" className="primary-button compact" onClick={handleSaveOption}>
+                    {editingOptionId ? 'Save edit' : 'Add option'}
+                  </button>
+                </div>
+
+                {editingOptionId ? (
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={() => {
+                      setEditingOptionId(null);
+                      setOptionDraft('');
+                    }}
+                  >
+                    Cancel edit
+                  </button>
+                ) : null}
+
+                {options.length === 0 ? (
+                  <div className="empty-state">
+                    <p>No options yet.</p>
+                    <span>Be the first brave little gremlin to throw one in.</span>
+                  </div>
+                ) : (
+                  <div className="option-list">
+                    {options.map((option) => (
+                      <div className="option-row" key={option.id}>
+                        <div>
+                          <strong>{option.label}</strong>
+                          <p>Added by {option.addedBy}</p>
+                        </div>
+                        <div className="row-actions">
+                          <button
+                            type="button"
+                            className="secondary-button"
+                            onClick={() => handleEditOption(option.id)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="secondary-button danger"
+                            onClick={() => handleRemoveOption(option.id)}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  className="primary-button"
+                  onClick={handleStartMatchups}
+                  disabled={options.length < 2}
+                >
+                  Start matchups
+                </button>
+
+                <p className="support-copy">
+                  Need at least 2 options before the room can start choosing.
+                </p>
+              </div>
+            </section>
+          ) : null}
+
+          {stage === 'matchups' ? (
+            <section className="screen">
+              <div className="progress-header">
+                <div>
+                  <p className="eyebrow">Matchups</p>
+                  <h2>
+                    Pick the better vibe {currentMatchupIndex + 1}/{Math.max(matchups.length, 1)}
+                  </h2>
+                </div>
+                <span className="progress-label">{Math.round(progressValue)}%</span>
+              </div>
+
+              <div className="progress-track" aria-hidden="true">
+                <div className="progress-fill" style={{ width: `${progressValue}%` }} />
+              </div>
+
+              {currentMatchup ? (
+                <div className="matchup-grid">
+                  <button
+                    type="button"
+                    className="choice-card"
+                    onClick={() => handleChooseWinner(currentMatchup.leftOptionId)}
+                  >
+                    <span className="choice-number">A</span>
+                    <strong>{getOptionLabel(currentMatchup.leftOptionId, options)}</strong>
+                    <p>Tappable. Decisive. Slightly chaotic.</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    className="choice-card"
+                    onClick={() => handleChooseWinner(currentMatchup.rightOptionId)}
+                  >
+                    <span className="choice-number">B</span>
+                    <strong>{getOptionLabel(currentMatchup.rightOptionId, options)}</strong>
+                    <p>If this one wins, the room commits with chest.</p>
+                  </button>
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <p>No matchups ready.</p>
+                  <span>Head back and add at least two options first.</span>
+                </div>
+              )}
+            </section>
+          ) : null}
+
+          {stage === 'result' ? (
+            <section className="screen">
+              <div className="result-badge">Winner revealed</div>
+              <div className="winner-card">
+                <p className="eyebrow">The room has spoken</p>
+                <h2>{winnerOption?.label ?? 'Mystery pick'}</h2>
+                <p>
+                  Tiny electric drumroll complete. Pika says this is the move.
+                </p>
+              </div>
+
+              <div className="card stack">
+                <div className="section-header">
+                  <div>
+                    <h3>Share the outcome</h3>
+                    <p>Send it to the group chat before someone reopens the debate.</p>
+                  </div>
+                </div>
+
+                <div className="share-box">
+                  <p>
+                    We used Pika and landed on <strong>{winnerOption?.label ?? 'our winner'}</strong>{' '}
+                    in room {ROOM_CODE}. No more “wait what are we doing?” energy.
+                  </p>
+                </div>
+
+                <button type="button" className="primary-button" onClick={handleCopyShare}>
+                  {shareCopied ? 'Copied-ish for the proto' : 'Copy share text'}
+                </button>
+
+                <button
+                  type="button"
+                  className="secondary-button wide"
+                  onClick={() => setStage('lobby')}
+                >
+                  Back to lobby
+                </button>
+              </div>
+            </section>
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
 }
+
+export default App;
