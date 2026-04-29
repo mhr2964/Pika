@@ -29,17 +29,17 @@ export function CreateRoomScreen({
   return (
     <AppShell
       eyebrow="Create room"
-      title="Start the room. Make the choice obvious."
-      subtitle="A quick prompt, a room code, and everyone knows the assignment."
+      title="Set the prompt, start the swirl"
+      subtitle="Give the room one sharp question and let Pika do the emotional sorting."
     >
       <div className="stack-lg">
         <div className="state-card">
-          <p className="state-card__title">Host the moment.</p>
-          <p>Keep it punchy. Pika works best when the question feels instantly answerable.</p>
+          <p className="state-card__title">Host energy matters.</p>
+          <p>Start with a prompt people can answer on instinct, not a spreadsheet.</p>
         </div>
 
         <label className="field">
-          <span>Your host name</span>
+          <span>Host name</span>
           <input
             value={hostName}
             onChange={(event) => onHostNameChange(event.target.value)}
@@ -48,7 +48,7 @@ export function CreateRoomScreen({
         </label>
 
         <label className="field">
-          <span>What are we choosing?</span>
+          <span>Prompt</span>
           <textarea
             value={prompt}
             onChange={(event) => onPromptChange(event.target.value)}
@@ -59,8 +59,8 @@ export function CreateRoomScreen({
 
         {hasError ? (
           <div className="state-card state-card--error">
-            <p className="state-card__title">Room failed to start.</p>
-            <p>Give it one more tap. Even good chaos needs a retry.</p>
+            <p className="state-card__title">Room did not spin up.</p>
+            <p>Give it another shot. Even the best rooms need one dramatic retry.</p>
           </div>
         ) : null}
 
@@ -77,7 +77,7 @@ export function CreateRoomScreen({
             onClick={onCreateRoom}
             disabled={isDisabled}
           >
-            {isSubmitting ? 'Starting room…' : 'Start room'}
+            {isSubmitting ? 'Creating room…' : 'Create room'}
           </button>
         </div>
       </div>

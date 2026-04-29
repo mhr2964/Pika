@@ -1,31 +1,51 @@
 import React from 'react';
+import { AppShell } from '../../components/AppShell';
 
 type WelcomeSplashProps = {
-  onStart?: () => void;
-  onResume?: () => void;
-  canResume?: boolean;
+  canResume: boolean;
+  onStart: () => void;
+  onResume: () => void;
 };
 
 export function WelcomeSplash({
+  canResume,
   onStart,
   onResume,
-  canResume = false,
 }: WelcomeSplashProps) {
   return (
-    <main>
-      <section>
-        <p>Pika</p>
-        <h1>Start the room. Stir the chaos.</h1>
-        <p>Fast choices, live reactions, no mystery about what happens next.</p>
-        <button type="button" onClick={onStart}>
-          Start
-        </button>
-        {canResume ? (
-          <button type="button" onClick={onResume}>
-            Resume where the chaos left off
+    <AppShell
+      eyebrow="Pika"
+      title="Make the room obvious fast."
+      subtitle="Create or join a room, feel the vibe instantly, and let the best option pull ahead."
+    >
+      <div className="stack-lg">
+        <div className="hero-card">
+          <p className="hero-card__title">Tiny sparks. Big room energy.</p>
+          <p>
+            Pika is for quick group choices that should feel alive, legible, and a little bit
+            dramatic in the best way.
+          </p>
+        </div>
+
+        <div className="button-column">
+          <button type="button" className="button" onClick={onStart}>
+            Start a room
           </button>
-        ) : null}
-      </section>
-    </main>
+          <button
+            type="button"
+            className="button button--ghost"
+            onClick={onResume}
+            disabled={!canResume}
+          >
+            {canResume ? 'Resume room' : 'Resume room soon'}
+          </button>
+        </div>
+
+        <div className="state-card">
+          <p className="state-card__title">Why Pika feels different</p>
+          <p>You do not just vote. You watch the room tell on itself in real time.</p>
+        </div>
+      </div>
+    </AppShell>
   );
 }

@@ -9,8 +9,8 @@ export function ReactionPile({ participants }: ReactionPileProps) {
   if (participants.length === 0) {
     return (
       <div className="state-card state-card--empty">
-        <p className="state-card__title">No one is reacting yet.</p>
-        <p>Invite a few friends and the room goes from quiet to feral fast.</p>
+        <p className="state-card__title">No reactions yet.</p>
+        <p>The room is still suspiciously calm. That never lasts in Pika.</p>
       </div>
     );
   }
@@ -18,11 +18,12 @@ export function ReactionPile({ participants }: ReactionPileProps) {
   return (
     <div className="reaction-pile">
       {participants.map((participant) => (
-        <article key={participant.id} className="reaction-chip">
-          <span className={`reaction-chip__tone reaction-chip__tone--${participant.tone}`}>
-            {participant.name}
-          </span>
-          <p>{participant.reaction}</p>
+        <article
+          key={participant.id}
+          className={`reaction-chip reaction-chip--${participant.tone}`}
+        >
+          <p className="reaction-chip__name">{participant.name}</p>
+          <p className="reaction-chip__text">{participant.reaction}</p>
         </article>
       ))}
     </div>

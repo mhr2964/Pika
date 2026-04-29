@@ -67,7 +67,7 @@ export default function App() {
   const [isRoomLoading, setIsRoomLoading] = useState(false);
   const [createError, setCreateError] = useState(false);
   const [joinError, setJoinError] = useState(false);
-  const [lobbyError, setLobbyError] = useState(false);
+  const [lobbyError] = useState(false);
   const [roomError, setRoomError] = useState(false);
 
   const canResume = stage !== 'welcome';
@@ -78,17 +78,17 @@ export default function App() {
   };
 
   const handleResume = () => {
-    if (canResume) {
+    if (!canResume) {
+      setStage('room-setup');
       return;
     }
 
-    setStage('room-setup');
+    setStage('room-active');
   };
 
   const handleBackToWelcome = () => {
     setCreateError(false);
     setJoinError(false);
-    setLobbyError(false);
     setRoomError(false);
     setStage('welcome');
   };
@@ -142,7 +142,6 @@ export default function App() {
   };
 
   const handleStartVoting = () => {
-    setLobbyError(false);
     setIsRoomLoading(true);
     setStage('room-active');
     window.setTimeout(() => setIsRoomLoading(false), 450);
@@ -164,6 +163,7 @@ export default function App() {
 
   const handleRevealOutcome = async () => {
     try {
+      setRoomError(false);
       const nextRoom = await roomClient.revealOutcome(room);
       setRoom(nextRoom);
       setStage('room-outcome');
@@ -186,7 +186,6 @@ export default function App() {
     setRoom(cloneRoomState(INITIAL_ROOM));
     setCreateError(false);
     setJoinError(false);
-    setLobbyError(false);
     setRoomError(false);
     setStage('welcome');
   };

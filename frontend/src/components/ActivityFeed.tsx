@@ -8,21 +8,21 @@ type ActivityFeedProps = {
 export function ActivityFeed({ items }: ActivityFeedProps) {
   if (items.length === 0) {
     return (
-      <div className="state-card">
-        <p className="state-card__title">No plot twists yet.</p>
-        <p>The feed wakes up the moment someone taps an option.</p>
+      <div className="state-card state-card--empty">
+        <p className="state-card__title">Quiet for a second.</p>
+        <p>The second someone taps, the room gossip starts rolling again.</p>
       </div>
     );
   }
 
   return (
-    <ul className="activity-feed">
+    <div className="activity-feed">
       {items.map((item) => (
-        <li key={item.id} className="activity-feed__item">
+        <div key={item.id} className="activity-feed__item">
           <span className="activity-feed__actor">{item.actor}</span>
-          <span>{item.message}</span>
-        </li>
+          <span className="activity-feed__message">{item.message}</span>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 }

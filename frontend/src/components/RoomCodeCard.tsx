@@ -7,9 +7,9 @@ type RoomCodeCardProps = {
 export function RoomCodeCard({ code }: RoomCodeCardProps) {
   return (
     <div className="room-code-card">
-      <p className="room-code-card__label">Room code</p>
-      <p className="room-code-card__code">{code}</p>
-      <p className="room-code-card__hint">Drop it in chat and let the chaos assemble.</p>
+      <span className="room-code-card__label">Room code</span>
+      <strong className="room-code-card__value">{code}</strong>
+      <p className="room-code-card__hint">Share it fast before someone claims they never got the invite.</p>
     </div>
   );
 }

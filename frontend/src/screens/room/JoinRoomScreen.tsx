@@ -60,7 +60,7 @@ export function JoinRoomScreen({
         {hasError ? (
           <div className="state-card state-card--error">
             <p className="state-card__title">Could not join that room.</p>
-            <p>Check the code and try again. Wrong rooms are off-brand chaos.</p>
+            <p>Check the code and try again. Tiny typo, huge plot twist.</p>
           </div>
         ) : null}
 
@@ -71,12 +71,7 @@ export function JoinRoomScreen({
           <button type="button" className="button button--ghost" onClick={onGoToCreateRoom}>
             Create instead
           </button>
-          <button
-            type="button"
-            className="button"
-            onClick={onJoinRoom}
-            disabled={isDisabled}
-          >
+          <button type="button" className="button" onClick={onJoinRoom} disabled={isDisabled}>
             {isSubmitting ? 'Joining room…' : 'Join room'}
           </button>
         </div>
