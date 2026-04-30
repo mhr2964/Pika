@@ -1,25 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-30T08:20:00Z",
+  "updatedAt": "2026-04-30T08:21:00Z",
   "title": "Pika Company Dashboard",
   "widgets": [
     {
       "type": "status",
       "title": "Execution State",
       "status": "pending",
-      "text": "RECOVERED / AMBER — manager-led execution is restored, but recovery remains under watch and is not yet fully green."
+      "text": "RECOVERED / ACTIVE WATCH — manager-led execution is restored, but the company is still operating under recovery monitoring rather than full normalization."
     },
     {
       "type": "status",
       "title": "Daemon",
       "status": "active",
-      "text": "Daemon execution has resumed after the manager-binding failure period."
+      "text": "Daemon execution is active again after the manager-binding failure period."
     },
     {
       "type": "status",
       "title": "Core Lanes",
       "status": "active",
-      "text": "Parallel execution is restored across frontend, backend, auth, security, growth, and brand."
+      "text": "Parallel execution has been restored across core build and launch-support lanes, with continued watch on evidence quality and continuity."
     },
     {
       "type": "status",
@@ -30,8 +30,8 @@
     {
       "type": "status",
       "title": "Backend",
-      "status": "active",
-      "text": "Backend shows current downstream activity in the restored parallel build."
+      "status": "pending",
+      "text": "Backend shows resumed activity, but current evidence remains incomplete enough to keep this lane on active watch."
     },
     {
       "type": "status",
@@ -59,6 +59,18 @@
     },
     {
       "type": "status",
+      "title": "Prototype",
+      "status": "pending",
+      "text": "Prototype should be treated as pending/watch; current evidence does not support fully confirmed product health."
+    },
+    {
+      "type": "status",
+      "title": "Product Health",
+      "status": "pending",
+      "text": "Product health remains under active watch; resumed execution does not yet equal full end-to-end confirmation."
+    },
+    {
+      "type": "status",
       "title": "CTO Lane",
       "status": "pending",
       "text": "ACTIVE / AMBER — department runs confirmed, milestone artifact missing post-restart. Pending owning-exec confirmation artifact."
@@ -73,7 +85,7 @@
       "type": "status",
       "title": "Support / Monitoring Watchlist",
       "status": "pending",
-      "text": "Risk remains in support lanes due to manager-binding fragility, partial post-restart churn, and possible no-op cycle relapse. Monitor pulse, archivist, efficiency, platform, and exec confirmation flow closely."
+      "text": "Risk remains in support and monitoring lanes due to manager-binding fragility, partial churn, and no-op cycle risk. Monitor pulse, archivist, efficiency, platform, and exec confirmation flow closely."
     },
     {
       "type": "status",
@@ -83,15 +95,9 @@
     },
     {
       "type": "status",
-      "title": "Prototype",
-      "status": "pending",
-      "text": "Prototype is no longer the primary blocker, but current state should still be treated as monitored rather than fully green."
-    },
-    {
-      "type": "status",
       "title": "Next Gate",
       "status": "pending",
-      "text": "Sustain restored parallel execution, clear support-lane watchlist risks, and obtain owning-exec confirmation artifacts."
+      "text": "Sustain restored parallel execution, clear watchlisted ambiguity, and obtain owning-exec confirmation artifacts before any normalization claim."
     }
   ]
 }
