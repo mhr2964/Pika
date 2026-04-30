@@ -1,7 +1,7 @@
 {
   "version": 1,
   "company": "Pika",
-  "updatedAt": "2026-04-30T00:08:00Z",
+  "updatedAt": "2026-04-30T01:16:00Z",
   "title": "Pika Ops Telemetry",
   "widgets": [
     {
@@ -14,86 +14,50 @@
           "value": "Active"
         },
         {
-          "label": "Topline",
-          "value": "Operating wave is live; routing is stable and repo connectivity is set."
+          "label": "Repo status",
+          "value": "Connected — GitHub URL is set in company context and repository connectivity is no longer an open dependency."
         },
         {
-          "label": "Repo status",
-          "value": "Connected — GitHub URL is present in company context and available for the next push-capable completion."
+          "label": "Execution mode",
+          "value": "Parallel company wave is active across engineering baseline, growth launch surfaces, and COO visibility cadence."
         },
         {
           "label": "Leadership scan",
-          "value": "Core streams are active, ownership is clear, and there is no open external repo dependency."
+          "value": "Ownership is clear, execution lanes are in flight, and the organization is operating toward a first push-capable baseline."
         }
       ]
     },
     {
       "type": "section",
-      "id": "active-workstreams",
-      "title": "Active Workstreams",
+      "id": "active-execution-lanes",
+      "title": "Active Execution Lanes",
       "items": [
         {
-          "label": "Archive baseline",
-          "value": "Owner: COO → Archivist | Status: active/completing baseline memory"
+          "label": "Engineering baseline/build",
+          "value": "Owner: CTO | Status: active — platform and devops are driving a clean repo baseline while frontend/backend continue the core room → ranking → results flow."
         },
         {
-          "label": "Efficiency baseline",
-          "value": "Owner: COO → Efficiency | Status: active/reporting on parallelism"
+          "label": "Growth launch surfaces",
+          "value": "Owner: Head of Growth | Status: active — brand and growth are finalizing waitlist, referral, and launch narrative assets in parallel."
         },
         {
-          "label": "Ops telemetry/dashboard",
-          "value": "Owner: COO → Pulse | Status: active/current refresh published"
-        },
-        {
-          "label": "Engineering phase definition",
-          "value": "Owner: CTO | Status: active"
-        },
-        {
-          "label": "Backend contract authority",
-          "value": "Owner: CTO → Backend | Status: active/planning canonical v1 slice contract"
-        },
-        {
-          "label": "Frontend conformity planning",
-          "value": "Owner: CTO → Frontend | Status: active/awaiting contract publication"
-        },
-        {
-          "label": "Platform scaffolding",
-          "value": "Owner: CTO → Platform | Status: active/dispatched"
-        },
-        {
-          "label": "Repo/run/deploy artifacts",
-          "value": "Owner: CTO → DevOps | Status: active/dispatched"
-        },
-        {
-          "label": "First product milestone definition",
-          "value": "Owner: Head of Product | Status: active"
-        },
-        {
-          "label": "Launch-track framing",
-          "value": "Owner: Head of Growth | Status: active"
+          "label": "COO visibility cadence",
+          "value": "Owner: COO | Status: active — pulse, archivist, and efficiency are refreshing dashboard, memory, and operating-status visibility."
         }
       ]
     },
     {
       "type": "section",
-      "id": "blocked-or-unowned",
-      "title": "Blocked / Unowned",
+      "id": "next-gate",
+      "title": "Next Gate",
       "items": [
         {
-          "label": "Hard-blocked work",
-          "value": "None evidenced"
+          "label": "Gate",
+          "value": "first push-ready baseline"
         },
         {
-          "label": "Open dependency",
-          "value": "Repository connectivity cleared; no open GitHub URL dependency remains."
-        },
-        {
-          "label": "Sequencing dependency",
-          "value": "Frontend alignment still depends on backend publishing the canonical v1 slice contract."
-        },
-        {
-          "label": "Unowned work",
-          "value": "None evidenced at the executive-routing level."
+          "label": "Readiness note",
+          "value": "Repo connectivity is resolved; remaining work is execution and artifact completion, not external setup."
         }
       ]
     }
