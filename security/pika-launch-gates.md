@@ -1,106 +1,65 @@
-# Pika Launch Gates — Canonical Security Source of Truth
-Date: 2026-04-30  
-Scope: v1 launch security gates based only on evidence present in the current workspace. Missing evidence is recorded as missing; this document does not infer controls that are not evidenced in code or docs.
+# Pika Launch Gates — Binding Security Release Gate
+Date: 2026-04-30
 
-## Launch Gates Table
+## Release Ruling
+**Binding gate:** This file is the binding Pika v1 security release gate.  
+**Current ruling:** ship blocked until critical gates below are evidenced cleared.  
+**Release condition:** No route or flow may ship if it exposes room or results reads/writes without server-enforced session identity and membership/privilege checks backed by repo evidence.  
+**Current auth baseline:** Guest-first, server-bound session only for v1. Anonymous-to-account upgrade is deferred and is not a launch requirement unless a live repo path brings it into scope.
 
-| Gate Name | Blocker Status | Severity | Owner Dept | Required Evidence | Current Evidence | Ship / No-Ship Criterion |
-| --- | --- | --- | --- | --- | --- | --- |
-| Room read/write authorization enforced before business logic | BLOCKED | Critical | backend + auth | Server-side route/middleware/controller evidence that room reads/writes require authenticated identity and room membership before room data is returned or mutated; test coverage proving unauthorized access is denied. | `backend/src/routes/rooms.js` exposes room routes; `backend/src/controllers/roomsController.js` handles room create/join/get/submit flows; no evidence in cited files of authenticated user enforcement or membership checks before business logic. `frontend/src/lib/roomClient.ts` shows client-side room access flow, which is not a security boundary. | **No-ship** until backend/auth artifacts show pre-business-logic authz checks and repo tests prove unauthorized room access is rejected. |
-| Results access restricted to authorized room participants or host | BLOCKED | Critical | backend + auth | Server-side handler/storage checks that results endpoints/data are limited to authorized participants/host, plus tests covering unauthorized result access denial. | Existing evidence set (`backend/src/controllers/roomsController.js`, `backend/src/storage/roomsStore.js`, `frontend/src/lib/roomClient.ts`, `docs/minimum-launch-release-slice.md`) does not show server-enforced authorization for results retrieval. No results auth test artifact is present in the cited workspace files. | **No-ship** until backend/auth proof shows results are access-controlled server-side and tests demonstrate denial for non-members/non-hosts. |
-| Session/grant integrity bound to authenticated identity and room membership | BLOCKED | Critical | auth + backend | Evidence that room participation/session state is bound to a verified user/session identity, with membership checks enforced on each protected action. | `backend/src/types/sessions.ts` exists, but current round evidence does not show implemented enforcement binding room actions to authenticated identity in routes/controllers. `backend/src/controllers/roomsController.js` and `backend/src/storage/roomsStore.js` do not provide evidenced auth-bound enforcement from the reviewed artifacts. | **No-ship** until auth/backend artifacts show identity-bound session enforcement for protected room actions and tests prove cross-user/session misuse is denied. |
-| Session tokens or room grants are signed, expiring, and server-issued | BLOCKED | Critical | auth + backend | Implemented token/grant issuance and verification artifacts showing signed, expiring, non-forgeable credentials; config/docs for issuance requirements; tests for invalid/expired token rejection. | System policy states the v1 auth baseline should use JWT RS256 with `iss/aud/sub/iat/exp/jti`, but no implementation artifact in the reviewed workspace proves issuance/verification is present. No current repo evidence shows signed server-issued room grants or token validation for protected room routes. | **No-ship** until repo evidence includes implementation of signed expiring credentials plus tests for valid, invalid, expired, and forged-token rejection. |
-| Secrets handling for auth/security configuration is defined and validated | BLOCKED | High | auth + devops + backend | Environment/config artifacts listing required secret-bearing vars, secure storage guidance, validation on boot, and deployment documentation for secret provisioning/rotation. | `backend/src/config/env.js` loads only `PORT` and `HOST`; no secret-bearing auth/security env vars or validation are evidenced there. `devops/port-and-env-conventions.md`, `devops/deployment-readiness-report.md`, and `docs/deployment-checklist.md` do not define secret storage, rotation, required auth env vars, or environment validation gates. | **No-ship** until auth/devops/backend add concrete secret/env requirements and boot-time validation artifacts, with deployment docs covering secure provisioning. |
-| Abuse and rate-limit controls on auth or room-entry surfaces | BLOCKED | High | auth + backend | Middleware/config/tests for signup/login abuse controls, room join/create throttling, or equivalent rate-limit protections on abuse-prone endpoints. | `backend/src/routes/*.js`, `backend/src/middleware/*`, and `backend/scripts/smoke-test.js` show no evidenced rate-limit middleware, lockout, challenge, or abuse guard. No signup/login throttling artifact is present in the current workspace evidence reviewed this round. | **No-ship** until backend/auth repo artifacts show abuse controls on relevant endpoints and tests verify throttling or equivalent protections. |
+## Operator Use
+Use this ledger as the single release-gate source of truth for launch-baseline security only. Update gate status only when repo evidence lands. Do not reopen broader security analysis here.
 
-## Room / Results Authorization
-**Status:** BLOCKED
+## Gate Status Vocabulary
+- **BLOCKED** — launch-critical proof is missing; release remains blocked on this gate.
+- **CLEARED** — required implementation and proof are present in repo evidence for the current baseline.
+- **DEFERRED** — intentionally out of current v1 launch baseline; not a launch blocker unless scope changes.
 
-Evidence reviewed this round:
-- `backend/src/routes/rooms.js`
-- `backend/src/controllers/roomsController.js`
-- `backend/src/storage/roomsStore.js`
-- `frontend/src/lib/roomClient.ts`
-- `docs/minimum-launch-release-slice.md`
-- `docs/push-readiness-verdict.md`
+## Launch Gates Ledger
 
-Findings:
-- The workspace contains room routes and controllers, but the reviewed backend artifacts do not provide evidence of authenticated, membership-based authorization being enforced before room business logic executes.
-- The frontend client flow references room access behavior, but frontend behavior is not accepted as authorization proof.
-- No reviewed artifact proves that results visibility is server-restricted to authorized participants or host.
-- No reviewed test artifact proves denial of unauthorized room or result access.
+| Gate | Status | Severity | Owner Dept | Current Evidence | Exact Proof Required to Clear |
+| --- | --- | --- | --- | --- | --- |
+| Backend authorization for room, host, and results boundaries before business logic | **BLOCKED** | Critical | backend + auth | `backend/src/routes/rooms.js` exposes room routes; `backend/src/controllers/roomsController.js` and `backend/src/storage/roomsStore.js` do not provide current repo evidence of verified server-bound session checks plus membership/privilege enforcement before protected room/results actions. `frontend/src/lib/roomClient.ts` is client flow only and not security proof. | Repo evidence showing protected room/results/host endpoints are wired through verified server-side session enforcement; controller/storage code showing membership and host-role checks occur before protected reads/writes; negative tests proving unauthorized, wrong-member, and wrong-role requests are rejected. |
+| Session and grant integrity for guest-first server-bound sessions | **BLOCKED** | Critical | auth + backend | `backend/src/types/sessions.ts` exists and `auth/pika-auth-launch-brief.md` defines the baseline, but reviewed workspace evidence does not yet prove implemented issuance/verification of server-bound session or grant credentials on protected room/results flows. | Repo evidence of server-issued session/grant mechanism for protected guest-first flows; verification logic on protected routes/controllers; tests proving invalid, expired, forged, replayed, and cross-room credentials are rejected. |
+| Secrets and env dependencies required for session safety | **BLOCKED** | High | auth + backend + devops | `backend/src/config/env.js` currently evidences only `PORT` and `HOST`. `workspace/.env.example`, `devops/port-and-env-conventions.md`, and `docs/deployment-checklist.md` do not yet provide sufficient repo proof of required session/auth secret configuration and backend startup validation for the chosen session model. | Backend/auth config artifact listing required session/auth env vars or signing material; startup validation that fails safely when required session-safety config is missing or invalid; deployment/docs evidence describing secure provisioning requirements for those values. |
+| Abuse throttles on public room create, join, and share-entry surfaces | **BLOCKED** | High | backend + auth | `backend/src/middleware/*` and `backend/scripts/smoke-test.js` do not show throttling or equivalent abuse controls on the public room-entry surfaces. Reviewed room route surfaces do not provide current repo evidence of create/join/share throttles. | Middleware/config showing throttling or equivalent abuse protection on public room create/join/share-entry routes; route wiring proving those controls are active on shipped surfaces; tests proving repeated abusive requests are constrained. |
+| Launch docs and gate alignment to approved v1 auth model | **CLEARED** | Medium | auth + security | `workspace/security/pika-launch-gates.md` and `auth/pika-auth-launch-brief.md` are aligned to the approved v1 model: guest-first, server-bound session only; no account-upgrade requirement in launch baseline. | No further proof required unless the auth baseline changes. |
+| Anonymous-to-account upgrade / account linking / identity merge | **DEFERRED** | Medium | auth | Current approved v1 baseline excludes account upgrade. Reviewed workspace evidence does not show a live signup, login, account-link, or identity-merge path in current launch scope. | Not required for v1 launch. Re-enter gate review only if live repo code brings account upgrade or linking into scope. |
 
-Proof that would clear this gate:
-1. Backend/auth implementation artifact showing authz checks before room read/write or results retrieval logic.
-2. Tests proving non-members and unauthenticated callers are denied room and results access.
-3. If host-only actions exist, tests proving non-host participants are denied those actions.
+## Blocked Critical Gates — Clearing Checklist
 
-## Grant / Session Integrity
-**Status:** BLOCKED
+### 1) Backend authorization for room, host, and results boundaries
+**Status:** BLOCKED  
+**Why blocked now:** current repo evidence does not prove protected room/results reads or writes are gated by server-enforced session identity and membership/privilege checks before business logic.  
+**Clear this gate with exactly:**
+1. Protected endpoint wiring that applies verified server-side session enforcement.
+2. Controller/storage evidence that room membership and host-only checks happen before protected operations.
+3. Negative tests for unauthenticated, non-member, and wrong-role access denial.
 
-Evidence reviewed this round:
-- `backend/src/index.ts`
-- `backend/src/index.js`
-- `backend/src/controllers/roomsController.js`
-- `backend/src/storage/roomsStore.js`
-- `backend/src/types/sessions.ts`
+### 2) Session and grant integrity for guest-first server-bound sessions
+**Status:** BLOCKED  
+**Why blocked now:** the baseline is documented, but implementation proof for issuance/verification and misuse rejection is not yet evidenced in the reviewed repo surfaces.  
+**Clear this gate with exactly:**
+1. Server-issued guest session or grant implementation for protected flows.
+2. Verification logic on protected routes/controllers.
+3. Tests covering invalid, expired, forged, replayed, and cross-room credential rejection.
 
-Findings:
-- A sessions type artifact exists, but reviewed code does not provide evidence that room operations are bound to authenticated identity and verified room membership at enforcement points.
-- The auth baseline policy exists as a system directive, but implementation proof is missing from current workspace evidence.
-- No reviewed test artifact shows rejection of forged, expired, or cross-user session/grant misuse.
+### 3) Secrets and env dependencies required for session safety
+**Status:** BLOCKED  
+**Why blocked now:** current env/config docs do not yet prove the chosen session model’s required secrets/config are defined and validated at startup.  
+**Clear this gate with exactly:**
+1. Required session/auth env or signing-material definitions in repo config.
+2. Backend startup validation for missing/unsafe values.
+3. Deployment/docs evidence for secure provisioning of those values.
 
-Proof that would clear this gate:
-1. Implemented auth/backend artifact showing signed, expiring, server-issued session or grant credentials.
-2. Route/controller verification logic proving protected actions require valid credentials.
-3. Tests covering invalid signature, expired token, wrong audience/issuer if used, and cross-user/session misuse rejection.
+### 4) Abuse throttles on public room create, join, and share-entry surfaces
+**Status:** BLOCKED  
+**Why blocked now:** no current repo evidence shows throttling or equivalent abuse protection on the public room-entry surfaces relevant to launch.  
+**Clear this gate with exactly:**
+1. Active abuse-throttle middleware/config on create/join/share-entry routes.
+2. Route wiring evidence showing those protections are enabled.
+3. Tests demonstrating repeated abusive requests are constrained.
 
-## Secrets Handling
-**Status:** BLOCKED
-
-Evidence reviewed this round:
-- `backend/src/config/env.js`
-- `devops/port-and-env-conventions.md`
-- `devops/deployment-readiness-report.md`
-- `docs/deployment-checklist.md`
-
-Findings:
-- Only `PORT` and `HOST` are evidenced in backend environment loading.
-- No reviewed artifact defines required auth/security secrets, provisioning method, rotation expectation, or startup validation for missing/weak secret configuration.
-- No reviewed deployment document provides concrete secret-handling gates for launch.
-
-Proof that would clear this gate:
-1. Backend/auth config artifact listing required secret-bearing env vars and validating them on startup.
-2. DevOps/deployment document describing secure secret provisioning and expected launch-time configuration.
-3. If asymmetric signing is used, evidence of key configuration requirements and validation.
-
-## Abuse / Rate-Limit Controls
-**Status:** BLOCKED
-
-Evidence reviewed this round:
-- `backend/src/routes/health.js`
-- `backend/src/routes/pikaItems.js`
-- `backend/src/routes/rooms.js`
-- `backend/src/middleware/errorHandler.js`
-- `backend/scripts/smoke-test.js`
-
-Findings:
-- No reviewed route or middleware artifact shows rate limiting, abuse throttling, or equivalent guardrails.
-- No reviewed test artifact demonstrates abuse protection on login, signup, room join, or room creation surfaces.
-- Current workspace evidence does not support claiming baseline abuse controls are implemented.
-
-Proof that would clear this gate:
-1. Middleware/config artifact implementing throttling or equivalent abuse protection on relevant endpoints.
-2. Route wiring showing those controls are active on launch-critical surfaces.
-3. Tests proving repeated abusive requests are constrained as designed.
-
-## Concise Verdict
-Launch recommendation: **NO-SHIP**.
-
-Blocked gates:
-1. **Room read/write authorization enforced before business logic** — clear with backend/auth enforcement artifacts plus tests proving unauthorized access denial.
-2. **Results access restricted to authorized room participants or host** — clear with server-side results authz implementation and tests for non-member/non-host denial.
-3. **Session/grant integrity bound to authenticated identity and room membership** — clear with identity-bound enforcement artifacts and tests for cross-user/session misuse denial.
-4. **Session tokens or room grants are signed, expiring, and server-issued** — clear with token/grant issuance + verification implementation and invalid/expired/forged credential tests.
-5. **Secrets handling for auth/security configuration is defined and validated** — clear with required secret/env definitions, startup validation, and deployment secret-provisioning documentation.
-6. **Abuse and rate-limit controls on auth or room-entry surfaces** — clear with active abuse-control middleware/config plus tests demonstrating throttling or equivalent protection.
+## Release Disposition
+**Current disposition:** CONDITIONAL NO-SHIP.  
+Pika v1 remains blocked from release until all **Critical** gates above are evidenced **CLEARED** in repo artifacts. High-severity gates remain required launch-baseline controls and should be closed in the same implementation cycle because they support safe operation of the approved guest-first session model.

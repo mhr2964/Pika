@@ -1,12 +1,9 @@
-# Pika vertical slice contract
+# Vertical slice contract
 
 Canonical machine-readable contract:
 - `packages/contracts/pika-vertical-slice.json`
 
-## Scope
-
-Core flow:
-
+## Flow
 1. Create room
 2. Add options
 3. Generate matchup
@@ -14,27 +11,14 @@ Core flow:
 5. Compute results
 6. Show results
 
-## Auth model
+## Ownership
+Auth is optional in this phase.
 
-Authentication is optional in v1.
-
-Ownership fields are nullable across room/selection payloads:
-
+Nullable ownership fields:
 - `ownerUserId: string | null`
 - `ownerSessionId: string | null`
 
-This supports:
-- signed-in ownership
-- anonymous session ownership
-- local/demo flows with deferred auth integration
-
-## Shared entities
-
-- `Room`
-- `Option`
-- `Matchup`
-- `Selection`
-- `Result`
-
-Backend is the contract authority for exact response behavior.
-Frontend should conform to the JSON contract file.
+## Ownership boundaries
+- Backend owns canonical contract evolution
+- Frontend conforms to published contract
+- Platform owns shared path/document clarity

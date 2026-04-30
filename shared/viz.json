@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-30T08:22:00Z",
+  "updatedAt": "2026-04-30T08:25:00Z",
   "title": "Pika Company Dashboard",
   "widgets": [
     {
@@ -49,7 +49,7 @@
       "type": "status",
       "title": "Growth",
       "status": "active",
-      "text": "Growth remains active on the launch-support stream."
+      "text": "Growth remains active on the launch-support stream with implementation fan-out now visibly activated on-board."
     },
     {
       "type": "status",
@@ -73,19 +73,19 @@
       "type": "status",
       "title": "CTO Lane",
       "status": "pending",
-      "text": "ACTIVE / AMBER — department runs confirmed, milestone artifact missing post-restart. Pending explicit restart-resolution milestone."
+      "text": "ACTIVE / AMBER — board-visible activation is present. Clearing condition remains the canonical runnable-surface milestone artifact."
     },
     {
       "type": "status",
       "title": "Head of Product Lane",
       "status": "blocked",
-      "text": "UNTRACKED / RED — no current downstream department activity visible in board evidence. Pending board-visible downstream activity."
+      "text": "UNTRACKED / RED — clearing condition: board-visible downstream activity and current phase status."
     },
     {
       "type": "status",
       "title": "Support / Monitoring Watchlist",
       "status": "pending",
-      "text": "Risk remains in support and monitoring lanes due to manager-binding fragility, partial churn, and no-op cycle risk. Monitor pulse, archivist, efficiency, platform, and exec confirmation flow closely."
+      "text": "Active watch: CTO DevOps/repo-root handoff closure is now activated on-board but still pending durable artifact closure; Head of Growth acquisition-pack implementation fan-out is now activated on-board but remains under follow-through watch; manager-binding fragility, partial churn, and no-op cycle risk remain under watch."
     },
     {
       "type": "status",

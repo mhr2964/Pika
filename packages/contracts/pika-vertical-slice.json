@@ -2,6 +2,12 @@
   "name": "pika-vertical-slice",
   "version": "1.0.0",
   "authority": "backend",
+  "canonicalRoots": [
+    "frontend",
+    "backend",
+    "packages/contracts",
+    "docs"
+  ],
   "flow": [
     "create_room",
     "add_options",
@@ -11,12 +17,8 @@
     "show_results"
   ],
   "ownership": {
-    "ownerUserId": {
-      "type": ["string", "null"]
-    },
-    "ownerSessionId": {
-      "type": ["string", "null"]
-    }
+    "ownerUserId": "string | null",
+    "ownerSessionId": "string | null"
   },
   "entities": {
     "Room": {
@@ -63,77 +65,28 @@
   },
   "routes": [
     {
-      "name": "create_room",
       "method": "POST",
-      "path": "/api/rooms",
-      "request": {
-        "title": "string",
-        "ownerUserId": "string | null",
-        "ownerSessionId": "string | null"
-      },
-      "response": {
-        "room": "Room"
-      }
+      "path": "/api/rooms"
     },
     {
-      "name": "add_options",
       "method": "POST",
-      "path": "/api/rooms/:roomId/options",
-      "request": {
-        "options": [
-          {
-            "label": "string",
-            "description": "string | null"
-          }
-        ]
-      },
-      "response": {
-        "room": "Room",
-        "options": "Option[]"
-      }
+      "path": "/api/rooms/:roomId/options"
     },
     {
-      "name": "generate_matchup",
       "method": "POST",
-      "path": "/api/rooms/:roomId/matchups/generate",
-      "request": {},
-      "response": {
-        "matchup": "Matchup"
-      }
+      "path": "/api/rooms/:roomId/matchups/generate"
     },
     {
-      "name": "submit_selection",
       "method": "POST",
-      "path": "/api/rooms/:roomId/selections",
-      "request": {
-        "matchupId": "string",
-        "chosenOptionId": "string",
-        "ownerUserId": "string | null",
-        "ownerSessionId": "string | null"
-      },
-      "response": {
-        "selection": "Selection",
-        "nextMatchup": "Matchup | null",
-        "resultsReady": "boolean"
-      }
+      "path": "/api/rooms/:roomId/selections"
     },
     {
-      "name": "compute_results",
       "method": "POST",
-      "path": "/api/rooms/:roomId/results/compute",
-      "request": {},
-      "response": {
-        "results": "Result"
-      }
+      "path": "/api/rooms/:roomId/results/compute"
     },
     {
-      "name": "show_results",
       "method": "GET",
-      "path": "/api/rooms/:roomId/results",
-      "request": {},
-      "response": {
-        "results": "Result"
-      }
+      "path": "/api/rooms/:roomId/results"
     }
   ]
 }

@@ -2,46 +2,91 @@
 
 Pika helps groups rank choices fast through playful head-to-head matchups, then share the result.
 
-## Active workspace layout
+## Canonical repo roots
 
-These are the active implementation roots for the current vertical slice:
+Only these top-level paths are authoritative for the current buildout:
 
-- `frontend/` — frontend application
-- `backend/` — backend application
-- `packages/contracts/` — shared machine-readable API contract
-- `docs/` — shared implementation/reference docs
+- `frontend/` — frontend application implementation
+- `backend/` — backend application implementation
+- `packages/contracts/` — shared implementation contracts
+- `docs/` — shared reference docs
 
-## Path rules
+Do not treat any other top-level app paths as canonical unless explicitly re-designated.
 
-- In agent file writes, local paths are prefixed with `workspace/`.
-- In the pushed repo, `workspace/` does **not** exist.
-- Repo paths should be referenced as:
-  - `frontend/...`
-  - `backend/...`
-  - `packages/contracts/...`
-  - `docs/...`
+## Ownership boundaries
 
-## Vertical slice contract
+### Root README owns
+- repo usage/setup orientation
+- canonical directory map
+- shared env entry points
+- local boot order guidance
+- path conventions used by all departments
 
-Canonical v1 contract:
+### Shared contracts/docs own
+- vertical-slice API contract
+- route map
+- mock/seed payload shapes
+- cross-team implementation agreements
+
+### App directories own
+- framework/runtime specifics
+- app-local scripts
+- app-local components, routes, handlers, services, schemas
+- auth/frontend/backend implementation details
+
+## Shared contract and docs
+
+Canonical contract:
 - `packages/contracts/pika-vertical-slice.json`
 
-Supporting docs:
+Reference docs:
 - `docs/vertical-slice-contract.md`
 - `docs/route-map.md`
 - `docs/mock-data-shape.md`
+- `docs/platform-status.md`
+- `docs/repo-surface-manifest.md`
 
-## Ownership model
+## Env sample locations
 
-Auth is optional for v1. Room ownership may be attached to either:
+- `.env.example`
+- `frontend/.env.example`
+- `backend/.env.example`
 
-- `ownerUserId: string | null`
-- `ownerSessionId: string | null`
+## Path convention
 
-At least one may be null; both may not be required for anonymous/local flows.
+`workspace/` is a local worker prefix only.
 
-## Working agreement
+It must not appear in:
+- repo documentation
+- CI path references
+- implementation import/path guidance
+- cross-team handoff notes
 
-- Backend owns the canonical contract schema.
-- Frontend implements against the published contract.
-- Platform owns scaffold clarity, shared docs, and repo-level path consistency.
+Use repo-relative paths such as:
+- `frontend/...`
+- `backend/...`
+- `packages/contracts/...`
+- `docs/...`
+
+## Local boot guidance
+
+Current intended boot sequence:
+
+1. Configure env from the example files
+2. Start backend first
+3. Start frontend second
+4. Exercise the vertical slice:
+   - create room
+   - add options
+   - generate matchup
+   - submit selections
+   - compute/show results
+
+## Current uncertainty
+
+The canonical roots and shared artifact locations are binding for this phase.
+
+Still not directly re-verified from manifest/package reads during the earlier ENOENT period:
+- exact package manager
+- exact root script wiring
+- exact app framework/runtime package definitions

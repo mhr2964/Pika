@@ -1,31 +1,26 @@
 # Pika Auth Launch Brief
 
+## Binding V1 Launch Decision
+
+Pika v1 launch auth is **guest-first and server-bound only**.
+
+The binding launch model is:
+
+- no public unauthenticated write actions after join/initiation points
+- no client-authoritative participant identity for session actions
+- no JWT-first launch model
+- no anonymous-to-account upgrade in v1
+- no account linking or upgrade UX in v1
+- no host account/auth product requirement for v1 unless backend later makes it strictly necessary for room administration
+- guest participation must be represented by a **server-bound opaque session/grant model**
+- session/grant material must be issued by the server and treated by clients as opaque
+- all room/session write authority must be derived from the server-issued session/grant, not caller-posted IDs
+
+For v1, the auth goal is narrow: make room participation and vote submission attributable to a server-issued room-bound session, close impersonation gaps, and make protected/unprotected boundaries explicit. Any account system or guest-to-account upgrade work is **later and non-blocking**.
+
 ## Purpose
 
-Define the minimum auth model required for Pika launch and document the current backend gaps against that baseline using concrete code evidence from the current backend implementation.
-
-## Binding Launch Baseline
-
-Per accepted auth hardening direction for launch:
-
-- Access tokens only; no server-side session store assumed for v1
-- JWT signing algorithm: `RS256`
-- JWT lifetime: `7d`
-- Required claims:
-  - `iss`
-  - `aud`
-  - `sub`
-  - `iat`
-  - `exp`
-  - `jti`
-
-This brief scopes the smallest shippable auth surface that makes session boundaries explicit for:
-
-- guest access via room-scoped grant
-- host identity for room creation/management
-- participant identity binding for join and vote actions
-- protected vs unprotected routes
-- launch-critical abuse controls around auth entry points
+Define the minimum auth/session model required for Pika launch and document the current backend gaps against that baseline using concrete code evidence from the current backend implementation.
 
 ## Evidence Summary: Current Backend State
 
@@ -33,15 +28,15 @@ Current backend code is a single unauthenticated Express app in `workspace/backe
 
 ### Concrete evidence
 
-- No JWT library or auth middleware dependency exists in backend `package.json`
-- The server is created directly in `src/index.ts`:
-  - `const app = express();`
-  - `app.use(express.json());`
-- No auth middleware is registered before routes
-- No route-level identity checks exist
-- No credential exchange endpoints exist
-- No rate limiting dependency or middleware exists
-- Room/session state is stored in process memory and optionally persisted to JSON on disk
+- no JWT library, session library, cookie library, or auth middleware dependency exists in backend `package.json`
+- the server is created directly in `src/index.ts`
+- `app.use(express.json())` is the only global middleware shown
+- no auth/session middleware is registered before routes
+- no route-level identity checks exist
+- no credential exchange endpoints exist
+- no session issuance endpoint exists
+- no rate limiting dependency or middleware exists
+- room/session state is stored in process memory and optionally persisted to JSON on disk
 
 ## Current Route Surface and Auth Exposure
 
@@ -51,9 +46,9 @@ All current routes are public.
 
 `GET /api/v1/health`
 
-- Returns service metadata
-- No auth required
-- Appropriate to remain public
+- returns service metadata
+- no auth required
+- appropriate to remain public
 
 ### Public room creation
 
@@ -61,21 +56,21 @@ All current routes are public.
 
 Current behavior:
 
-- Accepts optional `roomCode`
-- Creates a room with empty participants, matchups, results
-- Returns `201` with room metadata
+- accepts optional `roomCode`
+- creates a room with empty participants, matchups, results
+- returns `201` with room metadata
 
-Current auth state:
+Current auth/session state:
 
-- Fully unauthenticated
-- No caller identity captured
-- No host ownership established
-- No anti-abuse controls
+- fully unauthenticated
+- no caller identity captured
+- no room owner or creator grant established
+- no anti-abuse controls
 
 Launch implication:
 
-- Anyone can create unlimited rooms anonymously
-- No room host can later be proven or authorized
+- anyone can create unlimited rooms anonymously
+- no server-bound authority is established for later room administration
 
 ### Public room metadata read
 
@@ -83,21 +78,21 @@ Launch implication:
 
 Current behavior:
 
-- Returns room summary:
+- returns room summary:
   - `code`
   - `phase`
   - timestamps
   - counts
   - `completed`
 
-Current auth state:
+Current auth/session state:
 
-- Fully unauthenticated
+- fully unauthenticated
 
 Launch implication:
 
-- Acceptable as public if room code possession is treated as sufficient discovery barrier
-- Should be explicitly classified as unprotected room-summary access
+- acceptable as public if room code possession is treated as sufficient discovery barrier
+- should be explicitly classified as unprotected room-summary access
 
 ### Public participant join
 
@@ -105,23 +100,23 @@ Launch implication:
 
 Current behavior:
 
-- Accepts `name`
-- Creates a participant object with generated `id`
-- Appends participant directly to room
-- Returns participant object and room summary
+- accepts `name`
+- creates a participant object with generated `id`
+- appends participant directly to room
+- returns participant object and room summary
 
-Current auth state:
+Current auth/session state:
 
-- Fully unauthenticated
-- Participant identity is created solely from posted display name
-- No bound token is issued
-- No device/user continuity exists after join
+- fully unauthenticated
+- participant identity is created solely from posted display name
+- no bound opaque session/grant is issued
+- no client continuity exists after join other than raw participant ID in response
 
 Launch implication:
 
-- Anyone can join any room if they know the code
-- Same person can mint unlimited participant identities
-- Later actions cannot be tied to a stable authenticated principal
+- anyone can join any room if they know the code
+- same person can mint unlimited participant identities
+- later actions cannot be tied to a stable server-issued session
 
 ### Public session read
 
@@ -129,21 +124,21 @@ Launch implication:
 
 Current behavior:
 
-- Returns full session payload:
+- returns full session payload:
   - all participants
   - all matchups
   - all results
   - full room status
 
-Current auth state:
+Current auth/session state:
 
-- Fully unauthenticated
+- fully unauthenticated
 
 Launch implication:
 
-- Anyone with a room code can read full room internals
-- No distinction between host, joined participant, and outsider
-- Protected/unprotected state is undefined
+- anyone with a room code can read full room internals
+- no distinction between joined participant and outsider
+- protected/unprotected state is undefined
 
 ### Public result submission
 
@@ -151,67 +146,67 @@ Launch implication:
 
 Current behavior:
 
-- Accepts:
+- accepts:
   - `matchupId`
   - `submittedBy`
   - `winner`
-- Validates that `submittedBy` is present in participant IDs
-- Validates that `winner` is a participant and belongs to matchup
-- Rejects duplicate submission only for same `(matchupId, submittedBy)` pair
-- Stores result and returns updated room/session data
+- validates that `submittedBy` is present in participant IDs
+- validates that `winner` is a participant and belongs to matchup
+- rejects duplicate submission only for same `(matchupId, submittedBy)` pair
+- stores result and returns updated room/session data
 
-Current auth state:
+Current auth/session state:
 
-- Fully unauthenticated
-- Trusts caller-provided `submittedBy`
-- No proof caller controls the participant identity being claimed
+- fully unauthenticated
+- trusts caller-provided `submittedBy`
+- no proof caller controls the participant identity being claimed
 
 Launch implication:
 
-- Any caller can impersonate any participant by sending that participant ID
-- Voting integrity is broken
-- This is the most severe launch-blocking auth gap in current backend
+- any caller can impersonate any participant by sending that participant ID
+- voting integrity is broken
+- this is the most severe launch-blocking auth/session gap in current backend
 
 ## Code-Cited Gap Assessment
 
-## 1. No authentication implementation exists
+## 1. No server-bound auth/session implementation exists
 
 Evidence:
 
 - `workspace/backend/package.json` only lists:
   - `dotenv`
   - `express`
-- No JWT signing or verification package is present
-- No route middleware in `workspace/backend/src/index.ts` performs authorization checks
+- no session, cookie, JWT, or auth libraries are present
+- no route middleware in `src/index.ts` performs authentication or authorization
 
 Gap:
 
-- Launch baseline requires JWT access tokens with `RS256` and explicit claims
-- Current code has no token issuance, validation, or principal extraction
+- v1 requires server-issued opaque room/session grants with explicit protected routes
+- current code has no issuance, lookup, validation, or principal extraction path
 
 Severity:
 
 - launch-blocking
 
-## 2. No explicit principal model exists
+## 2. No explicit principal/session model exists
 
 Evidence:
 
-Current data model in `workspace/backend/src/index.ts` uses room-local records:
+Current data model uses room-local records:
 
 - room
 - participant
 - result
 
-But request identity is never derived from an authenticated token.
+But request identity is never derived from a server-issued session.
 
 Gap:
 
-Launch needs at least these principal classes:
+Launch needs at least these runtime states:
 
-- `host`
-- `guest-participant`
-- `anonymous outsider` before join
+- outsider with no room session
+- joined guest with a room-bound opaque session/grant
+- optional room creator authority if room administration remains in scope
 
 Current code has only caller-supplied JSON and room-local IDs.
 
@@ -221,31 +216,32 @@ Severity:
 
 ## 3. Vote submission trusts attacker-controlled identity input
 
-Evidence from `POST /api/v1/rooms/:roomCode/results` in `workspace/backend/src/index.ts`:
+Evidence from `POST /api/v1/rooms/:roomCode/results`:
 
 - `submittedBy` is read from request body
 - server checks only whether it exists in `room.participants`
-- server does not verify token subject matches `submittedBy`
+- server does not derive submitter from any server-issued session/grant
 
 Gap:
 
-- Launch requires participant actions be bound to a token-authenticated subject or room-scoped grant identity
+- launch requires session actions be bound to a server-issued room session
+- caller-posted participant identifiers cannot remain authoritative
 
 Severity:
 
 - critical, launch-blocking
 
-## 4. No host ownership or room admin authorization exists
+## 4. No room-bound session issuance on join
 
-Evidence from `POST /api/v1/rooms` in `workspace/backend/src/index.ts`:
+Evidence from `POST /api/v1/rooms/:roomCode/join`:
 
-- room is created without owner identity
-- room record contains no host subject, host participant, or creator grant
+- route creates participant and returns it directly
+- no opaque session/grant is created or returned
+- no persistence exists for room membership credentials beyond participant ID exposure
 
 Gap:
 
-- Launch requires host identity attachment for room creation and management semantics
-- Without owner binding, no future room-protected operation can be safely authorized
+- join must be the moment where the server binds the guest to the room with an opaque session/grant
 
 Severity:
 
@@ -253,7 +249,7 @@ Severity:
 
 ## 5. Session boundary is undefined
 
-Evidence from `workspace/backend/src/index.ts`:
+Evidence:
 
 - `GET /api/v1/rooms/:roomCode` is public
 - `GET /api/v1/rooms/:roomCode/session` is public
@@ -265,153 +261,150 @@ Gap:
 Launch needs explicit classification of:
 
 - public routes
-- routes requiring any valid guest/host token
-- routes requiring room membership
-- routes requiring host ownership
+- routes that issue room-bound sessions
+- routes requiring a valid room-bound session
+- any optional room-admin routes
 
 Severity:
 
 - launch-blocking
 
-## 6. No auth entry points exist
+## 6. No auth/session rate limits or abuse controls exist
 
 Evidence:
 
-There are no routes in `workspace/backend/src/index.ts` for:
-
-- token issuance
-- guest grant exchange
-- host login/signup
-- token refresh or reissue
-- account upgrade from guest to account
+- no middleware for IP- or session-based throttling
+- room creation and join endpoints are open
+- no limits on participant creation in a room
+- no limits on result submission attempts beyond duplicate pair rule
 
 Gap:
 
-Even the minimum launch model needs at least one controlled token issuance path.
-
-Severity:
-
-- launch-blocking
-
-## 7. No auth rate limits or abuse controls exist
-
-Evidence:
-
-- No middleware for IP- or subject-based throttling in `workspace/backend/src/index.ts`
-- Room creation and join endpoints are open
-- No limits on participant creation in a room
-- No limits on result submission attempts beyond duplicate pair rule
-- `workspace/backend/package.json` has no rate-limit dependency
-
-Gap:
-
-Auth launch baseline requires abuse controls at minimum on:
-- token issuance/grant exchange
+Launch baseline requires abuse controls at minimum on:
 - room creation
-- join
+- join/session issuance
 - result submission
 
 Severity:
 
 - high, launch-blocking for internet exposure
 
-## 8. Key/env configuration is absent
+## 7. Creator/host authority is not defined
 
-Evidence:
+Evidence from `POST /api/v1/rooms`:
 
-Current backend env usage in `workspace/backend/src/index.ts` only covers:
-
-- `PORT`
-- `PERSIST_ROOMS`
-- `ROOMS_FILE`
+- room is created without owner identity
+- room record contains no creator session, owner subject, or admin binding
 
 Gap:
 
-Launch JWT model needs explicit key and audience/issuer configuration, at minimum:
-
-- `JWT_ISSUER`
-- `JWT_AUDIENCE`
-- `JWT_PRIVATE_KEY`
-- `JWT_PUBLIC_KEY`
+If any post-create admin actions exist for launch, authority must be server-bound.
+If no admin actions ship in v1, this can be minimized and deferred.
 
 Severity:
 
-- launch-blocking
+- medium unless room administration endpoints are introduced pre-launch
 
-## Minimum Launch Auth Model
+## Prioritized Must-Fix Implementation Checklist
 
-This is the smallest shippable model that fits the adopted baseline while minimizing surface area.
+This section turns the current auth/session touchpoints into a release-gate checklist. Items marked **P0** are launch blockers. Items marked **Later / Non-blocking** must not expand v1 scope.
 
-## Identity types
+## Contracts
 
-### 1. Host principal
+### P0
 
-Purpose:
+- [ ] Publish canonical route classification:
+  - public: `GET /api/v1/health`, `GET /api/v1/rooms/:roomCode`
+  - session-issuing: `POST /api/v1/rooms/:roomCode/join`
+  - session-required: `GET /api/v1/rooms/:roomCode/session`, `POST /api/v1/rooms/:roomCode/results`
+- [ ] Remove caller-authoritative participant identity from result submission contract
+  - `submittedBy` must not remain an accepted authoritative input
+- [ ] Define the join response contract to include server-issued opaque session/grant material
+  - opaque token or grant ID format is backend-owned and not interpreted by client
+- [ ] Define how session-required requests carry the opaque session/grant
+  - header or cookie must be explicit in the contract
+- [ ] Define consistent auth/session error responses
+  - `401` for missing/invalid session
+  - `403` for valid session without room permission, if applicable
 
-- create rooms
-- manage room lifecycle
-- optionally join as a participant
+### P1
 
-Representation:
+- [ ] Define whether room creation remains fully public for v1 or also returns a creator/admin grant
+- [ ] Define whether session reads return the same payload for all joined guests or differ by role
 
-- JWT access token signed with `RS256`
-- `sub` = stable host subject ID
+### Later / Non-blocking
 
-Acquisition:
+- [ ] Anonymous-to-account upgrade contract
+- [ ] Account linking contract
+- [ ] Host login/signup contract
+- [ ] Multi-device session portability contract
+- [ ] Long-lived account/session management contract
 
-- via dedicated host auth/issue path
-- exact credential UX can remain minimal for launch, but backend must issue a real signed JWT
+## Backend
 
-### 2. Guest participant principal
+### P0
 
-Purpose:
+- [ ] Add server-issued opaque room session/grant generation on `POST /api/v1/rooms/:roomCode/join`
+- [ ] Persist room-session binding so later requests can be authorized
+  - minimum binding: room code + participant ID + opaque session/grant + expiry/validity metadata
+- [ ] Require valid room-bound session/grant on `GET /api/v1/rooms/:roomCode/session`
+- [ ] Require valid room-bound session/grant on `POST /api/v1/rooms/:roomCode/results`
+- [ ] Derive acting participant from validated server session/grant, not request body
+- [ ] Remove or ignore `submittedBy` in backend write authorization
+- [ ] Prevent cross-room reuse of a session/grant
+- [ ] Add rate limiting for:
+  - room creation
+  - join/session issuance
+  - result submission
+- [ ] Return explicit 401/403 responses for session failures
+- [ ] Keep public access limited to health and room summary endpoints only
 
-- join a specific room
-- fetch room session for that room
-- submit own results for that room
+### P1
 
-Representation:
+- [ ] Decide whether room creation should also mint a creator/admin grant for future moderation/control
+- [ ] If creator/admin actions are in launch scope, bind room ownership to a server-issued authority at create time
+- [ ] Add session invalidation or simple expiry handling appropriate for launch
+- [ ] Ensure persisted room/session storage model can survive process restarts if persistence is enabled
 
-- JWT access token signed with `RS256`
-- `sub` = stable guest subject ID
-- room scope encoded in claims or enforced via server-side room-membership lookup keyed by `sub`
+### Later / Non-blocking
 
-Launch recommendation:
+- [ ] Account database or user table
+- [ ] Password flows
+- [ ] Email verification
+- [ ] Social auth
+- [ ] Guest-to-account upgrade
+- [ ] Refresh-token architecture
+- [ ] Cross-room identity federation
+- [ ] Full account recovery/session management features
 
-- use room-scoped guest grants, not global anonymous tokens
+## Frontend
 
-### 3. Anonymous outsider
+### P0
 
-Purpose:
+- [ ] Treat join as a session-establishing action, not just participant creation
+- [ ] Store and resend the server-issued opaque room session/grant on session-protected requests
+- [ ] Stop treating raw `participant.id` as sufficient proof of authority
+- [ ] Ensure session page/data fetches send the issued session/grant
+- [ ] Ensure result submission sends only vote/matchup intent, not caller-auth identity
+- [ ] Handle `401` by sending user back through join/re-entry for that room
+- [ ] Handle `403` with explicit room-access error state if backend uses it
 
-- view public room summary by code
-- optionally access join screen before exchange
+### P1
 
-Representation:
+- [ ] Clarify whether room creator UI has any special controls in v1
+- [ ] Preserve guest session across reload for the room, using the opaque grant transport chosen by backend
+- [ ] Make protected/unprotected states explicit in UI copy
+  - browsing room summary vs joined room participation
 
-- no token
+### Later / Non-blocking
 
-## Required token semantics
+- [ ] Sign-up / sign-in screens
+- [ ] Upgrade account prompts
+- [ ] Account linking settings
+- [ ] Profile/session management UI
+- [ ] Multi-room account identity UX
 
-All access tokens:
-
-- algorithm: `RS256`
-- expiry: 7 days
-- claims required:
-  - `iss`
-  - `aud`
-  - `sub`
-  - `iat`
-  - `exp`
-  - `jti`
-
-Launch recommendation for additional claims:
-
-- `role`: `host` or `guest`
-- `roomCode`: required for guest room-scoped tokens
-- `displayName`: optional convenience claim for guest UX only if treated as non-authoritative
-
-## Route Classification for Launch
+## Minimum V1 Route Classification
 
 ## Unprotected routes
 
@@ -421,189 +414,74 @@ Public operational health.
 ### `GET /api/v1/rooms/:roomCode`
 Public room summary only.
 
-Reason:
-- Low sensitivity compared with full session payload
-- Keeps join-by-code lightweight
+### `POST /api/v1/rooms/:roomCode/join`
+Public only as a session-issuance entry point.
+It must transition the caller into a server-bound room session state.
 
 ## Protected routes
 
-### `POST /api/v1/rooms`
-Require host token.
-
-Server responsibilities:
-- authenticate JWT
-- create room with `hostSubjectId`
-- return room plus host relationship metadata if needed
-
-### `POST /api/v1/rooms/:roomCode/join`
-Two acceptable launch patterns; choose the smaller backend surface:
-
-Preferred:
-- unauthenticated request with `name`
-- server creates participant + guest subject binding + returns signed guest JWT
-
-Why:
-- preserves lightweight guest join UX
-- still transitions immediately into authenticated state
-
-Required server behavior:
-- returned JWT must bind the new principal to the room and participant identity
-
 ### `GET /api/v1/rooms/:roomCode/session`
-Require a valid token for the same room.
+Require valid room-bound opaque session/grant.
 
 Allowed callers:
-- room host
-- guest participant bound to that room
+- joined guest for that room
+- optional room creator/admin grant for that room, if such authority exists in v1
 
 ### `POST /api/v1/rooms/:roomCode/results`
-Require a valid token for the same room.
+Require valid room-bound opaque session/grant.
 
 Allowed caller behavior:
-- server derives submitter identity from token, not request body
-- `submittedBy` in body should be removed from contract
-- server maps token principal to authorized participant ID
+- server derives submitter from validated session/grant
+- client must not supply authoritative participant identity
 
-## Canonical Launch Flow
+## Room creation decision note
 
-## Guest via grant
+### `POST /api/v1/rooms`
+Current state is public and unauthenticated.
+
+For v1, the smallest shippable path is:
+
+- keep room creation public if no creator-only admin actions are required at launch
+- protect against abuse with rate limiting and explicit contract boundaries
+- do not expand scope into host accounts unless product/backend introduces creator-only operations that truly need them
+
+If launch requires creator-only controls later, add a creator/admin server-bound grant then. That work is separate from the core guest participation fix and should not block the first auth/session cut unless such controls are already in release scope.
+
+## Canonical V1 Guest Flow
 
 1. User enters room code and name
 2. Client calls `POST /api/v1/rooms/:roomCode/join`
 3. Server creates:
    - participant record
-   - guest subject binding for that participant in that room
-   - JWT access token signed with `RS256`
-4. Client stores token
-5. Subsequent `session` and `results` calls require `Authorization: Bearer <token>`
+   - opaque room-bound session/grant
+   - binding between that session/grant and participant + room
+4. Server returns participant-facing data plus opaque session/grant material
+5. Client stores/transports that opaque material without interpreting it
+6. Subsequent `session` and `results` calls require the issued room-bound session/grant
+7. Server derives the acting participant from the validated session/grant
 
-## Host identity
+## Explicitly Deferred from V1
 
-1. Host authenticates through minimal host auth flow
-2. Server issues host JWT
-3. Host calls `POST /api/v1/rooms` with bearer token
-4. Server stores room creator as host subject
-5. Host may then access room-protected resources as owner
+The following are **later and non-blocking**:
 
-## Anonymous to account upgrade
-
-Not required for first launch cut if host-only account model is adopted initially.
-
-Minimum acceptable launch stance:
-- guest identities are ephemeral room-scoped principals
-- no guest-to-account upgrade shipped yet
-- brief this explicitly as deferred work
-
-## Required Backend Changes Before Launch
-
-## A. Add JWT issuance and verification
-
-Need:
-- RS256 signing support
-- bearer token parsing middleware
-- claim validation for `iss`, `aud`, `sub`, `iat`, `exp`, `jti`
-
-Outcome:
-- authenticated principal available on protected routes
-
-## B. Introduce explicit auth environment contract
-
-Minimum env vars:
-- `JWT_ISSUER`
-- `JWT_AUDIENCE`
-- `JWT_PRIVATE_KEY`
-- `JWT_PUBLIC_KEY`
-
-Optional:
-- `HOST_AUTH_MODE` if host sign-in approach is feature-flagged
-
-## C. Bind room ownership
-
-Room record must add a creator/owner field, e.g.:
-
-- `hostSubjectId`
-
-Without this, host authorization is impossible.
-
-## D. Bind participant identity to authenticated subject
-
-Participant actions must not trust client-supplied participant IDs.
-
-Need a mapping such as:
-
-- participant record includes `subjectId`, or
-- room membership table maps `subjectId -> participantId`
-
-## E. Remove caller-controlled identity from vote submissions
-
-Current request body field:
-- `submittedBy`
-
-Launch fix:
-- stop accepting it as authoritative
-- derive submitting participant from authenticated principal
-
-## F. Protect session reads
-
-`GET /api/v1/rooms/:roomCode/session` must require room-bound token.
-
-Reason:
-- this endpoint exposes full participant, matchup, and result data
-
-## G. Add auth-focused rate limits
-
-At minimum:
-- room creation by IP and/or host subject
-- join by IP and room code
-- result submission by subject and room
-- token issuance/exchange endpoints
-
-## H. Publish explicit 401/403 behavior
-
-Need consistent auth errors:
-
-- `401 unauthorized` for missing/invalid/expired token
-- `403 forbidden` for valid token lacking room or role permission
-
-## Launch Decision Recommendations
-
-## Recommended v1 scope
-
-Ship:
-
-- host-authenticated room creation
-- guest token issuance on join
-- protected session read
-- protected result submission
-- public room summary read
-- public health route
-
-Do not ship in v1 auth cut:
-
-- refresh tokens
+- anonymous-to-account upgrade
+- guest-to-account conversion
+- account linking
+- sign-up/sign-in product flows
+- password reset/recovery
 - social auth
-- password reset
-- guest-to-account upgrade
-- multi-device session management
-- granular admin moderation roles
-
-## Why this is the smallest shippable surface
-
-It fixes the launch-critical integrity issue:
-- unauthenticated impersonation on votes
-
-It also establishes explicit session boundaries without forcing a full identity platform:
-- host tokens for creation/ownership
-- guest room-scoped tokens for participation
+- persistent multi-device account identity
+- refresh token architecture
+- broader user management features
 
 ## Reviewer/Implementer Checklist
 
-- Confirm no backend route currently verifies bearer tokens
-- Confirm `submittedBy` is fully caller-controlled in current result submission flow
-- Confirm room creation currently stores no owner identity
-- Confirm session endpoint currently returns full room internals without auth
-- Confirm no JWT, auth, or rate-limit dependencies exist in backend package manifest
-- Confirm env contract currently lacks JWT issuer/audience/key configuration
+- confirm no backend route currently verifies session/grant material
+- confirm `submittedBy` is fully caller-controlled in current result submission flow
+- confirm join currently returns participant data without any server-bound session/grant
+- confirm session endpoint currently returns full room internals without auth
+- confirm no auth/session or rate-limit dependencies exist in backend package manifest
+- confirm any v1 implementation keeps account/upgrade work explicitly out of release-blocking scope
 
 ## Concrete Source References
 
@@ -623,342 +501,4 @@ Interpretation:
 
 ## Gap Verdict
 
-Current backend is effectively a public unauthenticated API with room-code-based obscurity only. It does not meet the accepted launch auth baseline. The most serious issue is that result submission trusts a client-provided participant ID, enabling trivial participant impersonation. Launch should be blocked on introducing signed JWT-based principals, room-bound authorization, host ownership binding, and
-basic auth abuse controls.
-
-## Release-Gate Auth/Session Decision Note
-
-This section is implementation-grounded and is limited to release-gate decisions needed for launch review.
-
-## 1. Session model decisions in code/contracts today
-
-### Implemented today
-
-Backend session state is application-managed room state, not authenticated user session state.
-
-Evidence in `workspace/backend/src/index.ts`:
-
-- The server initializes a plain Express app with `app.use(express.json())` and no auth/session middleware.
-- All room data is held in `const inMemoryRooms = new Map<string, RoomRecord>();`.
-- Persistence is optional file persistence controlled by:
-  - `process.env.PERSIST_ROOMS === "true"`
-  - `process.env.ROOMS_FILE || "./data/rooms.json"`
-- `GET /api/v1/rooms/:roomCode/session` returns `toSessionResponse(room)`, which includes:
-  - `participants`
-  - `matchups`
-  - `results`
-  - `completed`
-
-Decision note:
-- The implemented “session” is a room-state snapshot, not a bound authenticated session.
-- There is no cookie-backed session, no bearer-token session, no server-side auth session store, and no principal attachment in request handling.
-
-Frontend evidence:
-
-- `workspace/frontend/package.json` contains only React runtime dependencies (`react`, `react-dom`) and no auth/session client library.
-- Prior verification recorded `workspace/frontend/src/main.tsx` and `workspace/frontend/src/App.tsx` as mounting routing/app shell without auth provider or route guard.
-
-Decision note:
-- Frontend currently has no implemented auth bootstrap layer, no token storage abstraction in evidence, and no protected-route/session restoration mechanism in evidence.
-
-### Missing today
-
-The following launch-critical session-model elements are not implemented in the visible workspace files:
-
-- No token issuance route in `workspace/backend/src/index.ts`
-- No token verification middleware in `workspace/backend/src/index.ts`
-- No principal model attached to `Request`
-- No host session concept for room ownership
-- No guest room-bound authenticated session after join
-- No contract file evidence was available from `workspace/packages/contracts/pika-vertical-slice.json` because the path was not found during read, so no contract-level auth/session guarantees can be treated as implemented
-
-Release-gate decision:
-- Treat current code as having no real auth session model at all. The only implemented continuity mechanism is possession of a room code plus any client-known participant ID.
-
-## 2. Anonymous/guest-to-account upgrade flow and identity-binding risks
-
-### Implemented today
-
-Guest join behavior in `workspace/backend/src/index.ts`:
-
-- `POST /api/v1/rooms/:roomCode/join` accepts only `name`
-- Server creates:
-  - `participant.id = generateId("p")`
-  - `participant.name = name`
-  - `participant.joinedAt = Date.now()`
-- Participant is appended directly to `room.participants`
-- Response returns `{ participant, room }`
-
-Decision note:
-- Today’s guest identity is only a room-local participant record created from a display name.
-- No credential, token, cookie, device binding, or account binding is created during join.
-
-### Missing today
-
-No guest-to-account upgrade flow is implemented in visible backend files:
-
-- No signup/login route
-- No account record
-- No guest token to upgrade
-- No merge endpoint
-- No re-auth flow
-- No session rotation on privilege change
-
-### Identity-binding risks
-
-#### Account merge risk
-
-If a guest-to-account upgrade were added on top of today’s model without first introducing subject-bound identities, the system would have no trustworthy way to prove which guest participant should merge into which account-backed principal.
-
-Evidence:
-- Participant identity is generated server-side but returned to the client as plain data in `POST /join`.
-- Result submission later trusts request-body `submittedBy` in `POST /results`.
-- There is no stable auth subject in room records or request context.
-
-Decision:
-- Guest-to-account upgrade is unsafe to add before guest actions are bound to a signed subject and room membership mapping.
-
-#### Session fixation / identity takeover risk
-
-Current vote submission in `workspace/backend/src/index.ts` trusts:
-- `submittedBy` from request body
-- only checks that the ID exists in `room.participants`
-
-This means any client that learns or guesses a participant ID can submit as that participant.
-
-Decision:
-- This is effectively an identity-fixation/impersonation condition already present in the product, not merely a hypothetical future risk.
-- Any later upgrade flow would inherit this weakness unless submitter identity is derived from a validated token rather than body input.
-
-#### Privilege escalation risk
-
-Room creation in `POST /api/v1/rooms` stores no owner identity in the `RoomRecord`.
-Session reads in `GET /api/v1/rooms/:roomCode/session` are public.
-Results submission is public and body-trusted.
-
-Decision:
-- There is no implemented privilege boundary between outsider, guest participant, and host.
-- Any future “upgrade” or “host claims room” flow would be vulnerable to escalation unless ownership and participant binding are established first.
-
-Release-gate decision:
-- Guest-to-account upgrade is safe to defer, but only if launch explicitly ships without it and treats guest identities as ephemeral room-scoped principals.
-- Launch must not imply that current guest state can later be securely upgraded or merged.
-
-## 3. Room create/join/results/share authorization boundaries
-
-### Room create
-
-Implemented:
-- `POST /api/v1/rooms` is public in `workspace/backend/src/index.ts`
-- It creates a new room with empty arrays and no host field
-
-Missing:
-- No host token requirement
-- No creator subject binding
-- No authorization rule for room administration
-- No anti-abuse/rate-limiting guard
-
-Decision:
-- Must be protected before launch if room ownership matters at all.
-- Minimum safe launch boundary: require host bearer token and store `hostSubjectId` on room creation.
-
-### Room join
-
-Implemented:
-- `POST /api/v1/rooms/:roomCode/join` is public
-- Takes `name`
-- Creates participant
-- Returns participant and room summary
-
-Missing:
-- No guest token issuance
-- No room-scoped grant
-- No participant-to-subject binding
-- No join throttling
-- No duplicate identity/device continuity rule
-
-Decision:
-- Join may remain publicly callable only if the response immediately attaches a room-scoped guest credential for all subsequent sensitive actions.
-- As implemented today, join creates an identity without securing it.
-
-### Room session/results read
-
-Implemented:
-- `GET /api/v1/rooms/:roomCode` returns room summary only
-- `GET /api/v1/rooms/:roomCode/session` returns full room internals
-- Both are public in `workspace/backend/src/index.ts`
-
-Missing:
-- No distinction between public summary and protected session data
-- No membership or ownership check on session reads
-
-Decision:
-- `GET /api/v1/rooms/:roomCode` can remain public at launch.
-- `GET /api/v1/rooms/:roomCode/session` must require a valid room-bound host or guest token before launch.
-
-### Results submission
-
-Implemented:
-- `POST /api/v1/rooms/:roomCode/results` is public
-- Uses body fields `matchupId`, `submittedBy`, `winner`
-- Validates only against room participant/matchup data
-
-Missing:
-- No authenticated submitter
-- No bearer token
-- No binding of token subject to participant
-- No replay/abuse protection beyond duplicate `(matchupId, submittedBy)` pair
-
-Decision:
-- Must be protected before launch.
-- `submittedBy` must stop being authoritative input and should be removed from the public contract for result submission.
-
-### Share boundary
-
-Implemented evidence:
-- In the visible backend file, there is no dedicated share endpoint.
-- The only publicly readable share-like surface is `GET /api/v1/rooms/:roomCode`, which returns room summary metadata.
-- The only full-data read surface is `GET /api/v1/rooms/:roomCode/session`, which is public today.
-
-Decision:
-- For launch, “share” should resolve to public room-summary access only, not full session exposure.
-- If results sharing requires full result detail, add either:
-  - a dedicated public results-share projection endpoint, or
-  - a room setting plus explicit safe projection
-- Do not use the current public session endpoint as the share mechanism.
-
-## 4. Exact env/cookie/header/token/secrets dependencies for auth to function safely at launch
-
-### Implemented today
-
-Backend env variables actually used in `workspace/backend/src/index.ts`:
-
-- `PORT`
-- `PERSIST_ROOMS`
-- `ROOMS_FILE`
-
-No cookies are parsed or set.
-No `Authorization` header is read.
-No token is issued or verified.
-No secret/key material is loaded except generic dotenv file loading.
-
-Frontend dependency evidence:
-- `workspace/frontend/package.json` shows no auth package, cookie helper, or JWT helper.
-
-Decision:
-- Safe launch auth dependencies are almost entirely missing, not partially implemented.
-
-### Required at launch
-
-#### Headers
-
-Must implement:
-- `Authorization: Bearer <access-token>` on protected routes
-
-Backend touchpoint:
-- `workspace/backend/src/index.ts` must parse and validate bearer tokens before protected route handlers.
-
-Frontend touchpoint:
-- frontend request layer must attach the bearer token after join and host auth on:
-  - `GET /api/v1/rooms/:roomCode/session`
-  - `POST /api/v1/rooms/:roomCode/results`
-  - `POST /api/v1/rooms` for hosts
-
-#### Tokens
-
-Must implement:
-- access token only for v1
-- `RS256`
-- `7d` expiry
-- required claims:
-  - `iss`
-  - `aud`
-  - `sub`
-  - `iat`
-  - `exp`
-  - `jti`
-
-Recommended additional claim(s):
-- `role`
-- `roomCode` for guest tokens
-
-Decision:
-- No refresh-token system is required for launch if 7-day access tokens are accepted and revocation tradeoffs are acknowledged.
-
-#### Secrets / keys / env
-
-Must add backend env support for at least:
-- `JWT_ISSUER`
-- `JWT_AUDIENCE`
-- `JWT_PRIVATE_KEY`
-- `JWT_PUBLIC_KEY`
-
-Strongly recommended:
-- `JWT_KEY_ID` if key rotation metadata is exposed
-- `HOST_AUTH_MODE` if host auth path is feature-gated
-- rate-limit configuration envs if middleware is introduced
-
-Decision:
-- Auth cannot safely launch without asymmetric signing keys and issuer/audience validation because the adopted baseline explicitly depends on RS256 JWT verification.
-
-#### Cookies
-
-Implemented today:
-- none
-
-Launch decision:
-- Cookies are not required for launch if bearer-token auth is used consistently.
-- If cookies are later introduced, they must be `HttpOnly`, `Secure`, and `SameSite`-scoped appropriately, but that is not required for the smallest launch surface.
-
-## Exact backend/frontend touchpoints required to clear launch auth
-
-### Backend touchpoints
-
-In `workspace/backend/src/index.ts`:
-
-1. Add auth middleware before protected routes
-2. Add host-auth token issuance path
-3. Update `POST /api/v1/rooms` to require host principal and store owner identity
-4. Update `POST /api/v1/rooms/:roomCode/join` to mint and return a room-bound guest token
-5. Update `GET /api/v1/rooms/:roomCode/session` to require room-bound authorization
-6. Update `POST /api/v1/rooms/:roomCode/results` to derive submitter from authenticated principal, not `submittedBy`
-7. Extend room/participant model to store:
-   - `hostSubjectId` on rooms
-   - `subjectId` on participant or equivalent membership mapping
-8. Add 401/403 behavior
-9. Add rate limiting around create/join/auth/results
-10. Add env validation for JWT keys/issuer/audience at startup
-
-### Frontend touchpoints
-
-Visible frontend code was not provided in this read beyond `workspace/frontend/package.json`, but prior verification in dept chat established no auth provider or route guarding in `workspace/frontend/src/main.tsx` and `workspace/frontend/src/App.tsx`.
-
-Frontend must therefore add:
-
-1. token capture/storage after join response
-2. token capture/storage after host auth
-3. `Authorization` header attachment on protected API calls
-4. explicit unauthenticated/authenticated room-state handling
-5. 401/403 handling that returns user to join/auth flow rather than silently failing
-6. no reliance on client-managed participant IDs as identity proof
-
-## Must-fix-before-launch
-
-- Protect `POST /api/v1/rooms` with authenticated host identity (`workspace/backend/src/index.ts`)
-- Add room ownership binding on create (`workspace/backend/src/index.ts`)
-- Mint room-bound guest credential on join instead of returning only a bare participant object (`workspace/backend/src/index.ts`)
-- Protect `GET /api/v1/rooms/:roomCode/session` (`workspace/backend/src/index.ts`)
-- Protect `POST /api/v1/rooms/:roomCode/results` and remove caller-authoritative `submittedBy` identity (`workspace/backend/src/index.ts`)
-- Add JWT signing/verification dependencies beyond `express` and `dotenv` (`workspace/backend/package.json`)
-- Add launch auth env contract for issuer/audience/keys (`workspace/backend/src/index.ts` and environment setup)
-- Add minimal abuse controls on room create/join/results
-
-## Safe-to-defer
-
-- Guest-to-account upgrade flow
-- Account merge handling, once guest principals are properly token-bound
-- Refresh tokens
-- Cookie-based auth
-- Multi-device session management
-- Password reset/social auth
-- Dedicated public share/results projection endpoint, if room-summary-only sharing is acceptable at launch
+Current backend is effectively a public unauthenticated API with room-code-based obscurity only. It does not meet the binding v1 launch decision. The most serious issue is that result submission trusts a client-provided participant ID, enabling trivial participant impersonation. Launch should be blocked on introducing server-issued opaque room-bound sessions/grants, enforcing those sessions on session read and result submission, and adding basic abuse controls. Account and upgrade work are explicitly out of scope for the v1 release gate.

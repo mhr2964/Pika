@@ -6,6 +6,7 @@ type Room = {
   id: string;
   code: string;
   prompt: string;
+  hostName?: string;
 };
 
 type Matchup = {
@@ -42,7 +43,7 @@ type RoomFlowAdapter = {
   ) => Promise<string[]>;
 };
 
-const MOCK_NETWORK_DELAY_MS = 180;
+const MOCK_NETWORK_DELAY_MS = 220;
 const MIN_OPTIONS = 2;
 const DEFAULT_PROMPT = 'What should we do tonight?';
 
@@ -53,33 +54,56 @@ function wait(ms: number) {
 function makeRoomCode() {
   const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
+
   for (let index = 0; index < 5; index += 1) {
     code += letters[Math.floor(Math.random() * letters.length)];
   }
+
   return code;
 }
 
+function normalizeOption(option: string) {
+  return option.trim().replace(/\s+/g, ' ');
+}
+
+function dedupeOptions(options: string[]) {
+  const seen = new Set<string>();
+  return options.filter((option) => {
+    const normalizedKey = option.toLocaleLowerCase();
+    if (seen.has(normalizedKey)) {
+      return false;
+    }
+    seen.add(normalizedKey);
+    return true;
+  });
+}
+
 function buildMatchups(options: string[]): Matchup[] {
+  const normalizedOptions = dedupeOptions(
+    options.map(normalizeOption).filter((option) => option.length > 0)
+  );
+
   const matchups: Matchup[] = [];
-  for (let index = 0; index < options.length - 1; index += 2) {
-    const left = options[index];
-    const right = options[index + 1];
+  for (let index = 0; index < normalizedOptions.length; index += 2) {
+    const left = normalizedOptions[index];
+    const right = normalizedOptions[index + 1];
+
     if (left && right) {
       matchups.push({
         id: `matchup-${index}`,
         left,
         right,
       });
+      continue;
     }
-  }
 
-  if (options.length % 2 === 1 && options[options.length - 1]) {
-    const carried = options[options.length - 1];
-    matchups.push({
-      id: `matchup-carry`,
-      left: carried,
-      right: 'Skip this clash',
-    });
+    if (left) {
+      matchups.push({
+        id: `matchup-bye-${index}`,
+        left,
+        right: 'Bye to the next round',
+      });
+    }
   }
 
   return matchups;
@@ -88,16 +112,31 @@ function buildMatchups(options: string[]): Matchup[] {
 const mockRoomFlowAdapter: RoomFlowAdapter = {
   async createRoom(draft) {
     await wait(MOCK_NETWORK_DELAY_MS);
+
+    if (draft.prompt.toLocaleLowerCase().includes('error')) {
+      throw new Error('Mock adapter refused that prompt. Try a friendlier one.');
+    }
+
     return {
       id: `room-${Date.now()}`,
       code: makeRoomCode(),
-      prompt: draft.prompt.trim() || DEFAULT_PROMPT,
+      prompt: normalizeOption(draft.prompt) || DEFAULT_PROMPT,
+      hostName: normalizeOption(draft.name),
     };
   },
 
   async saveOptions(_roomId, options) {
     await wait(MOCK_NETWORK_DELAY_MS);
-    return options;
+
+    const normalizedOptions = dedupeOptions(
+      options.map(normalizeOption).filter((option) => option.length > 0)
+    );
+
+    if (normalizedOptions.length < MIN_OPTIONS) {
+      throw new Error('You need at least two real contenders to start matchups.');
+    }
+
+    return normalizedOptions;
   },
 
   async getMatchups(_roomId, options) {
@@ -105,15 +144,20 @@ const mockRoomFlowAdapter: RoomFlowAdapter = {
     return buildMatchups(options);
   },
 
-  async chooseWinner(_roomId, _matchup, winner) {
+  async chooseWinner(_roomId, matchup, winner) {
     await wait(MOCK_NETWORK_DELAY_MS);
+
+    if (winner !== matchup.left && winner !== matchup.right) {
+      throw new Error('Winner must be one of the displayed options.');
+    }
+
     return { winner };
   },
 
   async getResults(_roomId, winners, options) {
     await wait(MOCK_NETWORK_DELAY_MS);
-    const tally = new Map<string, number>();
 
+    const tally = new Map<string, number>();
     options.forEach((option) => {
       tally.set(option, 0);
     });
@@ -198,6 +242,17 @@ const secondaryButtonStyle: React.CSSProperties = {
   cursor: 'pointer',
 };
 
+const optionButtonStyle: React.CSSProperties = {
+  width: '100%',
+  textAlign: 'left',
+  color: '#fff',
+  background: 'rgba(255,255,255,0.05)',
+  cursor: 'pointer',
+  padding: 20,
+  borderRadius: 18,
+  border: '1px solid rgba(255,255,255,0.1)',
+};
+
 const inputStyle: React.CSSProperties = {
   width: '100%',
   boxSizing: 'border-box',
@@ -235,25 +290,72 @@ function SectionHeader({
   );
 }
 
+function ErrorBanner({ message }: { message: string }) {
+  if (!message) {
+    return null;
+  }
+
+  return (
+    <div
+      role="alert"
+      style={{
+        marginTop: 12,
+        marginBottom: 12,
+        borderRadius: 14,
+        padding: '12px 14px',
+        background: 'rgba(255, 96, 96, 0.12)',
+        border: '1px solid rgba(255, 140, 140, 0.28)',
+        color: '#ffd4d4',
+        fontWeight: 700,
+      }}
+    >
+      {message}
+    </div>
+  );
+}
+
+function StatusPill({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 8,
+        borderRadius: 999,
+        padding: '8px 12px',
+        background: 'rgba(255,255,255,0.06)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        fontSize: 13,
+        color: 'rgba(248, 247, 255, 0.84)',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function CreateRoomScreen({
   onCreate,
   isBusy,
+  errorMessage,
 }: {
   onCreate: (draft: RoomDraft) => Promise<void>;
   isBusy: boolean;
+  errorMessage: string;
 }) {
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [name, setName] = useState('');
-  const [error, setError] = useState('');
+  const [localError, setLocalError] = useState('');
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     if (!prompt.trim()) {
-      setError('Give your room a decision prompt so people know the vibe.');
+      setLocalError('Pick a prompt first so the room knows what it is deciding.');
       return;
     }
 
-    setError('');
+    setLocalError('');
     await onCreate({
       prompt,
       name,
@@ -263,19 +365,19 @@ function CreateRoomScreen({
   return (
     <form onSubmit={handleSubmit}>
       <SectionHeader
-        eyebrow="Pika room"
-        title="Spin up a room in one breath."
-        body="Guest-first, zero ceremony. Name the decision, drop your options, and let the room start sparking."
+        eyebrow="Start a room"
+        title="Start a room"
+        body="Pick a prompt, invite your people, and let the tiny tournament begin."
       />
 
       <div style={{ display: 'grid', gap: 14 }}>
         <label>
-          <div style={{ marginBottom: 8, fontWeight: 700 }}>Decision prompt</div>
+          <div style={{ marginBottom: 8, fontWeight: 700 }}>Prompt</div>
           <input
             style={inputStyle}
             value={prompt}
             onChange={(event) => setPrompt(event.target.value)}
-            placeholder="What are we picking?"
+            placeholder="What are we deciding?"
           />
         </label>
 
@@ -285,21 +387,19 @@ function CreateRoomScreen({
             style={inputStyle}
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Host energy, but optional"
+            placeholder="Host name, nickname, or mystery"
           />
         </label>
       </div>
 
-      {error ? (
-        <div style={{ color: '#ff9b9b', marginTop: 12, fontWeight: 600 }}>{error}</div>
-      ) : null}
+      <ErrorBanner message={localError || errorMessage} />
 
       <button type="submit" style={primaryButtonStyle} disabled={isBusy}>
-        {isBusy ? 'Opening room…' : 'Create room'}
+        {isBusy ? 'Starting room…' : 'Create room'}
       </button>
 
       <p style={{ ...bodyStyle, marginTop: 14 }}>
-        Pika note: no logins, no wall of setup, just “let’s decide already.”
+        Guest-first and gloriously low-friction. No login wall, just momentum.
       </p>
     </form>
   );
@@ -309,45 +409,49 @@ function OptionsScreen({
   room,
   initialOptions,
   isBusy,
+  errorMessage,
   onContinue,
 }: {
   room: Room;
   initialOptions: string[];
   isBusy: boolean;
+  errorMessage: string;
   onContinue: (options: string[]) => Promise<void>;
 }) {
   const [candidate, setCandidate] = useState('');
   const [options, setOptions] = useState<string[]>(initialOptions);
-  const [error, setError] = useState('');
+  const [localError, setLocalError] = useState('');
 
   function addOption() {
-    const trimmed = candidate.trim();
+    const trimmed = normalizeOption(candidate);
+
     if (!trimmed) {
-      setError('Throw in at least one real contender.');
+      setLocalError('Add a real option. “Something fun” is a vibe, not a contender.');
       return;
     }
 
-    if (options.includes(trimmed)) {
-      setError('That option is already in the ring.');
+    if (options.some((option) => option.toLocaleLowerCase() === trimmed.toLocaleLowerCase())) {
+      setLocalError('That contender is already in the bracket.');
       return;
     }
 
     setOptions((current) => [...current, trimmed]);
     setCandidate('');
-    setError('');
+    setLocalError('');
   }
 
   function removeOption(optionToRemove: string) {
     setOptions((current) => current.filter((option) => option !== optionToRemove));
+    setLocalError('');
   }
 
   async function handleContinue() {
     if (options.length < MIN_OPTIONS) {
-      setError('You need at least two options before the tiny drama can begin.');
+      setLocalError('You need at least two options before the tiny tournament can begin.');
       return;
     }
 
-    setError('');
+    setLocalError('');
     await onContinue(options);
   }
 
@@ -356,8 +460,14 @@ function OptionsScreen({
       <SectionHeader
         eyebrow={`Room ${room.code}`}
         title={room.prompt}
-        body="Add the contenders. Keep it messy, weird, and honest — Pika can handle a little chaos."
+        body="Add the contenders, trim the obvious no’s, then let the bracket do its little drama."
       />
+
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18 }}>
+        <StatusPill>Guest mode is on</StatusPill>
+        {room.hostName ? <StatusPill>Hosted by {room.hostName}</StatusPill> : null}
+        <StatusPill>Share code {room.code}</StatusPill>
+      </div>
 
       <div style={{ ...mutedCardStyle, marginBottom: 20 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -372,15 +482,14 @@ function OptionsScreen({
           </button>
         </div>
         <div style={{ ...bodyStyle, marginTop: 10 }}>
-          Room code <strong style={{ color: '#fff' }}>{room.code}</strong> — pass it around if
-          your people are fashionably late.
+          Drop in ideas fast. Pika works best before the group chat mutates into a committee.
         </div>
       </div>
 
       <div style={{ display: 'grid', gap: 12 }}>
         {options.length === 0 ? (
           <div style={mutedCardStyle}>
-            No options yet. This room is all anticipation and no contenders.
+            No options yet. The bracket is hungry and emotionally available.
           </div>
         ) : (
           options.map((option, index) => (
@@ -396,7 +505,7 @@ function OptionsScreen({
             >
               <div>
                 <div style={{ fontWeight: 800 }}>{option}</div>
-                <div style={{ ...bodyStyle, marginTop: 4 }}>Option #{index + 1}</div>
+                <div style={{ ...bodyStyle, marginTop: 4 }}>Contender #{index + 1}</div>
               </div>
               <button
                 type="button"
@@ -410,12 +519,10 @@ function OptionsScreen({
         )}
       </div>
 
-      {error ? (
-        <div style={{ color: '#ff9b9b', marginTop: 12, fontWeight: 600 }}>{error}</div>
-      ) : null}
+      <ErrorBanner message={localError || errorMessage} />
 
       <button type="button" style={primaryButtonStyle} disabled={isBusy} onClick={handleContinue}>
-        {isBusy ? 'Building matchups…' : 'Start matchups'}
+        {isBusy ? 'Building bracket…' : 'Start matchups'}
       </button>
     </div>
   );
@@ -426,16 +533,17 @@ function MatchupScreen({
   matchups,
   currentMatchupIndex,
   isBusy,
+  errorMessage,
   onPickWinner,
 }: {
   room: Room;
   matchups: Matchup[];
   currentMatchupIndex: number;
   isBusy: boolean;
+  errorMessage: string;
   onPickWinner: (matchup: Matchup, winner: string) => Promise<void>;
 }) {
   const currentMatchup = matchups[currentMatchupIndex];
-  const progressLabel = `${currentMatchupIndex + 1} / ${matchups.length}`;
 
   if (!currentMatchup) {
     return null;
@@ -445,13 +553,15 @@ function MatchupScreen({
     <div>
       <SectionHeader
         eyebrow={`Room ${room.code}`}
-        title="Let the contenders clash."
-        body="Pick fast. Overthinking is where good options go to become spreadsheets."
+        title="Pick the one with more pull."
+        body="No spreadsheets. No speeches. Just choose the option that wins the moment."
       />
 
-      <div style={{ ...mutedCardStyle, marginBottom: 16 }}>
-        <div style={{ fontWeight: 800, marginBottom: 6 }}>Matchup progress</div>
-        <div style={bodyStyle}>{progressLabel}</div>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
+        <StatusPill>
+          Matchup {currentMatchupIndex + 1} of {matchups.length}
+        </StatusPill>
+        <StatusPill>One tap decides</StatusPill>
       </div>
 
       <div style={{ display: 'grid', gap: 16 }}>
@@ -461,14 +571,7 @@ function MatchupScreen({
             type="button"
             onClick={() => onPickWinner(currentMatchup, choice)}
             disabled={isBusy}
-            style={{
-              ...mutedCardStyle,
-              width: '100%',
-              textAlign: 'left',
-              color: '#fff',
-              cursor: 'pointer',
-              padding: 20,
-            }}
+            style={optionButtonStyle}
           >
             <div style={{ fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               Tap to advance
@@ -478,8 +581,10 @@ function MatchupScreen({
         ))}
       </div>
 
+      <ErrorBanner message={errorMessage} />
+
       <p style={{ ...bodyStyle, marginTop: 16 }}>
-        One dominant move: choose the option with the stronger pull right now.
+        Pika rule: if you pause long enough to make a slideshow, you waited too long.
       </p>
     </div>
   );
@@ -500,8 +605,8 @@ function ResultsScreen({
     <div>
       <SectionHeader
         eyebrow={`Room ${room.code}`}
-        title="We have a winner."
-        body="The room has spoken. No committee fog, no endless maybe spiral."
+        title="Winner picked."
+        body="The room has spoken. Tiny tournament complete."
       />
 
       <div
@@ -516,22 +621,28 @@ function ResultsScreen({
         <div style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
           Top pick
         </div>
-        <div style={{ fontSize: 32, fontWeight: 900, marginTop: 8 }}>{winner}</div>
+        <div style={{ fontSize: 32, fontWeight: 900, marginTop: 8 }}>
+          {winner || 'No winner yet'}
+        </div>
         <p style={{ ...bodyStyle, marginTop: 10 }}>
-          Certified by vibes and a tiny bit of structured conflict.
+          Decided with vibes, clicks, and just enough structure to stop the spiral.
         </p>
       </div>
 
       <div style={{ display: 'grid', gap: 12 }}>
-        {rest.map((option, index) => (
-          <div key={option} style={mutedCardStyle}>
-            <strong>#{index + 2}</strong> {option}
-          </div>
-        ))}
+        {rest.length === 0 ? (
+          <div style={mutedCardStyle}>No runners-up this round. Clean sweep energy.</div>
+        ) : (
+          rest.map((option, index) => (
+            <div key={option} style={mutedCardStyle}>
+              <strong>#{index + 2}</strong> {option}
+            </div>
+          ))
+        )}
       </div>
 
       <button type="button" style={primaryButtonStyle} onClick={onRestart}>
-        Start a fresh room
+        Start another room
       </button>
     </div>
   );
@@ -549,9 +660,12 @@ export default function App() {
   const [matchups, setMatchups] = useState<Matchup[]>([]);
   const [rankedOptions, setRankedOptions] = useState<string[]>([]);
   const [isBusy, setIsBusy] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   async function handleCreateRoom(draft: RoomDraft) {
     setIsBusy(true);
+    setErrorMessage('');
+
     try {
       const room = await adapter.createRoom(draft);
       setFlowState({
@@ -563,6 +677,10 @@ export default function App() {
       setMatchups([]);
       setRankedOptions([]);
       setScreen('options');
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Could not create room. Try again.'
+      );
     } finally {
       setIsBusy(false);
     }
@@ -574,6 +692,8 @@ export default function App() {
     }
 
     setIsBusy(true);
+    setErrorMessage('');
+
     try {
       const savedOptions = await adapter.saveOptions(flowState.room.id, options);
       const nextMatchups = await adapter.getMatchups(flowState.room.id, savedOptions);
@@ -586,6 +706,10 @@ export default function App() {
       }));
       setMatchups(nextMatchups);
       setScreen('matchups');
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Could not save options. Try again.'
+      );
     } finally {
       setIsBusy(false);
     }
@@ -597,6 +721,8 @@ export default function App() {
     }
 
     setIsBusy(true);
+    setErrorMessage('');
+
     try {
       const result = await adapter.chooseWinner(flowState.room.id, matchup, winner);
       const nextWinners = [...flowState.matchupWinners, result.winner];
@@ -623,6 +749,10 @@ export default function App() {
         currentMatchupIndex: nextIndex,
         matchupWinners: nextWinners,
       }));
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Could not record winner. Try again.'
+      );
     } finally {
       setIsBusy(false);
     }
@@ -637,6 +767,7 @@ export default function App() {
     });
     setMatchups([]);
     setRankedOptions([]);
+    setErrorMessage('');
     setScreen('create');
   }
 
@@ -644,7 +775,11 @@ export default function App() {
     <main style={appShellStyle}>
       <section style={panelStyle}>
         {screen === 'create' ? (
-          <CreateRoomScreen onCreate={handleCreateRoom} isBusy={isBusy} />
+          <CreateRoomScreen
+            onCreate={handleCreateRoom}
+            isBusy={isBusy}
+            errorMessage={errorMessage}
+          />
         ) : null}
 
         {screen === 'options' && flowState.room ? (
@@ -652,6 +787,7 @@ export default function App() {
             room={flowState.room}
             initialOptions={flowState.options}
             isBusy={isBusy}
+            errorMessage={errorMessage}
             onContinue={handleSaveOptions}
           />
         ) : null}
@@ -662,6 +798,7 @@ export default function App() {
             matchups={matchups}
             currentMatchupIndex={flowState.currentMatchupIndex}
             isBusy={isBusy}
+            errorMessage={errorMessage}
             onPickWinner={handlePickWinner}
           />
         ) : null}
