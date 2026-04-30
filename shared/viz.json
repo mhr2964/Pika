@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-30T08:21:00Z",
+  "updatedAt": "2026-04-30T08:22:00Z",
   "title": "Pika Company Dashboard",
   "widgets": [
     {
@@ -73,13 +73,13 @@
       "type": "status",
       "title": "CTO Lane",
       "status": "pending",
-      "text": "ACTIVE / AMBER — department runs confirmed, milestone artifact missing post-restart. Pending owning-exec confirmation artifact."
+      "text": "ACTIVE / AMBER — department runs confirmed, milestone artifact missing post-restart. Pending explicit restart-resolution milestone."
     },
     {
       "type": "status",
       "title": "Head of Product Lane",
       "status": "blocked",
-      "text": "UNTRACKED / RED — no current downstream department activity visible in board evidence. Pending owning-exec confirmation artifact."
+      "text": "UNTRACKED / RED — no current downstream department activity visible in board evidence. Pending board-visible downstream activity."
     },
     {
       "type": "status",
@@ -89,15 +89,27 @@
     },
     {
       "type": "status",
+      "title": "Prototype Refresh Watch",
+      "status": "pending",
+      "text": "Conditional watch only: refresh prototype status if growth or product lands new visible launch/share surfaces that need current-slice alignment."
+    },
+    {
+      "type": "status",
       "title": "Platform",
       "status": "held",
       "text": "Platform remains a watchlisted stale-risk lane pending clearer post-restart advancement."
     },
     {
       "type": "status",
-      "title": "Next Gate",
+      "title": "Next Company Gate",
       "status": "pending",
-      "text": "Sustain restored parallel execution, clear watchlisted ambiguity, and obtain owning-exec confirmation artifacts before any normalization claim."
+      "text": "Acquisition pack implemented and matched to current product slice."
+    },
+    {
+      "type": "status",
+      "title": "Follow-on Gate",
+      "status": "pending",
+      "text": "Launch-readiness review."
     }
   ]
 }
