@@ -1,106 +1,33 @@
 {
   "version": 1,
-  "company": "Pika",
-  "updatedAt": "2026-04-30T02:08:00Z",
-  "title": "Pika Ops Telemetry",
+  "updatedAt": "2026-04-30T03:06:00Z",
+  "title": "Pika Company Dashboard",
   "widgets": [
     {
-      "type": "section",
-      "id": "leadership-status",
-      "title": "Leadership Status",
-      "items": [
-        {
-          "label": "Repo-connected status",
-          "value": "Resolved — configured GitHub URL present and recent pushes are evidenced",
-          "tone": "positive",
-          "note": "Project metadata includes github_url: https://github.com/mhr2964/Pika.git and recent board milestones show repo activity."
-        },
-        {
-          "label": "CI/hardening status",
-          "value": "In progress — hardening accepted as self-consistent, no passing CI run evidenced",
-          "tone": "attention",
-          "note": "Board status says repo, env, docs, and workflow assumptions are accepted for the next manager Push Request, but no green CI result is shown."
-        },
-        {
-          "label": "Next milestone gate",
-          "value": "first clickable prototype landed",
-          "tone": "active",
-          "note": "CEO direction keeps the company on visible-artifact buildout, with the prototype as the next concrete milestone now expected to land."
-        }
-      ]
+      "type": "status",
+      "title": "Daemon",
+      "status": "active",
+      "text": "Resumed. Work is moving again from the user-confirmed monitor path."
     },
     {
-      "type": "section",
-      "id": "active-lanes",
-      "title": "Active Executive Lanes",
-      "items": [
-        {
-          "label": "Prototype lane",
-          "value": "Active — first-pass clickable prototype is being built",
-          "tone": "active",
-          "note": "Head of Product was directed to dispatch frontend for a self-contained prototype covering landing, room creation, option entry, matchup voting, results reveal, and share moment."
-        },
-        {
-          "label": "Backend contract lane",
-          "value": "Active — prototype-alignment contract note is being defined",
-          "tone": "active",
-          "note": "CTO was directed to dispatch backend to write lightweight room, option, matchup, result, and share data shapes for prototype alignment."
-        },
-        {
-          "label": "Growth share-loop lane",
-          "value": "Active — first-pass share-loop copy/hooks are being defined",
-          "tone": "active",
-          "note": "Head of Growth was directed to dispatch growth to define share-loop copy and hooks that complement the prototype's results/share moment."
-        },
-        {
-          "label": "COO visibility lane",
-          "value": "Active — dashboard remains current as adjacent lanes move",
-          "tone": "active",
-          "note": "Pulse is operating under standing cadence to refresh the visibility artifact when milestones, lanes, and launch-readiness signals change."
-        }
-      ]
+      "type": "status",
+      "title": "Active Lane",
+      "status": "active",
+      "text": "Prototype lane is the current focus."
     },
     {
-      "type": "section",
-      "id": "delivery-signals",
-      "title": "Delivery Signals",
-      "items": [
-        {
-          "label": "Engineering status",
-          "value": "Active — prototype and backend alignment lanes are both in flight",
-          "tone": "positive",
-          "note": "Engineering now spans the clickable prototype lane plus the backend-owned contract authority path at workspace/packages/contracts/pika-vertical-slice.json."
-        },
-        {
-          "label": "Brand status",
-          "value": "Active — prototype voice/microcopy support requested",
-          "tone": "active",
-          "note": "Head of Product was instructed to dispatch brand in parallel so the prototype reads coherently."
-        },
-        {
-          "label": "Growth status",
-          "value": "Active — share-loop lane is in flight",
-          "tone": "active",
-          "note": "Growth is now explicitly working the first-pass share-loop copy/hooks alongside product buildout."
-        },
-        {
-          "label": "Prototype status",
-          "value": "Active — in progress",
-          "tone": "active",
-          "note": "The company is in visible-artifact buildout, with the prototype lane explicitly dispatched and live."
-        }
-      ]
+      "type": "milestone",
+      "title": "Current Gate",
+      "status": "active",
+      "text": "First visible clickable artifact at the user-confirmed monitor path."
     },
     {
-      "type": "section",
-      "id": "status-note",
-      "title": "Status Note",
+      "type": "list",
+      "title": "Operational Truth",
       "items": [
-        {
-          "label": "Delta",
-          "value": "Dashboard now reflects a multi-lane active state: prototype build, backend contract alignment, and growth share-loop work are all in flight, with the next milestone advanced to first clickable prototype landed.",
-          "tone": "info"
-        }
+        "Prototype visibility verification is active.",
+        "Dashboard reflects only board-confirmed state.",
+        "Launch narrative work is not the active lane."
       ]
     }
   ]
