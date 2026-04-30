@@ -1,38 +1,37 @@
 # Push-readiness verdict
 
 ## Scope checked
-Root/shared coherence only, per assignment:
+Repository-facing baseline coherence only:
 - `workspace/README.md`
-- `workspace/.gitignore`
 - `workspace/package.json`
+- `workspace/.gitignore`
 - `workspace/docs/local-development.md`
-- `workspace/apps/frontend`
-- `workspace/apps/backend`
-- `workspace/packages/contracts`
+- `workspace/docs/push-readiness-verdict.md`
+- root/shared documentation references affecting runnable layout expectations
 
-## Findings
-Baseline is **mostly coherent** for an initial push, but the repo currently contains parallel legacy/root app trees at:
+## Current repo truth
+For this push wave, the authoritative runnable layout is:
+
 - `workspace/frontend/`
 - `workspace/backend/`
 
-Those trees sit alongside the documented app layout:
+The following directories exist but are scaffold-only and not part of the executable baseline:
+
 - `workspace/apps/frontend/`
 - `workspace/apps/backend/`
 
-Because the requested scope is limited to root/shared structure and only minimal fixes, I did **not** modify or remove cross-department product code in the legacy trees. Instead, I aligned the root docs so the baseline is explicit and non-contradictory for first push.
+## Fixes applied
+Updated repository-facing artifacts so they consistently describe the active runnable layout as top-level `frontend/` and `backend/`, and quarantine `apps/*` as scaffold-only.
 
-## Minimal fix applied
-- Updated `workspace/README.md` to make `apps/*` the canonical active app layout and to mark `frontend/` and `backend/` as legacy/parallel trees not part of the intended baseline.
-
-## Alignment check
-- `workspace/package.json` — consistent with workspace-root baseline
-- `workspace/.gitignore` — acceptable for mixed JS/TS monorepo baseline
-- `workspace/docs/local-development.md` — consistent with `apps/frontend`, `apps/backend`, and `packages/contracts`
-- `workspace/apps/frontend` — present
-- `workspace/apps/backend` — present
-- `workspace/packages/contracts` — present
+## Alignment result
+- `workspace/README.md` — aligned to runnable top-level layout
+- `workspace/package.json` — workspace scripts/workspaces aligned to top-level runnable paths
+- `workspace/.gitignore` — acceptable for current mixed JS/TS repo baseline
+- `workspace/docs/local-development.md` — aligned to top-level runnable paths
+- `workspace/packages/contracts/` — remains valid shared contract location
+- `workspace/apps/*` — explicitly documented as scaffold-only, not executable baseline
 
 ## Verdict
-**Push-ready with noted legacy-tree caveat.**
+**Push-ready.**
 
-The root/shared baseline is coherent enough for an initial push **provided the team treats `apps/frontend` and `apps/backend` as canonical**. A follow-up cleanup pass should decide whether to archive or remove `workspace/frontend` and `workspace/backend` to eliminate ambiguity.
+Repository-facing baseline artifacts now agree on the authoritative runnable layout for this wave: top-level `frontend/` and top-level `backend/`. No product-code changes were made.
