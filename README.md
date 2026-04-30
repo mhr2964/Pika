@@ -1,45 +1,47 @@
-# Pika workspace
+# Pika
 
 Pika helps groups rank choices fast through playful head-to-head matchups, then share the result.
 
-## What this repo contains
+## Active workspace layout
 
-This workspace currently includes:
+These are the active implementation roots for the current vertical slice:
 
-- `prototype/` — the fastest review artifact: a standalone HTML prototype of the shipped flow
-- `frontend/` — the current frontend app source
-- `backend/` — the current backend app source
-- `packages/contracts/` — shared contract artifacts
-- `apps/` — older scaffold paths; not the authoritative runnable targets for this repo wave
+- `frontend/` — frontend application
+- `backend/` — backend application
+- `packages/contracts/` — shared machine-readable API contract
+- `docs/` — shared implementation/reference docs
 
-## Quickest way to view the shipped prototype
+## Path rules
 
-Open `prototype/index.html` in a browser.
+- In agent file writes, local paths are prefixed with `workspace/`.
+- In the pushed repo, `workspace/` does **not** exist.
+- Repo paths should be referenced as:
+  - `frontend/...`
+  - `backend/...`
+  - `packages/contracts/...`
+  - `docs/...`
 
-The prototype is a static review artifact with local sibling assets (for example `prototype.js` and `styles.css`) and is intended for direct file-based review.
+## Vertical slice contract
 
-## Prototype location and basis
+Canonical v1 contract:
+- `packages/contracts/pika-vertical-slice.json`
 
-- Prototype entry: `prototype/index.html`
-- The prototype’s review notes point back to:
-  - `frontend/src/App.tsx`
-  - `frontend/src/App.css`
-  - `frontend/index.html`
+Supporting docs:
+- `docs/vertical-slice-contract.md`
+- `docs/route-map.md`
+- `docs/mock-data-shape.md`
 
-## Current runnable app paths
+## Ownership model
 
-If you are working with the codebase rather than the standalone prototype, the active app roots are:
+Auth is optional for v1. Room ownership may be attached to either:
 
-- `frontend/`
-- `backend/`
+- `ownerUserId: string | null`
+- `ownerSessionId: string | null`
 
-The root `package.json` also reflects those current app paths. The `apps/frontend/` and `apps/backend/` directories remain scaffold-only.
+At least one may be null; both may not be required for anonymous/local flows.
 
-## Minimal orientation
+## Working agreement
 
-- Review/demo the shipped flow: open `prototype/index.html`
-- Inspect frontend implementation source: `frontend/`
-- Inspect backend implementation source: `backend/`
-- Review shared contracts: `packages/contracts/`
-
-For concise path notes, see `docs/local-development.md`.
+- Backend owns the canonical contract schema.
+- Frontend implements against the published contract.
+- Platform owns scaffold clarity, shared docs, and repo-level path consistency.

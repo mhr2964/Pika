@@ -3,11 +3,15 @@ const path = require('path');
 const { env } = require('../config/env');
 
 const roomsById = new Map();
+const roomIdsByCode = new Map();
 let hasLoadedPersistedRooms = false;
 
-function createStoreError(message, statusCode) {
+function createStoreError(message, statusCode, code, fields, details) {
   const error = new Error(message);
   error.statusCode = statusCode;
+  error.code = code;
+  error.fields = fields;
+  error.details = details;
   return error;
 }
 
@@ -35,7 +39,7 @@ function getSafeStoragePath() {
   const safeBaseDirectory = `${path.resolve(process.cwd())}${path.sep}`;
 
   if (!resolvedPath.startsWith(safeBaseDirectory)) {
-    throw createStoreError('Resolved storage path is outside the allowed workspace.', 500);
+    throw createStoreError('Resolved storage path is outside the allowed workspace.', 500, 'INTERNAL_ERROR');
   }
 
   return resolvedPath;
@@ -56,6 +60,11 @@ async function ensureStorageFile() {
   return storagePath;
 }
 
+function indexRoom(room) {
+  roomsById.set(room.id, room);
+  roomIdsByCode.set(room.code, room.id);
+}
+
 async function loadPersistedRoomsIfNeeded() {
   if (!env.persistRooms || hasLoadedPersistedRooms) {
     return;
@@ -66,10 +75,11 @@ async function loadPersistedRoomsIfNeeded() {
   const parsedRooms = JSON.parse(rawContent);
 
   roomsById.clear();
+  roomIdsByCode.clear();
 
   for (const room of parsedRooms) {
-    if (room && typeof room.id === 'string') {
-      roomsById.set(room.id, room);
+    if (room && typeof room.id === 'string' && typeof room.code === 'string') {
+      indexRoom(room);
     }
   }
 
@@ -82,239 +92,357 @@ async function persistRoomsIfEnabled() {
   }
 
   const storagePath = await ensureStorageFile();
-  await fs.writeFile(
-    storagePath,
-    JSON.stringify(Array.from(roomsById.values()), null, 2),
-    'utf8'
-  );
+  await fs.writeFile(storagePath, JSON.stringify(Array.from(roomsById.values()), null, 2), 'utf8');
 }
 
-function getRoomRecord(roomId) {
+function getRoomRecordByCode(code) {
+  const roomId = roomIdsByCode.get(code);
+  if (!roomId) {
+    return null;
+  }
   return roomsById.get(roomId) || null;
 }
 
-function requirePlayerInRoom(room, playerId) {
-  const exists = room.players.some((player) => player.id === playerId);
-
-  if (!exists) {
-    throw createStoreError('Player is not in this room.', 400);
-  }
+function summarizeParticipant(participant) {
+  return {
+    id: participant.id,
+    displayName: participant.displayName,
+    joinedAt: participant.joinedAt
+  };
 }
 
-function buildResults(room) {
-  const totalsByTarget = new Map();
-  const reactionCounts = {};
+function computeCapabilities(room, participantId) {
+  const isHost = participantId && participantId === room.hostParticipantId;
+  return [
+    ...(isHost && room.phase !== 'results' && room.phase !== 'closed' ? ['canAdvancePhase'] : []),
+    ...(room.phase === 'active' ? ['canSubmitChoice'] : []),
+    ...(room.phase === 'results' ? ['canViewResults'] : [])
+  ];
+}
 
-  for (const vote of room.votes) {
-    const current = totalsByTarget.get(vote.targetId) || {
-      targetId: vote.targetId,
-      score: 0,
-      voteCount: 0
-    };
-
-    current.score += vote.value;
-    current.voteCount += 1;
-    totalsByTarget.set(vote.targetId, current);
-  }
-
-  for (const reaction of room.reactions) {
-    reactionCounts[reaction.emoji] = (reactionCounts[reaction.emoji] || 0) + 1;
-  }
-
-  const totals = Array.from(totalsByTarget.values()).sort((left, right) => {
-    if (right.score !== left.score) {
-      return right.score - left.score;
+function buildRoomState(room, participantId) {
+  return {
+    id: room.id,
+    code: room.code,
+    phase: room.phase,
+    createdAt: room.createdAt,
+    updatedAt: room.updatedAt,
+    participants: room.participants.map(summarizeParticipant),
+    participantCount: room.participants.length,
+    activeMatchup:
+      room.phase === 'active' && room.matchups[room.currentMatchupIndex]
+        ? {
+            id: room.matchups[room.currentMatchupIndex].id,
+            prompt: room.matchups[room.currentMatchupIndex].prompt,
+            choices: room.matchups[room.currentMatchupIndex].choices.map((choice) => ({
+              id: choice.id,
+              label: choice.label
+            })),
+            status: room.matchups[room.currentMatchupIndex].locked ? 'locked' : 'pending'
+          }
+        : null,
+    completedMatchupCount: room.matchups.filter((matchup) => matchup.locked).length,
+    totalMatchupCount: room.matchups.length,
+    capabilities: computeCapabilities(room, participantId),
+    viewerRole: participantId
+      ? participantId ===
+'host'
+        : 'guest',
+    session: {
+      participantId: participantId || undefined,
+      authState: 'unknown'
     }
+  };
+}
 
-    return right.voteCount - left.voteCount;
-  });
+function buildResultsState(room) {
+  const matchup = room.matchups[room.currentMatchupIndex] || room.matchups[room.matchups.length - 1];
+  const voteCountByChoiceId = new Map();
+
+  for (const submission of room.submissions) {
+    voteCountByChoiceId.set(
+      submission.choiceId,
+      (voteCountByChoiceId.get(submission.choiceId) || 0) + 1
+    );
+  }
+
+  const rankings = (matchup ? matchup.choices : [])
+    .map((choice) => ({
+      choiceId: choice.id,
+      label: choice.label,
+      voteCount: voteCountByChoiceId.get(choice.id) || 0
+    }))
+    .sort((left, right) => right.voteCount - left.voteCount || left.label.localeCompare(right.label));
 
   return {
     roomId: room.id,
-    topic: room.topic,
-    phase: 'results',
-    totals,
-    reactionCounts,
-    winner: totals[0] || null
+    roomCode: room.code,
+    winner: rankings[0] || null,
+    rankings,
+    totalSubmissions: room.submissions.length,
+    phase: 'results'
   };
 }
 
-async function createRoomRecord({ hostName, topic }) {
+function ensureParticipant(room, participantId) {
+  const participant = room.participants.find((entry) => entry.id === participantId);
+  if (!participant) {
+    throw createStoreError('Participant is not in this room.', 403, 'FORBIDDEN');
+  }
+  return participant;
+}
+
+function ensureHost(room, participantId) {
+  ensureParticipant(room, participantId);
+  if (room.hostParticipantId !== participantId) {
+    throw createStoreError('Only the host can advance the room.', 403, 'FORBIDDEN');
+  }
+}
+
+function ensureRoomOpenForJoin(room) {
+  if (room.phase === 'closed' || room.phase === 'results') {
+    throw createStoreError('Room is closed.', 409, 'ROOM_CLOSED');
+  }
+}
+
+function ensureActiveMatchup(room, matchupId) {
+  const matchup = room.matchups[room.currentMatchupIndex];
+  if (!matchup || matchup.id !== matchupId) {
+    throw createStoreError('Matchup is not active.', 409, 'INVALID_PHASE');
+  }
+  return matchup;
+}
+
+async function createRoomRecord({ hostDisplayName, matchupPrompt, choices }) {
   await loadPersistedRoomsIfNeeded();
 
   const timestamp = new Date().toISOString();
-  const hostPlayer = {
-    id: createId('player'),
-    name: hostName,
+  const hostParticipant = {
+    id: createId('participant'),
+    displayName: hostDisplayName,
     joinedAt: timestamp
   };
+
+  let code = createRoomCode();
+  while (roomIdsByCode.has(code)) {
+    code = createRoomCode();
+  }
 
   const room = {
     id: createId('room'),
-    code: createRoomCode(),
-    topic,
+    code,
     phase: 'lobby',
-    hostId: hostPlayer.id,
-    players: [hostPlayer],
-    votes: [],
-    reactions: [],
     createdAt: timestamp,
-    updatedAt: timestamp
+    updatedAt: timestamp,
+    hostParticipantId: hostParticipant.id,
+    participants: [hostParticipant],
+    currentMatchupIndex: 0,
+    matchups: [
+      {
+        id: createId('matchup'),
+        prompt: matchupPrompt,
+        choices: choices.map((choice) => ({
+          id: choice.id,
+          label: choice.label
+        })),
+        locked: false
+      }
+    ],
+    submissions: [],
+    security: {
+      rateLimitingImplemented: false,
+      authIntegrationImplemented: false
+    }
   };
 
-  roomsById.set(room.id, room);
-  await persistRoomsIfEnabled();
-
-  return cloneValue(room);
-}
-
-async function getRoomById(roomId) {
-  await loadPersistedRoomsIfNeeded();
-
-  const room = getRoomRecord(roomId);
-
-  if (!room) {
-    return null;
-  }
-
-  return cloneValue(room);
-}
-
-async function joinRoomById(roomId, { name }) {
-  await loadPersistedRoomsIfNeeded();
-
-  const room = getRoomRecord(roomId);
-
-  if (!room) {
-    return null;
-  }
-
-  const duplicateName = room.players.some((player) => {
-    return player.name.toLowerCase() === name.toLowerCase();
-  });
-
-  if (duplicateName) {
-    throw createStoreError('A player with this name is already in the room.', 409);
-  }
-
-  const timestamp = new Date().toISOString();
-  const player = {
-    id: createId('player'),
-    name,
-    joinedAt: timestamp
-  };
-
-  const updatedRoom = {
-    ...room,
-    players: [...room.players, player],
-    updatedAt: timestamp
-  };
-
-  roomsById.set(roomId, updatedRoom);
+  indexRoom(room);
   await persistRoomsIfEnabled();
 
   return {
-    room: cloneValue(updatedRoom),
-    player: cloneValue(player)
+    room: buildRoomState(room, hostParticipant.id),
+    participant: summarizeParticipant(hostParticipant)
   };
 }
 
-async function submitVoteForRoom(roomId, { playerId, targetId, value }) {
+async function getRoomByCode(code) {
   await loadPersistedRoomsIfNeeded();
 
-  const room = getRoomRecord(roomId);
-
+  const room = getRoomRecordByCode(code);
   if (!room) {
     return null;
   }
 
-  requirePlayerInRoom(room, playerId);
+  return buildRoomState(room);
+}
+
+async function joinRoomByCode(code, { displayName }) {
+  await loadPersistedRoomsIfNeeded();
+
+  const room = getRoomRecordByCode(code);
+  if (!room) {
+    throw createStoreError('Room not found.', 404, 'NOT_FOUND');
+  }
+
+  ensureRoomOpenForJoin(room);
+
+  const duplicateName = room.participants.some(
+    (participant) => participant.displayName.toLowerCase() === displayName.toLowerCase()
+  );
+
+  if (duplicateName) {
+    throw createStoreError('A participant with this display name already joined.', 409, 'DUPLICATE_JOIN');
+  }
 
   const timestamp = new Date().toISOString();
-  const vote = {
-    roomId,
-    playerId,
-    targetId,
-    value,
-    submittedAt: timestamp
+  const participant = {
+    id: createId('participant'),
+    displayName,
+    joinedAt: timestamp
   };
 
-  const filteredVotes = room.votes.filter((existingVote) => {
-    return !(existingVote.playerId === playerId && existingVote.targetId === targetId);
+  room.participants.push(participant);
+  room.updatedAt = timestamp;
+
+  indexRoom(room);
+  await persistRoomsIfEnabled();
+
+  return {
+    room: buildRoomState(room, participant.id),
+    participant: summarizeParticipant(participant)
+  };
+}
+
+async function submitChoiceForRoom(code, { participantId, matchupId, choiceId, requestId }) {
+  await loadPersistedRoomsIfNeeded();
+
+  const room = getRoomRecordByCode(code);
+  if (!room) {
+    throw createStoreError('Room not found.', 404, 'NOT_FOUND');
+  }
+
+  ensureParticipant(room, participantId);
+
+  if (room.phase !== 'active') {
+    throw createStoreError('Room is not accepting choices in the current phase.', 409, 'INVALID_PHASE');
+  }
+
+  const matchup = ensureActiveMatchup(room, matchupId);
+  const choiceExists = matchup.choices.some((choice) => choice.id === choiceId);
+
+  if (!choiceExists) {
+    throw createStoreError('Choice is invalid for the active matchup.', 400, 'VALIDATION_ERROR', [
+      { field: 'choiceId', message: 'choiceId must reference an active matchup choice.' }
+    ]);
+  }
+
+  const existingSubmission = room.submissions.find((submission) => {
+    if (requestId && submission.requestId === requestId) {
+      return true;
+    }
+
+    return submission.matchupId === matchupId && submission.participantId === participantId;
   });
 
-  const updatedRoom = {
-    ...room,
-    phase: room.phase === 'lobby' ? 'live' : room.phase,
-    votes: [...filteredVotes, vote],
-    updatedAt: timestamp
-  };
+  if (existingSubmission) {
+    if (existingSubmission.choiceId !== choiceId) {
+      throw createStoreError(
+        'A choice was already submitted for this matchup.',
+        409,
+        'CHOICE_ALREADY_SUBMITTED'
+      );
+    }
 
-  roomsById.set(roomId, updatedRoom);
-  await persistRoomsIfEnabled();
-
-  return cloneValue(vote);
-}
-
-async function submitReactionForRoom(roomId, { playerId, emoji }) {
-  await loadPersistedRoomsIfNeeded();
-
-  const room = getRoomRecord(roomId);
-
-  if (!room) {
-    return null;
+    return {
+      room: buildRoomState(room, participantId),
+      submission: {
+        matchupId: existingSubmission.matchupId,
+        participantId: existingSubmission.participantId,
+        choiceId: existingSubmission.choiceId,
+        submittedAt: existingSubmission.submittedAt,
+        duplicate: true
+      }
+    };
   }
 
-  requirePlayerInRoom(room, playerId);
-
   const timestamp = new Date().toISOString();
-  const reaction = {
-    roomId,
-    playerId,
-    emoji,
+  const submission = {
+    matchupId,
+    participantId,
+    choiceId,
+    requestId: requestId || null,
     submittedAt: timestamp
   };
 
-  const updatedRoom = {
-    ...room,
-    phase: room.phase === 'lobby' ? 'live' : room.phase,
-    reactions: [...room.reactions, reaction],
-    updatedAt: timestamp
-  };
+  room.submissions.push(submission);
+  room.updatedAt = timestamp;
 
-  roomsById.set(roomId, updatedRoom);
+  indexRoom(room);
   await persistRoomsIfEnabled();
 
-  return cloneValue(reaction);
+  return {
+    room: buildRoomState(room, participantId),
+    submission: {
+      matchupId,
+      participantId,
+      choiceId,
+      submittedAt: timestamp,
+      duplicate: false
+    }
+  };
 }
 
-async function getRoomResults(roomId) {
+async function advanceRoomPhase(code, { requestedByParticipantId }) {
   await loadPersistedRoomsIfNeeded();
 
-  const room = getRoomRecord(roomId);
-
+  const room = getRoomRecordByCode(code);
   if (!room) {
-    return null;
+    throw createStoreError('Room not found.', 404, 'NOT_FOUND');
   }
 
-  const results = buildResults(room);
-  const updatedRoom = {
-    ...room,
-    phase: 'results',
-    updatedAt: new Date().toISOString()
-  };
+  ensureHost(room, requestedByParticipantId);
 
-  roomsById.set(roomId, updatedRoom);
+  if (room.phase === 'lobby') {
+    room.phase = 'active';
+  } else if (room.phase === 'active') {
+    room.matchups[room.currentMatchupIndex].locked = true;
+    room.phase = 'results';
+  } else {
+    throw createStoreError('Room cannot be advanced from the current phase.', 409, 'INVALID_PHASE');
+  }
+
+  room.updatedAt = new Date().toISOString();
+
+  indexRoom(room);
   await persistRoomsIfEnabled();
 
-  return results;
+  return {
+    room: buildRoomState(room, requestedByParticipantId)
+  };
+}
+
+async function getRoomResults(code) {
+  await loadPersistedRoomsIfNeeded();
+
+  const room = getRoomRecordByCode(code);
+  if (!room) {
+    throw createStoreError('Room not found.', 404, 'NOT_FOUND');
+  }
+
+  if (room.phase !== 'results') {
+    throw createStoreError('Results are not available in the current phase.', 409, 'INVALID_PHASE');
+  }
+
+  return {
+    results: buildResultsState(room),
+    room: buildRoomState(room)
+  };
 }
 
 module.exports = {
   createRoomRecord,
-  getRoomById,
-  joinRoomById,
-  submitVoteForRoom,
-  submitReactionForRoom,
+  getRoomByCode,
+  joinRoomByCode,
+  submitChoiceForRoom,
+  advanceRoomPhase,
   getRoomResults
 };

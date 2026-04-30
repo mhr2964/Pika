@@ -1,558 +1,679 @@
-import { useMemo, useState } from 'react';
-import './App.css';
+import React, { useMemo, useState } from 'react';
 
-type AppPhase = 'room-entry' | 'room-standings' | 'room-results';
+type Screen = 'create' | 'options' | 'matchups' | 'results';
 
-type RoomMode = 'create' | 'join';
-
-type RoomMember = {
+type Room = {
   id: string;
+  code: string;
+  prompt: string;
+};
+
+type Matchup = {
+  id: string;
+  left: string;
+  right: string;
+};
+
+type RoomDraft = {
+  prompt: string;
   name: string;
-  isHost: boolean;
-  isYou: boolean;
-  points: number;
-  status: 'ready' | 'ranking' | 'locked';
 };
 
-type RoomStanding = {
-  playerId: string;
-  playerName: string;
-  points: number;
-  deltaLabel: string;
-  vibe: string;
+type RoomFlowState = {
+  room: Room | null;
+  options: string[];
+  currentMatchupIndex: number;
+  matchupWinners: string[];
 };
 
-type FinalResultCard = {
-  id: string;
-  rank: number;
-  title: string;
-  summary: string;
-  supportLabel: string;
+type RoomFlowAdapter = {
+  createRoom: (draft: RoomDraft) => Promise<Room>;
+  saveOptions: (roomId: string, options: string[]) => Promise<string[]>;
+  getMatchups: (roomId: string, options: string[]) => Promise<Matchup[]>;
+  chooseWinner: (
+    roomId: string,
+    matchup: Matchup,
+    winner: string
+  ) => Promise<{ winner: string }>;
+  getResults: (
+    roomId: string,
+    winners: string[],
+    options: string[]
+  ) => Promise<string[]>;
 };
 
-type RoomState = {
-  roomCode: string;
-  hostName: string;
-  youName: string;
-  status: 'ranking' | 'results';
-  roundLabel: string;
-  roomPrompt: string;
-  playerCount: number;
-  players: RoomMember[];
-  standings: RoomStanding[];
-  finalResults: FinalResultCard[];
-};
+const MOCK_NETWORK_DELAY_MS = 180;
+const MIN_OPTIONS = 2;
+const DEFAULT_PROMPT = 'What should we do tonight?';
 
-type CreateRoomPayload = {
-  hostName: string;
-  roomPrompt: string;
-};
-
-type JoinRoomPayload = {
-  roomCode: string;
-  playerName: string;
-};
-
-function createMockRoomState(payload: CreateRoomPayload): RoomState {
-  return {
-    roomCode: 'PIKA42',
-    hostName: payload.hostName.trim(),
-    youName: payload.hostName.trim(),
-    status: 'ranking',
-    roundLabel: 'Round 1 of 3',
-    roomPrompt: payload.roomPrompt.trim(),
-    playerCount: 4,
-    players: [
-      {
-        id: 'player-you',
-        name: payload.hostName.trim(),
-        isHost: true,
-        isYou: true,
-        points: 18,
-        status: 'locked',
-      },
-      {
-        id: 'player-zoe',
-        name: 'Zoe',
-        isHost: false,
-        isYou: false,
-        points: 17,
-        status: 'locked',
-      },
-      {
-        id: 'player-omar',
-        name: 'Omar',
-        isHost: false,
-        isYou: false,
-        points: 13,
-        status: 'locked',
-      },
-      {
-        id: 'player-lina',
-        name: 'Lina',
-        isHost: false,
-        isYou: false,
-        points: 11,
-        status: 'locked',
-      },
-    ],
-    standings: [
-      {
-        playerId: 'player-you',
-        playerName: payload.hostName.trim(),
-        points: 18,
-        deltaLabel: '+6 this round',
-        vibe: 'You picked the calm power move.',
-      },
-      {
-        playerId: 'player-zoe',
-        playerName: 'Zoe',
-        points: 17,
-        deltaLabel: '+7 this round',
-        vibe: 'One spicy upset away.',
-      },
-      {
-        playerId: 'player-omar',
-        playerName: 'Omar',
-        points: 13,
-        deltaLabel: '+5 this round',
-        vibe: 'Still absolutely in this.',
-      },
-      {
-        playerId: 'player-lina',
-        playerName: 'Lina',
-        points: 11,
-        deltaLabel: '+4 this round',
-        vibe: 'Quietly collecting believers.',
-      },
-    ],
-    finalResults: [
-      {
-        id: 'result-1',
-        rank: 1,
-        title: 'Lantern rooftop noodles',
-        summary: 'Warm lights, open-air table, and exactly enough chaos to feel memorable.',
-        supportLabel: 'Won with 14 room points',
-      },
-      {
-        id: 'result-2',
-        rank: 2,
-        title: 'Late museum + pastry crawl',
-        summary: 'A small adventure with soft edges and multiple bailout points.',
-        supportLabel: 'Finished 2 points behind',
-      },
-      {
-        id: 'result-3',
-        rank: 3,
-        title: 'Back-pocket board game night',
-        summary: 'Low lift, high loyalty, very hard to regret.',
-        supportLabel: 'Stayed lovable to the end',
-      },
-    ],
-  };
+function wait(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-function joinMockRoomState(payload: JoinRoomPayload): RoomState {
-  return {
-    roomCode: payload.roomCode.trim().toUpperCase(),
-    hostName: 'Mika',
-    youName: payload.playerName.trim(),
-    status: 'ranking',
-    roundLabel: 'Round 2 of 3',
-    roomPrompt: 'Pick the best low-pressure Saturday plan for four overbooked friends.',
-    playerCount: 4,
-    players: [
-      {
-        id: 'player-mika',
-        name: 'Mika',
-        isHost: true,
-        isYou: false,
-        points: 24,
-        status: 'locked',
-      },
-      {
-        id: 'player-you',
-        name: payload.playerName.trim(),
-        isHost: false,
-        isYou: true,
-        points: 22,
-        status: 'locked',
-      },
-      {
-        id: 'player-jules',
-        name: 'Jules',
-        isHost: false,
-        isYou: false,
-        points: 18,
-        status: 'locked',
-      },
-      {
-        id: 'player-rio',
-        name: 'Rio',
-        isHost: false,
-        isYou: false,
-        points: 16,
-        status: 'locked',
-      },
-    ],
-    standings: [
-      {
-        playerId: 'player-mika',
-        playerName: 'Mika',
-        points: 24,
-        deltaLabel: '+9 this round',
-        vibe: 'Host energy, unfortunately effective.',
-      },
-      {
-        playerId: 'player-you',
-        playerName: payload.playerName.trim(),
-        points: 22,
-        deltaLabel: '+8 this round',
-        vibe: 'Neck and neck, very Pika.',
-      },
-      {
-        playerId: 'player-jules',
-        playerName: 'Jules',
-        points: 18,
-        deltaLabel: '+6 this round',
-        vibe: 'A comeback with intent.',
-      },
-      {
-        playerId: 'player-rio',
-        playerName: 'Rio',
-        points: 16,
-        deltaLabel: '+5 this round',
-        vibe: 'Still holding mystery value.',
-      },
-    ],
-    finalResults: [
-      {
-        id: 'join-result-1',
-        rank: 1,
-        title: 'Sunset dumplings on the patio',
-        summary: 'Easy to say yes to, easy to extend if the night gets legs.',
-        supportLabel: 'Crowned by 4 players',
-      },
-      {
-        id: 'join-result-2',
-        rank: 2,
-        title: 'Bookstore drift + ramen stop',
-        summary: 'Low-pressure wandering with a clean, warm finish.',
-        supportLabel: 'Missed first by 2 votes',
-      },
-      {
-        id: 'join-result-3',
-        rank: 3,
-        title: 'Picnic snacks and people-watching lap',
-        summary: 'Cheap, forgiving, and somehow still iconic.',
-        supportLabel: 'The dark horse everyone respected',
-      },
-    ],
-  };
+function makeRoomCode() {
+  const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let index = 0; index < 5; index += 1) {
+    code += letters[Math.floor(Math.random() * letters.length)];
+  }
+  return code;
 }
 
-const roomFlowAdapter = {
-  createRoom(payload: CreateRoomPayload) {
-    return createMockRoomState(payload);
-  },
-  joinRoom(payload: JoinRoomPayload) {
-    return joinMockRoomState(payload);
-  },
-};
-
-function App() {
-  const [phase, setPhase] = useState<AppPhase>('room-entry');
-  const [roomMode, setRoomMode] = useState<RoomMode>('create');
-  const [createHostName, setCreateHostName] = useState('Avery');
-  const [createRoomPrompt, setCreateRoomPrompt] = useState(
-    'Pick the best low-lift plan for a team that wants one excellent decision.'
-  );
-  const [joinRoomCode, setJoinRoomCode] = useState('PIKA42');
-  const [joinPlayerName, setJoinPlayerName] = useState('June');
-  const [roomState, setRoomState] = useState<RoomState | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const canCreateRoom = createHostName.trim().length > 0 && createRoomPrompt.trim().length > 0;
-  const canJoinRoom = joinRoomCode.trim().length > 0 && joinPlayerName.trim().length > 0;
-
-  const adapterFieldSummary = useMemo(
-    () => ({
-      roomState:
-        'roomCode, hostName, youName, status, roundLabel, roomPrompt, playerCount, players, standings, finalResults',
-      players: 'id, name, isHost, isYou, points, status',
-      standings: 'playerId, playerName, points, deltaLabel, vibe',
-      finalResults: 'id, rank, title, summary, supportLabel',
-    }),
-    []
-  );
-
-  function handleContinueFromEntry() {
-    if (roomMode === 'create') {
-      if (!canCreateRoom) {
-        setErrorMessage('Add a host name and one sharp prompt so the room knows what it is deciding.');
-        return;
-      }
-
-      setRoomState(
-        roomFlowAdapter.createRoom({
-          hostName: createHostName,
-          roomPrompt: createRoomPrompt,
-        })
-      );
-      setErrorMessage(null);
-      setPhase('room-standings');
-      return;
+function buildMatchups(options: string[]): Matchup[] {
+  const matchups: Matchup[] = [];
+  for (let index = 0; index < options.length - 1; index += 2) {
+    const left = options[index];
+    const right = options[index + 1];
+    if (left && right) {
+      matchups.push({
+        id: `matchup-${index}`,
+        left,
+        right,
+      });
     }
-
-    if (!canJoinRoom) {
-      setErrorMessage('Add a room code and your name so Pika knows where to drop you.');
-      return;
-    }
-
-    setRoomState(
-      roomFlowAdapter.joinRoom({
-        roomCode: joinRoomCode,
-        playerName: joinPlayerName,
-      })
-    );
-    setErrorMessage(null);
-    setPhase('room-standings');
   }
 
-  function handleRevealResults() {
-    if (!roomState) {
-      return;
-    }
-
-    setRoomState({
-      ...roomState,
-      status: 'results',
+  if (options.length % 2 === 1 && options[options.length - 1]) {
+    const carried = options[options.length - 1];
+    matchups.push({
+      id: `matchup-carry`,
+      left: carried,
+      right: 'Skip this clash',
     });
-    setPhase('room-results');
   }
 
-  function handleBackToEntry() {
-    setPhase('room-entry');
-    setRoomState(null);
-    setErrorMessage(null);
+  return matchups;
+}
+
+const mockRoomFlowAdapter: RoomFlowAdapter = {
+  async createRoom(draft) {
+    await wait(MOCK_NETWORK_DELAY_MS);
+    return {
+      id: `room-${Date.now()}`,
+      code: makeRoomCode(),
+      prompt: draft.prompt.trim() || DEFAULT_PROMPT,
+    };
+  },
+
+  async saveOptions(_roomId, options) {
+    await wait(MOCK_NETWORK_DELAY_MS);
+    return options;
+  },
+
+  async getMatchups(_roomId, options) {
+    await wait(MOCK_NETWORK_DELAY_MS);
+    return buildMatchups(options);
+  },
+
+  async chooseWinner(_roomId, _matchup, winner) {
+    await wait(MOCK_NETWORK_DELAY_MS);
+    return { winner };
+  },
+
+  async getResults(_roomId, winners, options) {
+    await wait(MOCK_NETWORK_DELAY_MS);
+    const tally = new Map<string, number>();
+
+    options.forEach((option) => {
+      tally.set(option, 0);
+    });
+
+    winners.forEach((winner, index) => {
+      const points = winners.length - index;
+      tally.set(winner, (tally.get(winner) ?? 0) + points);
+    });
+
+    return [...tally.entries()]
+      .sort((left, right) => right[1] - left[1])
+      .map(([option]) => option);
+  },
+};
+
+const appShellStyle: React.CSSProperties = {
+  minHeight: '100vh',
+  background:
+    'radial-gradient(circle at top, rgba(255, 215, 102, 0.24), transparent 35%), linear-gradient(180deg, #151521 0%, #0f1020 100%)',
+  color: '#f8f7ff',
+  display: 'flex',
+  justifyContent: 'center',
+  padding: '32px 16px',
+  fontFamily:
+    'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+};
+
+const panelStyle: React.CSSProperties = {
+  width: '100%',
+  maxWidth: 720,
+  background: 'rgba(21, 24, 42, 0.92)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: 24,
+  boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+  padding: 24,
+  backdropFilter: 'blur(12px)',
+};
+
+const eyebrowStyle: React.CSSProperties = {
+  textTransform: 'uppercase',
+  letterSpacing: '0.12em',
+  fontSize: 12,
+  color: '#f8c95b',
+  fontWeight: 700,
+  marginBottom: 12,
+};
+
+const titleStyle: React.CSSProperties = {
+  fontSize: 34,
+  lineHeight: 1.05,
+  margin: '0 0 12px 0',
+};
+
+const bodyStyle: React.CSSProperties = {
+  fontSize: 16,
+  lineHeight: 1.5,
+  color: 'rgba(248, 247, 255, 0.82)',
+  margin: 0,
+};
+
+const primaryButtonStyle: React.CSSProperties = {
+  width: '100%',
+  border: 0,
+  borderRadius: 16,
+  background: 'linear-gradient(135deg, #ffd666 0%, #ff9f5a 100%)',
+  color: '#1a1630',
+  fontWeight: 800,
+  fontSize: 16,
+  padding: '16px 18px',
+  cursor: 'pointer',
+  marginTop: 16,
+};
+
+const secondaryButtonStyle: React.CSSProperties = {
+  border: '1px solid rgba(255,255,255,0.14)',
+  borderRadius: 14,
+  background: 'transparent',
+  color: '#f8f7ff',
+  fontWeight: 700,
+  fontSize: 14,
+  padding: '12px 14px',
+  cursor: 'pointer',
+};
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  boxSizing: 'border-box',
+  background: 'rgba(255,255,255,0.06)',
+  color: '#fff',
+  border: '1px solid rgba(255,255,255,0.12)',
+  borderRadius: 14,
+  padding: '14px 16px',
+  fontSize: 16,
+  outline: 'none',
+};
+
+const mutedCardStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.07)',
+  borderRadius: 18,
+  padding: 16,
+};
+
+function SectionHeader({
+  eyebrow,
+  title,
+  body,
+}: {
+  eyebrow: string;
+  title: string;
+  body: string;
+}) {
+  return (
+    <header style={{ marginBottom: 24 }}>
+      <div style={eyebrowStyle}>{eyebrow}</div>
+      <h1 style={titleStyle}>{title}</h1>
+      <p style={bodyStyle}>{body}</p>
+    </header>
+  );
+}
+
+function CreateRoomScreen({
+  onCreate,
+  isBusy,
+}: {
+  onCreate: (draft: RoomDraft) => Promise<void>;
+  isBusy: boolean;
+}) {
+  const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!prompt.trim()) {
+      setError('Give your room a decision prompt so people know the vibe.');
+      return;
+    }
+
+    setError('');
+    await onCreate({
+      prompt,
+      name,
+    });
   }
 
   return (
-    <div className="app-shell">
-      <div className="phone-frame">
-        <div className="app-panel">
-          <header className="topbar">
-            <div>
-              <p className="eyebrow">Pika rooms</p>
-              <h1>Get the room in, let the ranking speak, then land one winning answer.</h1>
-            </div>
-          </header>
+    <form onSubmit={handleSubmit}>
+      <SectionHeader
+        eyebrow="Pika room"
+        title="Spin up a room in one breath."
+        body="Guest-first, zero ceremony. Name the decision, drop your options, and let the room start sparking."
+      />
 
-          <main className="screen">
-            {phase === 'room-entry' ? (
-              <>
-                <section className="hero-card">
-                  <p className="hero-kicker">One room. One scoreline. One answer everyone can point at.</p>
-                  <h2>Create the room or join it fast — then let Pika make the standings emotionally obvious.</h2>
-                  <p className="hero-copy">
-                    This thin slice freezes scope to exactly three screens: entry, live standings, and final results.
-                  </p>
-                </section>
+      <div style={{ display: 'grid', gap: 14 }}>
+        <label>
+          <div style={{ marginBottom: 8, fontWeight: 700 }}>Decision prompt</div>
+          <input
+            style={inputStyle}
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            placeholder="What are we picking?"
+          />
+        </label>
 
-                {errorMessage ? (
-                  <div className="error-banner" role="alert">
-                    {errorMessage}
-                  </div>
-                ) : null}
+        <label>
+          <div style={{ marginBottom: 8, fontWeight: 700 }}>Your name (optional)</div>
+          <input
+            style={inputStyle}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Host energy, but optional"
+          />
+        </label>
+      </div>
 
-                <section className="card stack">
-                  <div className="room-mode-toggle">
-                    <button
-                      type="button"
-                      className={roomMode === 'create' ? 'primary-button' : 'secondary-button'}
-                      onClick={() => setRoomMode('create')}
-                    >
-                      Create room
-                    </button>
-                    <button
-                      type="button"
-                      className={roomMode === 'join' ? 'primary-button' : 'secondary-button'}
-                      onClick={() => setRoomMode('join')}
-                    >
-                      Join room
-                    </button>
-                  </div>
+      {error ? (
+        <div style={{ color: '#ff9b9b', marginTop: 12, fontWeight: 600 }}>{error}</div>
+      ) : null}
 
-                  {roomMode === 'create' ? (
-                    <>
-                      <div className="section-header">
-                        <div>
-                          <h3>Open a room</h3>
-                          <p>Give the room a host name and one clean prompt. Pika handles the scoreboard mood swing.</p>
-                        </div>
-                      </div>
+      <button type="submit" style={primaryButtonStyle} disabled={isBusy}>
+        {isBusy ? 'Opening room…' : 'Create room'}
+      </button>
 
-                      <label className="field">
-                        <span>Host name</span>
-                        <input
-                          value={createHostName}
-                          onChange={(event) => setCreateHostName(event.target.value)}
-                          placeholder="Avery"
-                        />
-                      </label>
+      <p style={{ ...bodyStyle, marginTop: 14 }}>
+        Pika note: no logins, no wall of setup, just “let’s decide already.”
+      </p>
+    </form>
+  );
+}
 
-                      <label className="field">
-                        <span>Room prompt</span>
-                        <textarea
-                          value={createRoomPrompt}
-                          onChange={(event) => setCreateRoomPrompt(event.target.value)}
-                          placeholder="Choose the best low-pressure dinner plan for the team."
-                          rows={4}
-                        />
-                      </label>
-                    </>
-                  ) : (
-                    <>
-                      <div className="section-header">
-                        <div>
-                          <h3>Slide into a room</h3>
-                          <p>Bring the code, bring your name, and let the standings do the social compression.</p>
-                        </div>
-                      </div>
+function OptionsScreen({
+  room,
+  initialOptions,
+  isBusy,
+  onContinue,
+}: {
+  room: Room;
+  initialOptions: string[];
+  isBusy: boolean;
+  onContinue: (options: string[]) => Promise<void>;
+}) {
+  const [candidate, setCandidate] = useState('');
+  const [options, setOptions] = useState<string[]>(initialOptions);
+  const [error, setError] = useState('');
 
-                      <label className="field">
-                        <span>Room code</span>
-                        <input
-                          value={joinRoomCode}
-                          onChange={(event) => setJoinRoomCode(event.target.value.toUpperCase())}
-                          placeholder="PIKA42"
-                        />
-                      </label>
+  function addOption() {
+    const trimmed = candidate.trim();
+    if (!trimmed) {
+      setError('Throw in at least one real contender.');
+      return;
+    }
 
-                      <label className="field">
-                        <span>Your name</span>
-                        <input
-                          value={joinPlayerName}
-                          onChange={(event) => setJoinPlayerName(event.target.value)}
-                          placeholder="June"
-                        />
-                      </label>
-                    </>
-                  )}
+    if (options.includes(trimmed)) {
+      setError('That option is already in the ring.');
+      return;
+    }
 
-                  <div className="adapter-box">
-                    <p>
-                      <strong>Adapter boundary:</strong> createRoom(payload) / joinRoom(payload) → RoomState using
-                      assumed fields: {adapterFieldSummary.roomState}.
-                    </p>
-                  </div>
+    setOptions((current) => [...current, trimmed]);
+    setCandidate('');
+    setError('');
+  }
 
-                  <button type="button" className="primary-button" onClick={handleContinueFromEntry}>
-                    {roomMode === 'create' ? 'Open room and view standings' : 'Join room and view standings'}
-                  </button>
-                </section>
-              </>
-            ) : null}
+  function removeOption(optionToRemove: string) {
+    setOptions((current) => current.filter((option) => option !== optionToRemove));
+  }
 
-            {phase === 'room-standings' && roomState ? (
-              <>
-                <section className="hero-card">
-                  <p className="hero-kicker">
-                    Room {roomState.roomCode} · {roomState.roundLabel}
-                  </p>
-                  <h2>{roomState.roomPrompt}</h2>
-                  <p className="hero-copy">
-                    {roomState.playerCount} players in orbit. The board below is the live ranking snapshot.
-                  </p>
-                </section>
+  async function handleContinue() {
+    if (options.length < MIN_OPTIONS) {
+      setError('You need at least two options before the tiny drama can begin.');
+      return;
+    }
 
-                <section className="card stack">
-                  <div className="section-header">
-                    <div>
-                      <h3>Live standings</h3>
-                      <p>Assumed standings fields: {adapterFieldSummary.standings}.</p>
-                    </div>
-                  </div>
+    setError('');
+    await onContinue(options);
+  }
 
-                  <div className="standings-list">
-                    {roomState.standings.map((standing, index) => (
-                      <div key={standing.playerId} className="standing-row">
-                        <div className="standing-rank">#{index + 1}</div>
-                        <div className="standing-copy">
-                          <strong>{standing.playerName}</strong>
-                          <p>{standing.vibe}</p>
-                        </div>
-                        <div className="standing-points">
-                          <strong>{standing.points}</strong>
-                          <span>{standing.deltaLabel}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+  return (
+    <div>
+      <SectionHeader
+        eyebrow={`Room ${room.code}`}
+        title={room.prompt}
+        body="Add the contenders. Keep it messy, weird, and honest — Pika can handle a little chaos."
+      />
 
-                  <div className="adapter-box">
-                    <p>
-                      <strong>Assumed player fields:</strong> {adapterFieldSummary.players}.
-                    </p>
-                  </div>
-
-                  <button type="button" className="primary-button" onClick={handleRevealResults}>
-                    Reveal final results
-                  </button>
-                  <button type="button" className="text-button" onClick={handleBackToEntry}>
-                    Back to entry
-                  </button>
-                </section>
-              </>
-            ) : null}
-
-            {phase === 'room-results' && roomState ? (
-              <>
-                <section className="winner-card">
-                  <p className="eyebrow">Final results</p>
-                  <h2>{roomState.finalResults[0]?.title}</h2>
-                  <p>{roomState.finalResults[0]?.summary}</p>
-                </section>
-
-                <section className="card stack">
-                  <div className="section-header">
-                    <div>
-                      <h3>Full podium</h3>
-                      <p>Assumed result fields: {adapterFieldSummary.finalResults}.</p>
-                    </div>
-                  </div>
-
-                  <div className="results-list">
-                    {roomState.finalResults.map((finalResult) => (
-                      <div key={finalResult.id} className="result-row">
-                        <span className="room-code-pill">#{finalResult.rank}</span>
-                        <div className="standing-copy">
-                          <strong>{finalResult.title}</strong>
-                          <p>{finalResult.summary}</p>
-                        </div>
-                        <span className="result-support">{finalResult.supportLabel}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="adapter-box">
-                    <p>
-                      <strong>Mock/local fixtures only:</strong> swap the roomFlowAdapter implementation with backend
-                      calls and keep the same RoomState, standings, and finalResults shapes.
-                    </p>
-                  </div>
-
-                  <button type="button" className="primary-button" onClick={handleBackToEntry}>
-                    Start another room
-                  </button>
-                </section>
-              </>
-            ) : null}
-          </main>
+      <div style={{ ...mutedCardStyle, marginBottom: 20 }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <input
+            style={inputStyle}
+            value={candidate}
+            onChange={(event) => setCandidate(event.target.value)}
+            placeholder="Add an option"
+          />
+          <button type="button" style={secondaryButtonStyle} onClick={addOption}>
+            Add
+          </button>
+        </div>
+        <div style={{ ...bodyStyle, marginTop: 10 }}>
+          Room code <strong style={{ color: '#fff' }}>{room.code}</strong> — pass it around if
+          your people are fashionably late.
         </div>
       </div>
+
+      <div style={{ display: 'grid', gap: 12 }}>
+        {options.length === 0 ? (
+          <div style={mutedCardStyle}>
+            No options yet. This room is all anticipation and no contenders.
+          </div>
+        ) : (
+          options.map((option, index) => (
+            <div
+              key={option}
+              style={{
+                ...mutedCardStyle,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: 16,
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 800 }}>{option}</div>
+                <div style={{ ...bodyStyle, marginTop: 4 }}>Option #{index + 1}</div>
+              </div>
+              <button
+                type="button"
+                style={secondaryButtonStyle}
+                onClick={() => removeOption(option)}
+              >
+                Remove
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+
+      {error ? (
+        <div style={{ color: '#ff9b9b', marginTop: 12, fontWeight: 600 }}>{error}</div>
+      ) : null}
+
+      <button type="button" style={primaryButtonStyle} disabled={isBusy} onClick={handleContinue}>
+        {isBusy ? 'Building matchups…' : 'Start matchups'}
+      </button>
     </div>
   );
 }
 
-export default App;
+function MatchupScreen({
+  room,
+  matchups,
+  currentMatchupIndex,
+  isBusy,
+  onPickWinner,
+}: {
+  room: Room;
+  matchups: Matchup[];
+  currentMatchupIndex: number;
+  isBusy: boolean;
+  onPickWinner: (matchup: Matchup, winner: string) => Promise<void>;
+}) {
+  const currentMatchup = matchups[currentMatchupIndex];
+  const progressLabel = `${currentMatchupIndex + 1} / ${matchups.length}`;
+
+  if (!currentMatchup) {
+    return null;
+  }
+
+  return (
+    <div>
+      <SectionHeader
+        eyebrow={`Room ${room.code}`}
+        title="Let the contenders clash."
+        body="Pick fast. Overthinking is where good options go to become spreadsheets."
+      />
+
+      <div style={{ ...mutedCardStyle, marginBottom: 16 }}>
+        <div style={{ fontWeight: 800, marginBottom: 6 }}>Matchup progress</div>
+        <div style={bodyStyle}>{progressLabel}</div>
+      </div>
+
+      <div style={{ display: 'grid', gap: 16 }}>
+        {[currentMatchup.left, currentMatchup.right].map((choice) => (
+          <button
+            key={choice}
+            type="button"
+            onClick={() => onPickWinner(currentMatchup, choice)}
+            disabled={isBusy}
+            style={{
+              ...mutedCardStyle,
+              width: '100%',
+              textAlign: 'left',
+              color: '#fff',
+              cursor: 'pointer',
+              padding: 20,
+            }}
+          >
+            <div style={{ fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              Tap to advance
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 800, marginTop: 10 }}>{choice}</div>
+          </button>
+        ))}
+      </div>
+
+      <p style={{ ...bodyStyle, marginTop: 16 }}>
+        One dominant move: choose the option with the stronger pull right now.
+      </p>
+    </div>
+  );
+}
+
+function ResultsScreen({
+  room,
+  rankedOptions,
+  onRestart,
+}: {
+  room: Room;
+  rankedOptions: string[];
+  onRestart: () => void;
+}) {
+  const [winner, ...rest] = rankedOptions;
+
+  return (
+    <div>
+      <SectionHeader
+        eyebrow={`Room ${room.code}`}
+        title="We have a winner."
+        body="The room has spoken. No committee fog, no endless maybe spiral."
+      />
+
+      <div
+        style={{
+          background: 'linear-gradient(135deg, rgba(255,214,102,0.18), rgba(255,159,90,0.12))',
+          border: '1px solid rgba(255,214,102,0.3)',
+          borderRadius: 20,
+          padding: 22,
+          marginBottom: 20,
+        }}
+      >
+        <div style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+          Top pick
+        </div>
+        <div style={{ fontSize: 32, fontWeight: 900, marginTop: 8 }}>{winner}</div>
+        <p style={{ ...bodyStyle, marginTop: 10 }}>
+          Certified by vibes and a tiny bit of structured conflict.
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gap: 12 }}>
+        {rest.map((option, index) => (
+          <div key={option} style={mutedCardStyle}>
+            <strong>#{index + 2}</strong> {option}
+          </div>
+        ))}
+      </div>
+
+      <button type="button" style={primaryButtonStyle} onClick={onRestart}>
+        Start a fresh room
+      </button>
+    </div>
+  );
+}
+
+export default function App() {
+  const adapter = useMemo(() => mockRoomFlowAdapter, []);
+  const [screen, setScreen] = useState<Screen>('create');
+  const [flowState, setFlowState] = useState<RoomFlowState>({
+    room: null,
+    options: [],
+    currentMatchupIndex: 0,
+    matchupWinners: [],
+  });
+  const [matchups, setMatchups] = useState<Matchup[]>([]);
+  const [rankedOptions, setRankedOptions] = useState<string[]>([]);
+  const [isBusy, setIsBusy] = useState(false);
+
+  async function handleCreateRoom(draft: RoomDraft) {
+    setIsBusy(true);
+    try {
+      const room = await adapter.createRoom(draft);
+      setFlowState({
+        room,
+        options: [],
+        currentMatchupIndex: 0,
+        matchupWinners: [],
+      });
+      setMatchups([]);
+      setRankedOptions([]);
+      setScreen('options');
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  async function handleSaveOptions(options: string[]) {
+    if (!flowState.room) {
+      return;
+    }
+
+    setIsBusy(true);
+    try {
+      const savedOptions = await adapter.saveOptions(flowState.room.id, options);
+      const nextMatchups = await adapter.getMatchups(flowState.room.id, savedOptions);
+
+      setFlowState((current) => ({
+        ...current,
+        options: savedOptions,
+        currentMatchupIndex: 0,
+        matchupWinners: [],
+      }));
+      setMatchups(nextMatchups);
+      setScreen('matchups');
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  async function handlePickWinner(matchup: Matchup, winner: string) {
+    if (!flowState.room) {
+      return;
+    }
+
+    setIsBusy(true);
+    try {
+      const result = await adapter.chooseWinner(flowState.room.id, matchup, winner);
+      const nextWinners = [...flowState.matchupWinners, result.winner];
+      const nextIndex = flowState.currentMatchupIndex + 1;
+
+      if (nextIndex >= matchups.length) {
+        const results = await adapter.getResults(
+          flowState.room.id,
+          nextWinners,
+          flowState.options
+        );
+        setFlowState((current) => ({
+          ...current,
+          currentMatchupIndex: nextIndex,
+          matchupWinners: nextWinners,
+        }));
+        setRankedOptions(results);
+        setScreen('results');
+        return;
+      }
+
+      setFlowState((current) => ({
+        ...current,
+        currentMatchupIndex: nextIndex,
+        matchupWinners: nextWinners,
+      }));
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  function handleRestart() {
+    setFlowState({
+      room: null,
+      options: [],
+      currentMatchupIndex: 0,
+      matchupWinners: [],
+    });
+    setMatchups([]);
+    setRankedOptions([]);
+    setScreen('create');
+  }
+
+  return (
+    <main style={appShellStyle}>
+      <section style={panelStyle}>
+        {screen === 'create' ? (
+          <CreateRoomScreen onCreate={handleCreateRoom} isBusy={isBusy} />
+        ) : null}
+
+        {screen === 'options' && flowState.room ? (
+          <OptionsScreen
+            room={flowState.room}
+            initialOptions={flowState.options}
+            isBusy={isBusy}
+            onContinue={handleSaveOptions}
+          />
+        ) : null}
+
+        {screen === 'matchups' && flowState.room ? (
+          <MatchupScreen
+            room={flowState.room}
+            matchups={matchups}
+            currentMatchupIndex={flowState.currentMatchupIndex}
+            isBusy={isBusy}
+            onPickWinner={handlePickWinner}
+          />
+        ) : null}
+
+        {screen === 'results' && flowState.room ? (
+          <ResultsScreen
+            room={flowState.room}
+            rankedOptions={rankedOptions}
+            onRestart={handleRestart}
+          />
+        ) : null}
+      </section>
+    </main>
+  );
+}

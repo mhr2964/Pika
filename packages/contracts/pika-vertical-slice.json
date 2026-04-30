@@ -1,0 +1,139 @@
+{
+  "name": "pika-vertical-slice",
+  "version": "1.0.0",
+  "authority": "backend",
+  "flow": [
+    "create_room",
+    "add_options",
+    "generate_matchup",
+    "submit_selection",
+    "compute_results",
+    "show_results"
+  ],
+  "ownership": {
+    "ownerUserId": {
+      "type": ["string", "null"]
+    },
+    "ownerSessionId": {
+      "type": ["string", "null"]
+    }
+  },
+  "entities": {
+    "Room": {
+      "id": "string",
+      "slug": "string",
+      "title": "string",
+      "status": "draft | active | complete",
+      "ownerUserId": "string | null",
+      "ownerSessionId": "string | null",
+      "createdAt": "string",
+      "updatedAt": "string"
+    },
+    "Option": {
+      "id": "string",
+      "roomId": "string",
+      "label": "string",
+      "description": "string | null",
+      "createdAt": "string"
+    },
+    "Matchup": {
+      "id": "string",
+      "roomId": "string",
+      "leftOptionId": "string",
+      "rightOptionId": "string",
+      "round": "number",
+      "status": "pending | answered"
+    },
+    "Selection": {
+      "id": "string",
+      "roomId": "string",
+      "matchupId": "string",
+      "chosenOptionId": "string",
+      "ownerUserId": "string | null",
+      "ownerSessionId": "string | null",
+      "createdAt": "string"
+    },
+    "Result": {
+      "roomId": "string",
+      "winnerOptionId": "string | null",
+      "rankedOptionIds": "string[]",
+      "totalSelections": "number",
+      "completedAt": "string | null"
+    }
+  },
+  "routes": [
+    {
+      "name": "create_room",
+      "method": "POST",
+      "path": "/api/rooms",
+      "request": {
+        "title": "string",
+        "ownerUserId": "string | null",
+        "ownerSessionId": "string | null"
+      },
+      "response": {
+        "room": "Room"
+      }
+    },
+    {
+      "name": "add_options",
+      "method": "POST",
+      "path": "/api/rooms/:roomId/options",
+      "request": {
+        "options": [
+          {
+            "label": "string",
+            "description": "string | null"
+          }
+        ]
+      },
+      "response": {
+        "room": "Room",
+        "options": "Option[]"
+      }
+    },
+    {
+      "name": "generate_matchup",
+      "method": "POST",
+      "path": "/api/rooms/:roomId/matchups/generate",
+      "request": {},
+      "response": {
+        "matchup": "Matchup"
+      }
+    },
+    {
+      "name": "submit_selection",
+      "method": "POST",
+      "path": "/api/rooms/:roomId/selections",
+      "request": {
+        "matchupId": "string",
+        "chosenOptionId": "string",
+        "ownerUserId": "string | null",
+        "ownerSessionId": "string | null"
+      },
+      "response": {
+        "selection": "Selection",
+        "nextMatchup": "Matchup | null",
+        "resultsReady": "boolean"
+      }
+    },
+    {
+      "name": "compute_results",
+      "method": "POST",
+      "path": "/api/rooms/:roomId/results/compute",
+      "request": {},
+      "response": {
+        "results": "Result"
+      }
+    },
+    {
+      "name": "show_results",
+      "method": "GET",
+      "path": "/api/rooms/:roomId/results",
+      "request": {},
+      "response": {
+        "results": "Result"
+      }
+    }
+  ]
+}

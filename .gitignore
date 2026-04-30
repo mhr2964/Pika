@@ -1,37 +1,10 @@
-# dependencies
 node_modules/
-**/node_modules/
-
-# environment
-.env
-.env.*
-!.env.example
-
-# logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# build outputs
 dist/
 build/
 coverage/
-.next/
-.out/
-
-# caches
-.cache/
-.parcel-cache/
-.vite/
-*.tsbuildinfo
-
-# runtime / OS / editor noise
+.env
+.env.local
+.env.*.local
+*.log
 .DS_Store
 Thumbs.db
-.vscode/
-.idea/
-
-# local app outputs
-frontend/dist/
-backend/dist/

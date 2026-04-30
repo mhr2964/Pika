@@ -1,329 +1,197 @@
-import { RoomActivity, RoomOption, RoomParticipant, RoomState } from '../types/pika';
+import { RoomState } from '../types/pika';
 
-type CreateRoomInput = {
+export type CreateRoomInput = {
   hostName: string;
   prompt: string;
 };
 
-type JoinRoomInput = {
+export type JoinRoomInput = {
   guestName: string;
   roomCode: string;
 };
 
-type SelectOptionInput = {
-  room: RoomState;
+export type SubmitChoiceInput = {
+  roomCode: string;
   selectedOptionId: string;
-  actorName: string;
 };
 
-type UpdateOptionInput = {
-  room: RoomState;
-  optionId: string;
-  label: string;
-  actorName: string;
+export type AdvanceRoomInput = {
+  roomCode: string;
 };
 
-type AddOptionInput = {
-  room: RoomState;
-  label: string;
-  actorName: string;
-};
+export type RoomClientErrorCode =
+  | 'bad-request'
+  | 'not-found'
+  | 'conflict'
+  | 'rate-limited'
+  | 'unauthorized'
+  | 'forbidden'
+  | 'network-error'
+  | 'server-error'
+  | 'not-implemented'
+  | 'unknown';
 
-type RemoveOptionInput = {
-  room: RoomState;
-  optionId: string;
-  actorName: string;
-};
+export class RoomClientError extends Error {
+  code: RoomClientErrorCode;
+  status?: number;
+  details?: unknown;
+
+  constructor(message: string, options: { code: RoomClientErrorCode; status?: number; details?: unknown }) {
+    super(message);
+    this.name = 'RoomClientError';
+    this.code = options.code;
+    this.status = options.status;
+    this.details = options.details;
+  }
+}
 
 export type RoomClient = {
   createRoom: (input: CreateRoomInput) => Promise<RoomState>;
   joinRoom: (input: JoinRoomInput) => Promise<RoomState>;
-  selectOption: (input: SelectOptionInput) => Promise<RoomState>;
-  revealOutcome: (room: RoomState) => Promise<RoomState>;
-  resetRound: (room: RoomState) => Promise<RoomState>;
-  addOption: (input: AddOptionInput) => Promise<RoomState>;
-  updateOption: (input: UpdateOptionInput) => Promise<RoomState>;
-  removeOption: (input: RemoveOptionInput) => Promise<RoomState>;
+  fetchRoomState: (roomCode: string) => Promise<RoomState>;
+  submitChoice: (input: SubmitChoiceInput) => Promise<RoomState>;
+  fetchResults: (roomCode: string) => Promise<RoomState>;
+  advanceRoomPhase: (input: AdvanceRoomInput) => Promise<RoomState>;
 };
 
-const MOCK_DELAY_MS = 240;
-const ROOM_CODE_LENGTH = 6;
-const MIN_NAME_LENGTH = 2;
-const MIN_PROMPT_LENGTH = 8;
-const MIN_OPTION_LENGTH = 2;
+type FetchLike = typeof fetch;
 
-function waitForMockNetwork() {
-  return new Promise<void>((resolve) => {
-    window.setTimeout(resolve, MOCK_DELAY_MS);
-  });
-}
+type RoomClientConfig = {
+  baseUrl?: string;
+  fetchImpl?: FetchLike;
+};
 
-function cloneRoomState(room: RoomState): RoomState {
-  return {
-    ...room,
-    participants: room.participants.map((participant) => ({ ...participant })),
-    options: room.options.map((option) => ({ ...option })),
-    activity: room.activity.map((item) => ({ ...item })),
-  };
-}
+type RequestOptions = {
+  method?: 'GET' | 'POST';
+  body?: unknown;
+};
 
-function normalizeName(value: string) {
-  return value.trim();
-}
-
-function normalizePrompt(value: string) {
-  return value.trim();
-}
+const DEFAULT_BASE_URL = '/api';
 
 function normalizeRoomCode(value: string) {
   return value.trim().toUpperCase();
 }
 
-function normalizeOptionLabel(value: string) {
-  return value.trim().replace(/\s+/g, ' ');
-}
+async function parseJson(response: Response) {
+  const text = await response.text();
 
-function createId(prefix: string) {
-  return `${prefix}-${Math.random().toString(36).slice(2, 8)}`;
-}
+  if (!text) {
+    return null;
+  }
 
-function createActivity(actor: string, message: string): RoomActivity {
-  return {
-    id: createId('activity'),
-    actor,
-    message,
-  };
-}
-
-function createParticipant(name: string): RoomParticipant {
-  return {
-    id: createId('participant'),
-    name,
-    reaction: 'just joined and already has opinions.',
-    tone: 'hype',
-  };
-}
-
-function ensureValidName(name: string, fieldLabel: string) {
-  if (normalizeName(name).length < MIN_NAME_LENGTH) {
-    throw new Error(`${fieldLabel} must be at least ${MIN_NAME_LENGTH} characters.`);
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new RoomClientError('The room server replied with something weird.', {
+      code: 'server-error',
+      status: response.status,
+      details: text,
+    });
   }
 }
 
-function ensureValidPrompt(prompt: string) {
-  if (normalizePrompt(prompt).length < MIN_PROMPT_LENGTH) {
-    throw new Error(`Prompt must be at least ${MIN_PROMPT_LENGTH} characters.`);
-  }
+function mapErrorCode(status: number): RoomClientErrorCode {
+  if (status === 400) return 'bad-request';
+  if (status === 401) return 'unauthorized';
+  if (status === 403) return 'forbidden';
+  if (status === 404) return 'not-found';
+  if (status === 409) return 'conflict';
+  if (status === 429) return 'rate-limited';
+  if (status >= 500) return 'server-error';
+  return 'unknown';
 }
 
-function ensureValidRoomCode(roomCode: string) {
-  if (normalizeRoomCode(roomCode).length !== ROOM_CODE_LENGTH) {
-    throw new Error(`Room code must be ${ROOM_CODE_LENGTH} characters.`);
-  }
-}
-
-function ensureValidOptionLabel(label: string) {
-  if (normalizeOptionLabel(label).length < MIN_OPTION_LENGTH) {
-    throw new Error(`Option must be at least ${MIN_OPTION_LENGTH} characters.`);
-  }
-}
-
-function ensureOptionExists(room: RoomState, optionId: string): RoomOption {
-  const option = room.options.find((candidate) => candidate.id === optionId);
-
-  if (!option) {
-    throw new Error('That option vanished into the snack void.');
+function extractMessage(payload: unknown, fallback: string) {
+  if (payload && typeof payload === 'object' && 'message' in payload && typeof payload.message === 'string') {
+    return payload.message;
   }
 
-  return option;
+  return fallback;
 }
 
-function buildOutcome(room: RoomState): RoomState {
-  if (room.options.length === 0) {
-    return {
-      ...cloneRoomState(room),
-      winningOptionId: null,
-      activity: [
-        createActivity('Pika', 'opened the reveal curtain and found… no contenders yet.'),
-        ...room.activity.map((item) => ({ ...item })),
-      ],
-    };
+async function request<T>(
+  fetchImpl: FetchLike,
+  baseUrl: string,
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  let response: Response;
+
+  try {
+    response = await fetchImpl(`${baseUrl}${path}`, {
+      method: options.method ?? 'GET',
+      headers: {
+        Accept: 'application/json',
+        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+  } catch (error) {
+    throw new RoomClientError('Could not reach the room server.', {
+      code: 'network-error',
+      details: error,
+    });
   }
 
-  const winningOption = [...room.options].sort((left, right) => right.votes - left.votes)[0];
+  const payload = await parseJson(response);
 
-  return {
-    ...cloneRoomState(room),
-    winningOptionId: winningOption.id,
-    activity: [
-      createActivity('Pika', `called it for ${winningOption.label}. confetti, but emotionally precise.`),
-      ...room.activity.map((item) => ({ ...item })),
-    ],
-  };
+  if (!response.ok) {
+    throw new RoomClientError(extractMessage(payload, 'The room request did not go through.'), {
+      code: mapErrorCode(response.status),
+      status: response.status,
+      details: payload,
+    });
+  }
+
+  return payload as T;
 }
 
-export function createRoomClient(seedRoom: RoomState): RoomClient {
-  let currentRoom = cloneRoomState(seedRoom);
+function notImplemented(methodName: string): Promise<never> {
+  throw new RoomClientError(`${methodName} is not wired to a launch-approved backend endpoint yet.`, {
+    code: 'not-implemented',
+  });
+}
+
+export function createRoomClient(config: RoomClientConfig = {}): RoomClient {
+  const fetchImpl = config.fetchImpl ?? fetch;
+  const baseUrl = (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, '');
 
   return {
-    async createRoom(input) {
-      await waitForMockNetwork();
-
-      ensureValidName(input.hostName, 'Host name');
-      ensureValidPrompt(input.prompt);
-
-      currentRoom = {
-        ...cloneRoomState(currentRoom),
-        hostName: normalizeName(input.hostName),
-        prompt: normalizePrompt(input.prompt),
-        selectedOptionId: null,
-        winningOptionId: null,
-        activity: [
-          createActivity(normalizeName(input.hostName), 'opened a fresh room and set the vibe.'),
-          ...currentRoom.activity.map((item) => ({ ...item })),
-        ],
-      };
-
-      return cloneRoomState(currentRoom);
+    createRoom(input) {
+      return request<RoomState>(fetchImpl, baseUrl, '/rooms', {
+        method: 'POST',
+        body: input,
+      });
     },
 
-    async joinRoom(input) {
-      await waitForMockNetwork();
-
-      ensureValidName(input.guestName, 'Guest name');
-      ensureValidRoomCode(input.roomCode);
-
-      if (normalizeRoomCode(input.roomCode) !== currentRoom.code) {
-        throw new Error('That room code is not on the guest list.');
-      }
-
-      const guestName = normalizeName(input.guestName);
-      const alreadyPresent = currentRoom.participants.some(
-        (participant) => participant.name.trim().toLowerCase() === guestName.toLowerCase(),
-      );
-
-      currentRoom = {
-        ...cloneRoomState(currentRoom),
-        participants: alreadyPresent
-          ? currentRoom.participants.map((participant) => ({ ...participant }))
-          : [...currentRoom.participants.map((participant) => ({ ...participant })), createParticipant(guestName)],
-        activity: [
-          createActivity(guestName, 'slid into the room with main-character energy.'),
-          ...currentRoom.activity.map((item) => ({ ...item })),
-        ],
-      };
-
-      return cloneRoomState(currentRoom);
+    joinRoom(input) {
+      return request<RoomState>(fetchImpl, baseUrl, `/rooms/${normalizeRoomCode(input.roomCode)}/join`, {
+        method: 'POST',
+        body: {
+          guestName: input.guestName,
+        },
+      });
     },
 
-    async selectOption(input) {
-      await waitForMockNetwork();
-
-      const room = cloneRoomState(input.room);
-      const option = ensureOptionExists(room, input.selectedOptionId);
-      const actorName = normalizeName(input.actorName) || 'Someone';
-
-      currentRoom = {
-        ...room,
-        selectedOptionId: option.id,
-        options: room.options.map((candidate) => ({
-          ...candidate,
-          votes:
-            candidate.id === option.id
-              ? candidate.votes + (room.selectedOptionId === option.id ? 0 : 1)
-              : candidate.votes,
-        })),
-        activity: [
-          createActivity(actorName, `backed ${option.label} like it owed them rent.`),
-          ...room.activity.map((item) => ({ ...item })),
-        ],
-      };
-
-      return cloneRoomState(currentRoom);
+    fetchRoomState(roomCode) {
+      return request<RoomState>(fetchImpl, baseUrl, `/rooms/${normalizeRoomCode(roomCode)}`);
     },
 
-    async revealOutcome(room) {
-      await waitForMockNetwork();
-      currentRoom = buildOutcome(room);
-      return cloneRoomState(currentRoom);
+    submitChoice(input) {
+      return request<RoomState>(fetchImpl, baseUrl, `/rooms/${normalizeRoomCode(input.roomCode)}/choices`, {
+        method: 'POST',
+        body: {
+          selectedOptionId: input.selectedOptionId,
+        },
+      });
     },
 
-    async resetRound(room) {
-      await waitForMockNetwork();
-
-      currentRoom = {
-        ...cloneRoomState(room),
-        roundLabel: room.roundLabel === 'Round 1' ? 'Round 2' : `${room.roundLabel} + remix`,
-        selectedOptionId: null,
-        winningOptionId: null,
-        options: room.options.map((option) => ({ ...option, votes: 0 })),
-        activity: [createActivity('Pika', 'reset the bracket and kept the chaos polished.')],
-      };
-
-      return cloneRoomState(currentRoom);
+    fetchResults(roomCode) {
+      return request<RoomState>(fetchImpl, baseUrl, `/rooms/${normalizeRoomCode(roomCode)}/results`);
     },
 
-    async addOption(input) {
-      await waitForMockNetwork();
-
-      const room = cloneRoomState(input.room);
-      const label = normalizeOptionLabel(input.label);
-      const actorName = normalizeName(input.actorName) || 'Someone';
-      ensureValidOptionLabel(label);
-
-      currentRoom = {
-        ...room,
-        options: [...room.options, { id: createId('option'), label, votes: 0 }],
-        activity: [
-          createActivity(actorName, `added ${label} to the board. bold, maybe brilliant.`),
-          ...room.activity.map((item) => ({ ...item })),
-        ],
-      };
-
-      return cloneRoomState(currentRoom);
-    },
-
-    async updateOption(input) {
-      await waitForMockNetwork();
-
-      const room = cloneRoomState(input.room);
-      const label = normalizeOptionLabel(input.label);
-      const actorName = normalizeName(input.actorName) || 'Someone';
-      ensureValidOptionLabel(label);
-      ensureOptionExists(room, input.optionId);
-
-      currentRoom = {
-        ...room,
-        options: room.options.map((option) =>
-          option.id === input.optionId ? { ...option, label } : { ...option },
-        ),
-        activity: [
-          createActivity(actorName, `renamed an option to ${label}. the plot tightened.`),
-          ...room.activity.map((item) => ({ ...item })),
-        ],
-      };
-
-      return cloneRoomState(currentRoom);
-    },
-
-    async removeOption(input) {
-      await waitForMockNetwork();
-
-      const room = cloneRoomState(input.room);
-      const actorName = normalizeName(input.actorName) || 'Someone';
-      const removedOption = ensureOptionExists(room, input.optionId);
-
-      currentRoom = {
-        ...room,
-        selectedOptionId: room.selectedOptionId === input.optionId ? null : room.selectedOptionId,
-        options: room.options.filter((option) => option.id !== input.optionId).map((option) => ({ ...option })),
-        activity: [
-          createActivity(actorName, `cut ${removedOption.label} from the lineup. ruthless, tidy, iconic.`),
-          ...room.activity.map((item) => ({ ...item })),
-        ],
-      };
-
-      return cloneRoomState(currentRoom);
+    advanceRoomPhase(input) {
+      return notImplemented(`advanceRoomPhase(${normalizeRoomCode(input.roomCode)})`);
     },
   };
 }

@@ -1,31 +1,97 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-30T04:06:00Z",
+  "updatedAt": "2026-04-30T08:20:00Z",
   "title": "Pika Company Dashboard",
   "widgets": [
     {
       "type": "status",
-      "title": "Prototype",
-      "status": "ready",
-      "text": "Prototype is ready."
-    },
-    {
-      "type": "status",
-      "title": "Launch Collateral",
-      "status": "active",
-      "text": "Launch collateral is in progress."
-    },
-    {
-      "type": "status",
-      "title": "External Gate",
+      "title": "Execution State",
       "status": "pending",
-      "text": "GitHub remote is pending."
+      "text": "RECOVERED / AMBER — manager-led execution is restored, but recovery remains under watch and is not yet fully green."
+    },
+    {
+      "type": "status",
+      "title": "Daemon",
+      "status": "active",
+      "text": "Daemon execution has resumed after the manager-binding failure period."
+    },
+    {
+      "type": "status",
+      "title": "Core Lanes",
+      "status": "active",
+      "text": "Parallel execution is restored across frontend, backend, auth, security, growth, and brand."
+    },
+    {
+      "type": "status",
+      "title": "Frontend",
+      "status": "active",
+      "text": "Frontend shows current downstream activity in the restored parallel build."
+    },
+    {
+      "type": "status",
+      "title": "Backend",
+      "status": "active",
+      "text": "Backend shows current downstream activity in the restored parallel build."
+    },
+    {
+      "type": "status",
+      "title": "Auth",
+      "status": "active",
+      "text": "Auth is active as a dependency lane with current artifact progress."
+    },
+    {
+      "type": "status",
+      "title": "Security",
+      "status": "active",
+      "text": "Security is active as a parallel launch gate with current artifact progress."
+    },
+    {
+      "type": "status",
+      "title": "Growth",
+      "status": "active",
+      "text": "Growth remains active on the launch-support stream."
+    },
+    {
+      "type": "status",
+      "title": "Brand",
+      "status": "active",
+      "text": "Brand remains active on launch-support deliverables."
+    },
+    {
+      "type": "status",
+      "title": "CTO Lane",
+      "status": "pending",
+      "text": "ACTIVE / AMBER — department runs confirmed, milestone artifact missing post-restart. Pending owning-exec confirmation artifact."
+    },
+    {
+      "type": "status",
+      "title": "Head of Product Lane",
+      "status": "blocked",
+      "text": "UNTRACKED / RED — no current downstream department activity visible in board evidence. Pending owning-exec confirmation artifact."
+    },
+    {
+      "type": "status",
+      "title": "Support / Monitoring Watchlist",
+      "status": "pending",
+      "text": "Risk remains in support lanes due to manager-binding fragility, partial post-restart churn, and possible no-op cycle relapse. Monitor pulse, archivist, efficiency, platform, and exec confirmation flow closely."
+    },
+    {
+      "type": "status",
+      "title": "Platform",
+      "status": "held",
+      "text": "Platform remains a watchlisted stale-risk lane pending clearer post-restart advancement."
+    },
+    {
+      "type": "status",
+      "title": "Prototype",
+      "status": "pending",
+      "text": "Prototype is no longer the primary blocker, but current state should still be treated as monitored rather than fully green."
     },
     {
       "type": "status",
       "title": "Next Gate",
-      "status": "active",
-      "text": "Launch-readiness."
+      "status": "pending",
+      "text": "Sustain restored parallel execution, clear support-lane watchlist risks, and obtain owning-exec confirmation artifacts."
     }
   ]
 }
