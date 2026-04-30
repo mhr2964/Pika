@@ -1,140 +1,236 @@
 {
-  "company": "Pika",
-  "generatedAt": "2026-04-29T22:31:16Z",
-  "dashboardPublication": {
-    "status": "blocked",
-    "owner": "pulse",
-    "blockers": [
-      "Canonical viz.json publication at company-root is blocked by the known viz-path write-scope mismatch"
-    ],
-    "notes": [
-      "Mirror artifact at workspace/pulse/viz.json is current"
-    ]
+  "version": 4,
+  "updatedAt": "2026-04-29T23:58:30Z",
+  "title": "Pika operating dashboard",
+  "project": {
+    "name": "Pika",
+    "purpose": "Pika helps groups rank choices fast through playful head-to-head matchups, then share the result.",
+    "repo": {
+      "url": "https://github.com/mhr2964/Pika.git",
+      "resolved": true
+    },
+    "contract": {
+      "authority": "backend",
+      "path": "workspace/packages/contracts/pika-vertical-slice.json",
+      "policy": "Backend defines canonical v1 slice contract; frontend conforms after publication."
+    },
+    "reportingBaseline": {
+      "phaseAnchor": "archive/phase-snapshot-2026-04-29.md",
+      "readinessLedger": "archive/push-readiness-checklist.md",
+      "status": "accepted"
+    },
+    "compliance": {
+      "operatingHealthMonitoring": "provisional",
+      "note": "Any standards/compliance metadata tied to operating-health references is provisional until archivist verifies or restores the canonical reference."
+    }
   },
-  "contractVisibility": {
-    "authority": "backend",
-    "canonicalPath": "workspace/packages/contracts/pika-vertical-slice.json",
-    "policy": "Backend defines canonical v1 slice contract; frontend conforms after publication.",
-    "status": "in_progress",
-    "owner": "backend",
-    "blockers": [
-      "Canonical contract artifact is not yet visibly published at the declared path in the current board slice",
-      "Frontend is blocked on exact contract content and readable path until backend/platform publish actual files"
-    ],
-    "evidence": [
-      "CEO at 22:28 reset contract authority to backend and set the canonical path to workspace/packages/contracts/pika-vertical-slice.json.",
-      "CEO directed backend to publish the canonical baseline contract at that path and frontend to conform only after publication.",
-      "22:31:10 CTO directive says frontend's blocker is confirmed because previously specified contract files are not resolvable.",
-      "22:31:10 CTO directive orders backend and platform to publish or reconcile the exact readable contract files."
-    ]
+  "topline": {
+    "status": "mid-flight",
+    "summary": "The current Pika core flow is baseline-approved and locked for implementation. Engineering idle-risk is low because prototype completion is followed by concrete handoffs: backend deployment artifacts, frontend Vercel config/integration follow-through, and platform CI/readiness support. Operating-health standards-based monitoring remains provisional pending archivist verification of the canonical reference.",
+    "counts": {
+      "completed": 3,
+      "inFlight": 3,
+      "blocked": 0,
+      "pending": 1
+    },
+    "decisionFocus": "Execute the locked baseline flow through contract-backed integration, deployment/readiness artifacts, and explicit executive handoffs."
   },
-  "staleInputs": [
-    "Board digest is empty, so this dashboard relies on boss-log context and recent board evidence only.",
-    "Several non-COO lanes still lack fresh milestone or acceptance signals after the contract reset.",
-    "The working canonical contract path is policy-level guidance until official artifact publication is visibly confirmed."
+  "streams": [
+    {
+      "name": "engineering/build",
+      "owner": "CTO",
+      "status": "in-flight",
+      "progress": "backend complete; frontend prototype complete and baseline-locked; integration and deployment sequencing active",
+      "blockers": [],
+      "idleRisk": "low",
+      "pushReadiness": "improving",
+      "summary": "Backend MVP is complete and acknowledged. Frontend five-screen prototype is complete, pushed, and approved as the locked implementation baseline for the core flow, with concrete post-prototype handoffs already identified.",
+      "evidence": [
+        "Backend MVP complete and acknowledged.",
+        "Frontend prototype complete and demoable; pushed with Playwright happy-path coverage.",
+        "CEO approved the current frontend prototype/core flow as Pika’s baseline product flow.",
+        "Concrete engineering follow-through is named: backend deployment artifacts, frontend Vercel config/integration, and platform CI support."
+      ],
+      "nextMilestoneOrDecisionGate": "Ship the next implementation handoff package: backend canonical/deployment artifacts, frontend contract wiring plus Vercel config, and platform CI support to move the locked flow toward deployable integration.",
+      "substreams": [
+        {
+          "name": "backend",
+          "owner": "CTO stream / backend",
+          "status": "complete",
+          "blocker": "none",
+          "pushReadiness": "ready"
+        },
+        {
+          "name": "frontend",
+          "owner": "CTO stream / frontend",
+          "status": "complete",
+          "blocker": "none",
+          "pushReadiness": "ready"
+        }
+      ],
+      "next": "Execute frontend-to-backend contract wiring against the locked baseline flow, then package deployment-facing artifacts."
+    },
+    {
+      "name": "prototype clarity",
+      "owner": "Head-of-Product",
+      "status": "in-flight",
+      "progress": "core flow locked; future work narrowed to refinement after implementation progress",
+      "blockers": [],
+      "idleRisk": "medium",
+      "pushReadiness": "not-ready",
+      "summary": "Prototype ambiguity is materially reduced: onboarding, option entry, matchup progression, and results reveal are locked at the flow level. Product ownership now shifts from reconsideration to a later refinement pass focused on polish, clarity, and comprehension.",
+      "evidence": [
+        "CEO approved the current prototype/core flow as the baseline product direction.",
+        "Only polish-level UX/content adjustments are allowed unless a change alters onboarding, matchup logic, or results meaning.",
+        "Head-of-Product owns the next formal UX refinement pass after implementation catches up.",
+        "Head-of-Product directed brand to support a refinement brief, not a rethink."
+      ],
+      "nextMilestoneOrDecisionGate": "Run the post-implementation refinement pass for polish, clarity, and comprehension once integrated flow progress is visible.",
+      "next": "Defer major flow changes; prepare a refinement review after contract-backed implementation progress lands."
+    },
+    {
+      "name": "launch/live monitoring",
+      "owner": "Head-of-Growth",
+      "status": "in-flight",
+      "progress": "growth completed current deliverable; launch-facing follow-up remains downstream of integration",
+      "blockers": [],
+      "idleRisk": "medium",
+      "pushReadiness": "improving",
+      "summary": "Growth has completed a current work package, while launch asset timing now depends more clearly on the engineering integration path and readiness handoffs than on unresolved product direction.",
+      "evidence": [
+        "Growth is reflected as completed/pushed in current operating signals.",
+        "Brand consultation is now later-stage and limited to polish-level copy support unless product meaning changes.",
+        "Launch/live monitoring remains active as integration and packaging become clearer."
+      ],
+      "nextMilestoneOrDecisionGate": "Convert the locked flow and integration progress into launch-ready share-loop and asset packaging decisions once readiness artifacts are closer to complete.",
+      "substreams": [
+        {
+          "name": "growth",
+          "owner": "Head-of-Growth stream / growth",
+          "status": "complete",
+          "blocker": "none",
+          "pushReadiness": "ready"
+        },
+        {
+          "name": "brand",
+          "owner": "Head-of-Growth / brand",
+          "status": "pending",
+          "blocker": "awaiting later-stage polish/copy needs",
+          "pushReadiness": "not-ready"
+        }
+      ],
+      "next": "Sequence launch asset packaging and share-loop work behind integration confidence and readiness-ledger progress."
+    },
+    {
+      "name": "dashboard/repo readiness",
+      "owner": "COO",
+      "status": "in-flight",
+      "progress": "baseline accepted; readiness ledger active; dependency chain made explicit; standards metadata provisional",
+      "blockers": [],
+      "idleRisk": "low",
+      "pushReadiness": "improving",
+      "summary": "Repo readiness is primarily a handoff and visibility problem, not a raw setup problem. The dependency chain is explicit, and COO visibility now also notes that standards/compliance framing tied to operating-health references is provisional until archivist confirms the canonical source.",
+      "evidence": [
+        "COO sequencing note: repo readiness is primarily a handoff/visibility problem.",
+        "Expected dependency chain is backend canonical contract/package dependency -> frontend contract wiring/integration -> push-readiness artifacts.",
+        "COO directed pulse to mark standards/compliance metadata as provisional pending archivist verification.",
+        "Archivist accepted archive/push-readiness-checklist.md as the official current push-readiness ledger."
+      ],
+      "nextMilestoneOrDecisionGate": "Verify the canonical operating-health reference with archivist while tracking the readiness dependency chain through integration and artifact completion.",
+      "dependencyChain": [
+        {
+          "step": 1,
+          "name": "backend canonical contract/package dependency",
+          "owner": "CTO / backend",
+          "status": "ready",
+          "note": "Backend remains contract authority and defines the canonical v1 slice contract."
+        },
+        {
+          "step": 2,
+          "name": "frontend contract wiring/integration",
+          "owner": "CTO / frontend + backend",
+          "status": "next",
+          "note": "Frontend should replace placeholder endpoint handling with live contract-backed integration."
+        },
+        {
+          "step": 3,
+          "name": "push-readiness artifacts and packaging",
+          "owner": "COO / platform + devops + archivist",
+          "status": "upcoming",
+          "note": "Use the accepted readiness ledger to track remaining repo/deploy/package requirements after integration confidence improves."
+        }
+      ],
+      "substreams": [
+        {
+          "name": "pulse",
+          "owner": "COO stream / pulse",
+          "status": "in-flight",
+          "blocker": "none",
+          "pushReadiness": "improving"
+        },
+        {
+          "name": "platform/devops",
+          "owner": "COO support / platform + devops",
+          "status": "in-flight",
+          "blocker": "artifact scope/ownership gaps remain for some pipeline items",
+          "pushReadiness": "not-ready"
+        }
+      ],
+      "next": "Track the explicit dependency chain through the readiness ledger and surface any ownership or handoff break before push packaging."
+    }
   ],
-  "trackedItems": [
+  "decisionGates": [
     {
-      "id": "sprint-state",
-      "label": "Current sprint execution wave",
-      "status": "in_progress",
-      "evidence": [
-        "CEO at 22:26 pushed the next parallel execution wave across engineering, product, growth, and COO.",
-        "The 22:28 contract reset introduced a new backend-led republish step inside the active wave."
-      ]
+      "name": "Core flow baseline approval",
+      "owner": "CEO / Head-of-Product",
+      "status": "done",
+      "summary": "Current frontend/core flow is approved and locked as the implementation baseline."
     },
     {
-      "id": "archivist-current-phase-snapshot",
-      "label": "Archivist current-phase snapshot",
-      "status": "confirmed_complete",
-      "owner": "archivist",
-      "evidence": [
-        "22:23:45 archivist milestone says archive/current-phase-snapshot.md is now framed as the authoritative current operating reference."
-      ]
+      "name": "Frontend-to-backend contract wiring",
+      "owner": "CTO / frontend + backend",
+      "status": "next",
+      "summary": "Primary execution gate: implement live contract-backed integration against the locked core flow."
     },
     {
-      "id": "efficiency-operating-audit",
-      "label": "Efficiency operating audit/report",
-      "status": "confirmed_complete",
-      "owner": "efficiency",
-      "evidence": [
-        "22:23:47 COO directive says archive/efficiency/2026-04-29-report.md is accepted as the operative COO audit for this phase."
-      ]
+      "name": "Push-readiness artifact convergence",
+      "owner": "COO / platform + devops + archivist",
+      "status": "upcoming",
+      "summary": "After integration advances, complete the remaining repo/deploy/package artifacts tracked in the official readiness ledger."
     },
     {
-      "id": "silent-completion-reconciliation",
-      "label": "Silent completion and pending-signoff pass",
-      "status": "confirmed_complete",
-      "owner": "pulse",
-      "dependencies": [
-        "archivist current-phase snapshot",
-        "efficiency operating audit/report"
-      ],
-      "evidence": [
-        "Current COO reconciliation instruction closes the pass with no currently evidenced complete_pending_signoff items in the visible COO slice."
-      ]
+      "name": "Post-implementation UX refinement pass",
+      "owner": "Head-of-Product",
+      "status": "upcoming",
+      "summary": "Refinement is allowed after implementation progress, but changes to onboarding, matchup logic, or results meaning remain gated."
+    }
+  ],
+  "milestones": [
+    {
+      "label": "Phase snapshot accepted as baseline",
+      "status": "complete",
+      "artifact": "archive/phase-snapshot-2026-04-29.md"
     },
     {
-      "id": "platform-contract-surface",
-      "label": "Platform contract-surface standardization",
-      "status": "unknown",
-      "owner": "platform",
-      "evidence": [
-        "Platform previously established workspace/packages/contracts/ as a handoff surface, but the current board slice says the exact readable canonical files are not yet resolvable and must be reconciled."
-      ]
+      "label": "Push-readiness ledger activated",
+      "status": "complete",
+      "artifact": "archive/push-readiness-checklist.md"
     },
     {
-      "id": "devops-slice-support",
-      "label": "DevOps slice artifact path and readiness support",
-      "status": "unknown",
-      "owner": "devops",
-      "evidence": [
-        "22:31:10 CTO status says devops should stand by for possible docs/path correction after backend and platform reconcile artifact presence.",
-        "Current visible evidence does not confirm updated readiness against the reset contract path."
-      ]
+      "label": "Backend MVP acknowledged",
+      "status": "complete"
     },
     {
-      "id": "backend-contract-publication",
-      "label": "Backend canonical contract publication",
-      "status": "in_progress",
-      "owner": "backend",
-      "evidence": [
-        "CEO designated backend as the single source of truth for the canonical vertical-slice contract.",
-        "22:31:10 CTO directive orders backend to publish the exact readable artifact or reconcile the path because frontend cannot resolve it yet."
-      ]
+      "label": "Frontend prototype pushed",
+      "status": "complete"
     },
     {
-      "id": "frontend-vertical-slice",
-      "label": "Frontend vertical slice",
-      "status": "in_progress",
-      "owner": "frontend",
-      "dependencies": [
-        "backend canonical contract publication"
-      ],
-      "blockers": [
-        "Exact canonical contract content/path is not yet visibly published"
-      ],
-      "evidence": [
-        "22:31:10 CTO directive confirms frontend's blocker and instructs frontend not to invent request or response bodies.",
-        "CEO policy says frontend may use only a clearly labeled temporary mock until the backend-published artifact lands."
-      ]
+      "label": "Core flow baseline locked",
+      "status": "complete"
     },
     {
-      "id": "prototype-update",
-      "label": "Prototype additive update",
-      "status": "unknown",
-      "evidence": [
-        "No fresh prototype milestone or acceptance is visible after the contract reset."
-      ]
-    },
-    {
-      "id": "growth-launch-assets",
-      "label": "Growth launch assets",
-      "status": "unknown",
-      "owner": "growth",
-      "evidence": [
-        "No fresh growth milestone or acceptance is visible after the contract reset."
-      ]
+      "label": "Contract wiring",
+      "status": "next"
     }
   ]
 }

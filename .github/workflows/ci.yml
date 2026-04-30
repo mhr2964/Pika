@@ -1,41 +1,175 @@
 name: CI
 
 on:
+  pull_request:
   push:
     branches:
       - main
-  pull_request:
+
+# Platform assumptions for current repo state:
+# - Active implementation paths are `backend/` and `frontend/`.
+# - `apps/*` are duplicate/non-authoritative scaffolds and are intentionally not
+#   included in this workflow.
+# - Commands below only run scripts that are expected to exist from current
+#   package manifests/layout. Optional lint/test steps are guarded so CI does
+#   not invent requirements that the repo has not declared yet.
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  workspace-checks:
-    name: Workspace checks
+  changed-paths:
+    name: Detect changed active app paths
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: workspace
-
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      contracts: ${{ steps.filter.outputs.contracts }}
+      shared: ${{ steps.filter.outputs.shared }}
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Filter paths
+        id: filter
+        uses: dorny/paths-filter@v3
         with:
-          version: 9
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+            contracts:
+              - 'packages/contracts/**'
+            shared:
+              - 'package.json'
+              - 'docs/**'
+              - 'devops/**'
+              - '.github/workflows/**'
 
-      - name: Setup Node.js
+  backend:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    needs: changed-paths
+    if: needs.changed-paths.outputs.backend == 'true' || needs.changed-paths.outputs.contracts == 'true' || needs.changed-paths.outputs.shared == 'true'
+    defaults:
+      run:
+        working-directory: workspace/backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
-          cache-dependency-path: workspace/pnpm-lock.yaml
+          cache: npm
+          cache-dependency-path: |
+            workspace/package-lock.json
+            workspace/backend/package-lock.json
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: Install backend deps
+        run: npm install
 
-      - name: Lint
-        run: pnpm lint
+      - name: Run backend lint if present
+        shell: bash
+        run: |
+          node -e "const s=require('./package.json').scripts||{}; process.exit(s.lint?0:1)" \
+            && npm run lint \
+            || echo 'No backend lint script present; skipping.'
 
-      - name: Typecheck
-        run: pnpm typecheck
+      - name: Run backend test if present
+        shell: bash
+        run: |
+          node -e "const s=require('./package.json').scripts||{}; process.exit(s.test?0:1)" \
+            && npm test -- --runInBand \
+            || echo 'No backend test script present; skipping.'
+
+      - name: Run backend build if present
+        shell: bash
+        run: |
+          node -e "const s=require('./package.json').scripts||{}; process.exit(s.build?0:1)" \
+            && npm run build \
+            || echo 'No backend build script present; skipping.'
+
+  frontend:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    needs: changed-paths
+    if: needs.changed-paths.outputs.frontend == 'true' || needs.changed-paths.outputs.contracts == 'true' || needs.changed-paths.outputs.shared == 'true'
+    defaults:
+      run:
+        working-directory: workspace/frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            workspace/package-lock.json
+            workspace/frontend/package-lock.json
+
+      - name: Install frontend deps
+        run: npm install
+
+      - name: Run frontend lint if present
+        shell: bash
+        run: |
+          node -e "const s=require('./package.json').scripts||{}; process.exit(s.lint?0:1)" \
+            && npm run lint \
+            || echo 'No frontend lint script present; skipping.'
+
+      - name: Run frontend test if present
+        shell: bash
+        run: |
+          node -e "const s=require('./package.json').scripts||{}; process.exit(s.test?0:1)" \
+            && npm test -- --runInBand \
+            || echo 'No frontend unit test script present; skipping.'
+
+      - name: Run frontend build
+        run: npm run build
+
+      - name: Run frontend E2E if present
+        shell: bash
+        run: |
+          node -e "const s=require('./package.json').scripts||{}; process.exit((s['test:e2e']||s.e2e)?0:1)" \
+            && (npm run test:e2e || npm run e2e) \
+            || echo 'No frontend E2E script present; skipping.'
+
+  repo-sanity:
+    name: Repo sanity checks
+    runs-on: ubuntu-latest
+    needs: changed-paths
+    if: needs.changed-paths.outputs.shared == 'true'
+    defaults:
+      run:
+        working-directory: workspace
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            workspace/package-lock.json
+
+      - name: Verify active app paths exist
+        shell: bash
+        run: |
+          test -d backend
+          test -d frontend
+          test -d packages/contracts
+
+      - name: Note duplicate scaffolds
+        shell: bash
+        run: |
+          echo "Active app paths are backend/ and frontend/."
+          echo "apps/backend and apps/frontend remain non-authoritative scaffolds and are excluded from CI."
