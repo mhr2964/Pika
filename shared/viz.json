@@ -1,103 +1,43 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-30T08:25:00Z",
+  "updatedAt": "2026-04-30T08:26:00Z",
   "title": "Pika Company Dashboard",
   "widgets": [
     {
       "type": "status",
       "title": "Execution State",
-      "status": "pending",
-      "text": "RECOVERED / ACTIVE WATCH — manager-led execution is restored, but the company is still operating under recovery monitoring rather than full normalization."
-    },
-    {
-      "type": "status",
-      "title": "Daemon",
       "status": "active",
-      "text": "Daemon execution is active again after the manager-binding failure period."
+      "text": "Post-failure recovery risk is closed. Company tracking is now focused on two targeted evidence gates."
     },
     {
       "type": "status",
       "title": "Core Lanes",
       "status": "active",
-      "text": "Parallel execution has been restored across core build and launch-support lanes, with continued watch on evidence quality and continuity."
+      "text": "Build, launch-support, and implementation lanes are active. No broad recovery watch remains in effect."
     },
     {
       "type": "status",
-      "title": "Frontend",
-      "status": "active",
-      "text": "Frontend shows current downstream activity in the restored parallel build."
-    },
-    {
-      "type": "status",
-      "title": "Backend",
+      "title": "CTO Evidence Gate",
       "status": "pending",
-      "text": "Backend shows resumed activity, but current evidence remains incomplete enough to keep this lane on active watch."
+      "text": "Pending canonical runnable-surface milestone/status artifact."
     },
     {
       "type": "status",
-      "title": "Auth",
-      "status": "active",
-      "text": "Auth is active as a dependency lane with current artifact progress."
-    },
-    {
-      "type": "status",
-      "title": "Security",
-      "status": "active",
-      "text": "Security is active as a parallel launch gate with current artifact progress."
+      "title": "Head of Product Evidence Gate",
+      "status": "pending",
+      "text": "Pending downstream activity or explicit phase-status evidence this round."
     },
     {
       "type": "status",
       "title": "Growth",
       "status": "active",
-      "text": "Growth remains active on the launch-support stream with implementation fan-out now visibly activated on-board."
-    },
-    {
-      "type": "status",
-      "title": "Brand",
-      "status": "active",
-      "text": "Brand remains active on launch-support deliverables."
-    },
-    {
-      "type": "status",
-      "title": "Prototype",
-      "status": "pending",
-      "text": "Prototype should be treated as pending/watch; current evidence does not support fully confirmed product health."
-    },
-    {
-      "type": "status",
-      "title": "Product Health",
-      "status": "pending",
-      "text": "Product health remains under active watch; resumed execution does not yet equal full end-to-end confirmation."
-    },
-    {
-      "type": "status",
-      "title": "CTO Lane",
-      "status": "pending",
-      "text": "ACTIVE / AMBER — board-visible activation is present. Clearing condition remains the canonical runnable-surface milestone artifact."
-    },
-    {
-      "type": "status",
-      "title": "Head of Product Lane",
-      "status": "blocked",
-      "text": "UNTRACKED / RED — clearing condition: board-visible downstream activity and current phase status."
-    },
-    {
-      "type": "status",
-      "title": "Support / Monitoring Watchlist",
-      "status": "pending",
-      "text": "Active watch: CTO DevOps/repo-root handoff closure is now activated on-board but still pending durable artifact closure; Head of Growth acquisition-pack implementation fan-out is now activated on-board but remains under follow-through watch; manager-binding fragility, partial churn, and no-op cycle risk remain under watch."
+      "text": "Growth implementation remains active on the approved acquisition pack."
     },
     {
       "type": "status",
       "title": "Prototype Refresh Watch",
       "status": "pending",
-      "text": "Conditional watch only: refresh prototype status if growth or product lands new visible launch/share surfaces that need current-slice alignment."
-    },
-    {
-      "type": "status",
-      "title": "Platform",
-      "status": "held",
-      "text": "Platform remains a watchlisted stale-risk lane pending clearer post-restart advancement."
+      "text": "Conditional branch only: refresh prototype if new visible product/growth surfaces land and need alignment."
     },
     {
       "type": "status",
