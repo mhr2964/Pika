@@ -1,11 +1,11 @@
 {
   "version": 6,
-  "updatedAt": "2026-04-30T00:02:16Z",
+  "updatedAt": "2026-04-30T00:17:21Z",
   "title": "Pika operating dashboard",
   "currentPhase": {
-    "name": "Push-readiness execution against locked baseline",
+    "name": "Parallel push-readiness conversion against locked baseline",
     "status": "active",
-    "summary": "The product flow is approved and archived as complete, `/api/v1` is the active backend contract baseline, and the next engineering gate is frontend integration against the backend-owned contract with backend acceptance/sign-off still pending package completeness."
+    "summary": "The product flow is approved and archived as complete, `/api/v1` is the active backend contract baseline, and the company is converting ready source artifacts into repo-readiness, dashboard-prep, and release-prep progress in parallel while CTO-owned canonical viz publication remains an external dependency rather than the central gate."
   },
   "project": {
     "name": "Pika",
@@ -29,14 +29,106 @@
       "readinessStatusNote": "archive/push-readiness-status.md",
       "operatingHealthReference": "archive/operating-health-reference.md",
       "status": "accepted"
+    },
+    "phaseTransitionArchive": {
+      "path": "archive/2026-04-29-phase-transition.md",
+      "status": "approved-reference",
+      "note": "COO approved this archive snapshot as the current retrievable reference for the restored parallel-work phase transition."
     }
   },
+  "readySourceArtifacts": [
+    {
+      "name": "Approved product baseline flow",
+      "owner": "CEO / Head-of-Product",
+      "status": "ready",
+      "evidence": "Product-flow approval is archived complete and treated as stable for additive refinement only.",
+      "conversionUse": "Supports comprehension/polish refinement work and preserves a locked sequence for engineering and launch-prep alignment."
+    },
+    {
+      "name": "Backend v1 slice contract baseline",
+      "owner": "backend",
+      "status": "ready-with-signoff-pending",
+      "evidence": "`/api/v1` is approved as the active backend namespace and workspace/packages/contracts/pika-vertical-slice.json is the canonical contract path.",
+      "conversionUse": "Provides the integration target for frontend wiring and the baseline for downstream readiness verification once package completeness is accepted."
+    },
+    {
+      "name": "Push-readiness reporting references",
+      "owner": "COO / archivist",
+      "status": "ready",
+      "evidence": "archive/push-readiness-checklist.md, archive/push-readiness-status.md, and archive/operating-health-reference.md are already accepted references.",
+      "conversionUse": "Supports dashboard-prep clarification, repo-readiness ordering, and artifact-linked support verification without waiting on publication."
+    },
+    {
+      "name": "Phase-transition archive snapshot",
+      "owner": "archivist",
+      "status": "ready",
+      "evidence": "archive/2026-04-29-phase-transition.md was created and approved by COO as the current retrievable transition reference.",
+      "conversionUse": "Makes the restored parallel-work phase and blocker chain explicit for CEO visibility and ongoing operating interpretation."
+    },
+    {
+      "name": "Verified frontend preview deployment configuration",
+      "owner": "devops",
+      "status": "ready",
+      "evidence": "Current support activation state notes frontend preview deployment config already verified.",
+      "conversionUse": "Allows release-prep and deployment-readiness follow-through to continue once backend package/env verification is ready."
+    }
+  ],
+  "remainingConversionBlockers": [
+    {
+      "name": "Backend package completeness and sign-off",
+      "owner": "CTO / backend",
+      "status": "active",
+      "impact": "Blocks clean handoff into accepted frontend contract-backed integration and downstream verification.",
+      "evidence": "Backend produced artifacts, but CTO has not granted sign-off because the escalation package contents were incomplete."
+    },
+    {
+      "name": "Frontend integration against accepted backend baseline",
+      "owner": "CTO / frontend + backend",
+      "status": "next",
+      "impact": "Blocks integrated behavior validation against live backend responses and keeps readiness conversion short of a full connected slice.",
+      "evidence": "Frontend progress exists, but the dashboard still treats full contract-backed integration as the next engineering gate."
+    },
+    {
+      "name": "Canonical viz publication to companies/Pika/viz.json",
+      "owner": "CTO / platform",
+      "status": "external-dependency",
+      "impact": "Blocks canonical published dashboard visibility, but should not block parallel repo-readiness, dashboard-prep, archive, or release-prep work.",
+      "evidence": "CEO explicitly reopened parallel work while keeping CTO ownership of publication."
+    }
+  ],
+  "nextConcreteHandoffs": [
+    {
+      "lane": "engineering/build",
+      "owner": "CTO",
+      "handoff": "Move backend from artifacts-landed to accepted package completeness, then hand the approved baseline into frontend contract-backed integration against workspace/packages/contracts/pika-vertical-slice.json."
+    },
+    {
+      "lane": "product refinement",
+      "owner": "Head-of-Product",
+      "handoff": "Use the locked baseline flow to dispatch comprehension-gap, empty-state, and polish refinements that do not alter core sequencing."
+    },
+    {
+      "lane": "launch/release prep",
+      "owner": "Head-of-Growth",
+      "handoff": "Convert the approved baseline into waitlist/referral, share-loop, and launch-message assets so release-facing packaging is ready when engineering verification clears."
+    },
+    {
+      "lane": "dashboard/repo readiness",
+      "owner": "COO",
+      "handoff": "Use the accepted readiness references and approved phase-transition archive to clarify backlog requirements, conversion blockers, and artifact ordering outside the publication dependency."
+    },
+    {
+      "lane": "support verification",
+      "owner": "platform + devops + archivist",
+      "handoff": "Stay conditional and activate only when concrete CI, deployment, archival, dashboard-prep, or publication-linked artifacts are ready for validation."
+    }
+  ],
   "operatingActionsInForce": {
     "status": "active",
     "actions": [
-      "Immediate post-prototype integration sequencing is in force: completed prototype and baseline approvals must roll directly into backend acceptance, frontend contract wiring, and deployment/readiness verification.",
+      "Immediate post-prototype integration sequencing is in force: completed prototype and baseline approvals must roll directly into backend acceptance, frontend contract wiring, repo-readiness artifact completion, and deployment/readiness verification.",
       "Each executive stream must show one explicit next milestone or decision gate so completed work never sits without a named handoff.",
-      "Support-team activation is conditional and should only be treated as active when tied to concrete readiness artifacts such as CI validation, deployment config verification, backend env/package artifacts, or canonical viz publication."
+      "Support-team activation is conditional and should only be treated as active when tied to concrete readiness artifacts such as CI validation, deployment config verification, backend env/package artifacts, dashboard-prep inputs, release-prep inputs, or canonical viz publication."
     ]
   },
   "baselineStreams": [
@@ -45,8 +137,8 @@
       "owner": "CTO",
       "status": "active",
       "idleRisk": "low",
-      "summary": "Engineering is in immediate post-prototype integration mode. `/api/v1` is approved as the active backend baseline, backend produced artifacts but still lacks accepted package contents for final sign-off, and frontend integration is now the named next engineering gate.",
-      "nextMilestoneOrGate": "Advance backend package acceptance/sign-off enough to clear the handoff into frontend contract-backed integration against workspace/packages/contracts/pika-vertical-slice.json.",
+      "summary": "Engineering is in immediate post-prototype integration mode. `/api/v1` is approved as the active backend baseline, backend produced artifacts but still lacks accepted package contents for final sign-off, and frontend hardening plus contract-backed integration can continue in parallel with adjacent repo-readiness work.",
+      "nextMilestoneOrGate": "Advance backend package acceptance/sign-off enough to clear the handoff into frontend contract-backed integration against workspace/packages/contracts/pika-vertical-slice.json, while continuing implementation hardening that does not depend on publication.",
       "integrationSequencing": [
         {
           "step": 1,
@@ -84,7 +176,7 @@
           "name": "frontend",
           "status": "next",
           "state": "integration gate",
-          "note": "Frontend has progress on wiring shared client/async states, but full contract-backed integration remains the next engineering gate."
+          "note": "Frontend has progress on wiring shared client/async states, and contract-conformant hardening can continue while full integration remains the next engineering gate."
         }
       ]
     },
@@ -93,24 +185,24 @@
       "owner": "Head-of-Product",
       "status": "complete",
       "idleRisk": "low",
-      "summary": "Product-flow approval is archived complete and no longer an active readiness gate. Product involvement is limited to later refinement if implementation uncovers meaning-level issues.",
-      "nextMilestoneOrGate": "Hold for post-implementation refinement review only if integrated behavior reveals clarity or meaning issues."
+      "summary": "Product-flow approval is archived complete and no longer an active readiness gate. Product involvement is now parallel refinement work focused on comprehension gaps, empty states, and polish opportunities that do not change the approved core sequencing.",
+      "nextMilestoneOrGate": "Review the approved baseline flow for comprehension, empty-state, and polish refinements that can be dispatched without reopening the locked sequence."
     },
     {
       "name": "launch/live monitoring",
       "owner": "Head-of-Growth",
       "status": "active",
       "idleRisk": "medium",
-      "summary": "Growth remains active but downstream of the engineering integration path. Launch-facing activation should follow verified readiness artifacts rather than speculative timing.",
-      "nextMilestoneOrGate": "Convert verified backend/frontend readiness into launch/share-loop packaging and live monitoring activation."
+      "summary": "Growth remains active and can prepare launch/share-loop packaging, waitlist/referral assets, launch messaging, and monitoring inputs in parallel while engineering clears the remaining acceptance and integration gates.",
+      "nextMilestoneOrGate": "Prepare release-prep and share-loop assets now so they can activate immediately once verified backend/frontend readiness artifacts are in hand."
     },
     {
       "name": "dashboard/repo readiness",
       "owner": "COO",
       "status": "active",
       "idleRisk": "low",
-      "summary": "Dashboard and repo readiness remain tied to the accepted operating-health reference and push-readiness records. Support-team work is only active when linked to concrete artifacts, not as a standing parallel stream.",
-      "nextMilestoneOrGate": "Keep readiness state aligned to archive/push-readiness-status.md and activate support teams only for concrete artifact-linked checks or publication tasks."
+      "summary": "Dashboard and repo readiness remain tied to the accepted operating-health reference and push-readiness records. Canonical viz publication is still a scoped dependency, but readiness ordering, blocker clarification, dashboard backlog prep, and support-team coordination can proceed now against concrete artifacts.",
+      "nextMilestoneOrGate": "Clarify the dashboard requirements/conversion-blocker backlog, keep readiness state aligned to archive/push-readiness-status.md, and complete artifact-linked repo/readiness prep that does not depend on canonical viz publication."
     }
   ],
   "immediateDecisionGates": [
@@ -136,7 +228,7 @@
       "name": "Artifact-linked support verification",
       "owner": "COO / platform + devops + archivist",
       "status": "conditional",
-      "summary": "Activate only when concrete readiness artifacts require validation, publication, or archival state advancement."
+      "summary": "Activate only when concrete readiness artifacts require validation, dashboard-prep clarification, release-prep support, publication, or archival state advancement."
     }
   ],
   "currentSignals": {
@@ -153,20 +245,20 @@
     {
       "team": "platform",
       "status": "conditional-active",
-      "activateWhen": "CI validation or canonical viz publication is required.",
+      "activateWhen": "CI validation, dashboard-prep dependency clarification, or canonical viz publication is required.",
       "currentArtifactLink": "workspace/platform/ci-adoption-validation.md and canonical viz publication routing."
     },
     {
       "team": "devops",
       "status": "conditional-active",
-      "activateWhen": "Deployment config or backend env/package artifacts are ready for verification.",
-      "currentArtifactLink": "Frontend preview deployment config already verified; remain ready for backend package/env verification."
+      "activateWhen": "Deployment config, release-prep inputs, or backend env/package artifacts are ready for verification.",
+      "currentArtifactLink": "Frontend preview deployment config already verified; remain ready for backend package/env verification and release-prep handoff."
     },
     {
       "team": "archivist",
       "status": "conditional-active",
-      "activateWhen": "Readiness ledger/status note or canonical operating references require confirmation.",
-      "currentArtifactLink": "archive/push-readiness-checklist.md, archive/push-readiness-status.md, and archive/operating-health-reference.md."
+      "activateWhen": "Readiness ledger/status note, dashboard-prep clarification, or canonical operating references require confirmation.",
+      "currentArtifactLink": "archive/push-readiness-checklist.md, archive/push-readiness-status.md, archive/operating-health-reference.md, and archive/2026-04-29-phase-transition.md."
     }
   ],
   "divergenceNotes": [
@@ -184,6 +276,11 @@
       "type": "support-activation-discipline",
       "status": "enforced",
       "detail": "Support teams should not appear as continuously active unless they are tied to concrete readiness artifacts."
+    },
+    {
+      "type": "viz-publication-scope",
+      "status": "watch",
+      "detail": "Canonical viz publication to companies/Pika/viz.json remains CTO-owned and outstanding, but it should be tracked as a scoped dependency while repo-readiness, dashboard-prep, release-prep, and archive-backed operating visibility continue in parallel."
     }
   ]
 }

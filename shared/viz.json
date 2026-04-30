@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "company": "Pika",
+  "updatedAt": "2026-04-30T00:08:00Z",
+  "title": "Pika Ops Telemetry",
+  "widgets": [
+    {
+      "type": "section",
+      "id": "leadership-status",
+      "title": "Leadership Status",
+      "items": [
+        {
+          "label": "Company",
+          "value": "Active"
+        },
+        {
+          "label": "Topline",
+          "value": "Operating wave is live; routing is stable and repo connectivity is set."
+        },
+        {
+          "label": "Repo status",
+          "value": "Connected — GitHub URL is present in company context and available for the next push-capable completion."
+        },
+        {
+          "label": "Leadership scan",
+          "value": "Core streams are active, ownership is clear, and there is no open external repo dependency."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "id": "active-workstreams",
+      "title": "Active Workstreams",
+      "items": [
+        {
+          "label": "Archive baseline",
+          "value": "Owner: COO → Archivist | Status: active/completing baseline memory"
+        },
+        {
+          "label": "Efficiency baseline",
+          "value": "Owner: COO → Efficiency | Status: active/reporting on parallelism"
+        },
+        {
+          "label": "Ops telemetry/dashboard",
+          "value": "Owner: COO → Pulse | Status: active/current refresh published"
+        },
+        {
+          "label": "Engineering phase definition",
+          "value": "Owner: CTO | Status: active"
+        },
+        {
+          "label": "Backend contract authority",
+          "value": "Owner: CTO → Backend | Status: active/planning canonical v1 slice contract"
+        },
+        {
+          "label": "Frontend conformity planning",
+          "value": "Owner: CTO → Frontend | Status: active/awaiting contract publication"
+        },
+        {
+          "label": "Platform scaffolding",
+          "value": "Owner: CTO → Platform | Status: active/dispatched"
+        },
+        {
+          "label": "Repo/run/deploy artifacts",
+          "value": "Owner: CTO → DevOps | Status: active/dispatched"
+        },
+        {
+          "label": "First product milestone definition",
+          "value": "Owner: Head of Product | Status: active"
+        },
+        {
+          "label": "Launch-track framing",
+          "value": "Owner: Head of Growth | Status: active"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "id": "blocked-or-unowned",
+      "title": "Blocked / Unowned",
+      "items": [
+        {
+          "label": "Hard-blocked work",
+          "value": "None evidenced"
+        },
+        {
+          "label": "Open dependency",
+          "value": "Repository connectivity cleared; no open GitHub URL dependency remains."
+        },
+        {
+          "label": "Sequencing dependency",
+          "value": "Frontend alignment still depends on backend publishing the canonical v1 slice contract."
+        },
+        {
+          "label": "Unowned work",
+          "value": "None evidenced at the executive-routing level."
+        }
+      ]
+    }
+  ]
+}

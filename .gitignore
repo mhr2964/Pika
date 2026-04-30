@@ -1,10 +1,36 @@
+# dependencies
 node_modules/
+.pnpm-store/
+.npm/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# build outputs
 dist/
 build/
 coverage/
-.next/
-.env
-.env.*
-!.env.example
+.playwright/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# OS / editor
 .DS_Store
-*.log
+Thumbs.db
+.vscode/
+.idea/
+
+# deployment artifacts
+.vercel/
