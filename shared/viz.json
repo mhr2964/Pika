@@ -1,34 +1,31 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-30T03:06:00Z",
+  "updatedAt": "2026-04-30T04:06:00Z",
   "title": "Pika Company Dashboard",
   "widgets": [
     {
       "type": "status",
-      "title": "Daemon",
-      "status": "active",
-      "text": "Resumed. Work is moving again from the user-confirmed monitor path."
+      "title": "Prototype",
+      "status": "ready",
+      "text": "Prototype is ready."
     },
     {
       "type": "status",
-      "title": "Active Lane",
+      "title": "Launch Collateral",
       "status": "active",
-      "text": "Prototype lane is the current focus."
+      "text": "Launch collateral is in progress."
     },
     {
-      "type": "milestone",
-      "title": "Current Gate",
-      "status": "active",
-      "text": "First visible clickable artifact at the user-confirmed monitor path."
+      "type": "status",
+      "title": "External Gate",
+      "status": "pending",
+      "text": "GitHub remote is pending."
     },
     {
-      "type": "list",
-      "title": "Operational Truth",
-      "items": [
-        "Prototype visibility verification is active.",
-        "Dashboard reflects only board-confirmed state.",
-        "Launch narrative work is not the active lane."
-      ]
+      "type": "status",
+      "title": "Next Gate",
+      "status": "active",
+      "text": "Launch-readiness."
     }
   ]
 }

@@ -1,41 +1,45 @@
-# Pika
+# Pika workspace
 
 Pika helps groups rank choices fast through playful head-to-head matchups, then share the result.
 
-## Authoritative runnable layout
+## What this repo contains
 
-The current runnable baseline for this repo is:
+This workspace currently includes:
 
-- `workspace/frontend/` — active frontend app
-- `workspace/backend/` — active backend app
+- `prototype/` — the fastest review artifact: a standalone HTML prototype of the shipped flow
+- `frontend/` — the current frontend app source
+- `backend/` — the current backend app source
+- `packages/contracts/` — shared contract artifacts
+- `apps/` — older scaffold paths; not the authoritative runnable targets for this repo wave
 
-These are the paths that should be used for local development, CI wiring, and first-push repository expectations in the current wave.
+## Quickest way to view the shipped prototype
 
-## Scaffold-only directories
+Open `prototype/index.html` in a browser.
 
-The following directories exist as scaffold/documentation structure and are **not** the executable baseline for this push:
+The prototype is a static review artifact with local sibling assets (for example `prototype.js` and `styles.css`) and is intended for direct file-based review.
 
-- `workspace/apps/frontend/`
-- `workspace/apps/backend/`
+## Prototype location and basis
 
-Do not treat `apps/*` as the live runtime path unless leadership explicitly approves a future consolidation.
+- Prototype entry: `prototype/index.html`
+- The prototype’s review notes point back to:
+  - `frontend/src/App.tsx`
+  - `frontend/src/App.css`
+  - `frontend/index.html`
 
-## Shared structure
+## Current runnable app paths
 
-- `workspace/packages/contracts/` — shared contracts package
-- `workspace/docs/` — shared product and development documentation
-- `workspace/brand/` — brand deliverables
-- `workspace/growth/` — growth deliverables
-- `workspace/devops/` — deployment and operations docs
+If you are working with the codebase rather than the standalone prototype, the active app roots are:
 
-## Local development
+- `frontend/`
+- `backend/`
 
-See `workspace/docs/local-development.md` for the current startup paths and conventions.
+The root `package.json` also reflects those current app paths. The `apps/frontend/` and `apps/backend/` directories remain scaffold-only.
 
-## Shared contracts
+## Minimal orientation
 
-See `workspace/packages/contracts/README.md`.
+- Review/demo the shipped flow: open `prototype/index.html`
+- Inspect frontend implementation source: `frontend/`
+- Inspect backend implementation source: `backend/`
+- Review shared contracts: `packages/contracts/`
 
-## Push-readiness note
-
-Repository-facing baseline artifacts now reflect the current repo truth: top-level `frontend/` and top-level `backend/` are authoritative runnable paths for this wave, while `apps/*` remains scaffold-only.
+For concise path notes, see `docs/local-development.md`.

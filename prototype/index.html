@@ -1,1219 +1,336 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pika Prototype</title>
-  <style>
-    :root {
-      --bg: #0f1021;
-      --bg-soft: #17192f;
-      --panel: rgba(23, 25, 47, 0.88);
-      --panel-strong: #1d2140;
-      --text: #f6f7fb;
-      --muted: #a9b0d0;
-      --border: rgba(255, 255, 255, 0.1);
-      --accent: #8b5cf6;
-      --accent-2: #ec4899;
-      --accent-3: #22c55e;
-      --warning: #f59e0b;
-      --shadow: 0 24px 50px rgba(0, 0, 0, 0.35);
-      --radius-xl: 28px;
-      --radius-lg: 20px;
-      --radius-md: 16px;
-      --radius-sm: 12px;
-      --max-width: 440px;
-      --transition: 180ms ease;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html, body {
-      margin: 0;
-      min-height: 100%;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(139, 92, 246, 0.28), transparent 34%),
-        radial-gradient(circle at top right, rgba(236, 72, 153, 0.22), transparent 28%),
-        linear-gradient(180deg, #111327 0%, #0a0b16 100%);
-      color: var(--text);
-    }
-
-    body {
-      display: flex;
-      justify-content: center;
-      padding: 20px 14px 36px;
-    }
-
-    .app-shell {
-      width: 100%;
-      max-width: var(--max-width);
-    }
-
-    .phone-frame {
-      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-      border: 1px solid var(--border);
-      border-radius: 34px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      backdrop-filter: blur(18px);
-    }
-
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 18px 0;
-      font-size: 0.8rem;
-      color: rgba(255,255,255,0.78);
-    }
-
-    .screen {
-      display: none;
-      min-height: 760px;
-      padding: 18px;
-      position: relative;
-    }
-
-    .screen.active {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .hero-card,
-    .panel,
-    .result-card,
-    .vote-card,
-    .option-card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      backdrop-filter: blur(18px);
-      box-shadow: 0 16px 40px rgba(7, 10, 28, 0.25);
-    }
-
-    .hero-card {
-      padding: 24px 22px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .hero-card::after {
-      content: "";
-      position: absolute;
-      right: -28px;
-      top: -32px;
-      width: 140px;
-      height: 140px;
-      background: radial-gradient(circle, rgba(236,72,153,0.35), transparent 65%);
-      pointer-events: none;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.06);
-      color: #ddd8ff;
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-
-    h1, h2, h3, p {
-      margin: 0;
-    }
-
-    h1 {
-      font-size: 2.2rem;
-      line-height: 1;
-      letter-spacing: -0.04em;
-      margin-top: 14px;
-    }
-
-    h2 {
-      font-size: 1.45rem;
-      letter-spacing: -0.03em;
-    }
-
-    h3 {
-      font-size: 1rem;
-      letter-spacing: -0.02em;
-    }
-
-    .subtext {
-      color: var(--muted);
-      line-height: 1.5;
-      font-size: 0.98rem;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .mini-stat {
-      padding: 14px;
-      border-radius: var(--radius-md);
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .mini-stat strong {
-      display: block;
-      font-size: 1.12rem;
-      margin-bottom: 4px;
-    }
-
-    .panel {
-      padding: 18px;
-    }
-
-    .actions,
-    .footer-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    button,
-    input {
-      font: inherit;
-    }
-
-    .btn {
-      border: 0;
-      border-radius: 18px;
-      padding: 15px 18px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform var(--transition), opacity var(--transition), background var(--transition), border-color var(--transition);
-      width: 100%;
-    }
-
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: white;
-      box-shadow: 0 12px 26px rgba(139, 92, 246, 0.28);
-    }
-
-    .btn-secondary {
-      background: rgba(255,255,255,0.06);
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--muted);
-      border: 1px dashed rgba(255,255,255,0.14);
-    }
-
-    .btn:disabled {
-      opacity: 0.42;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .topbar button {
-      width: auto;
-      padding: 10px 14px;
-      border-radius: 14px;
-    }
-
-    .step-label {
-      color: #ddd8ff;
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .form-stack,
-    .stack {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .field label {
-      color: #dde2ff;
-      font-size: 0.92rem;
-      font-weight: 600;
-    }
-
-    .text-input {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.05);
-      color: var(--text);
-      border-radius: 16px;
-      padding: 15px 16px;
-      outline: none;
-    }
-
-    .text-input:focus {
-      border-color: rgba(139, 92, 246, 0.75);
-      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.16);
-    }
-
-    .chips {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .chip {
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.04);
-      color: #e9ecff;
-      border-radius: 999px;
-      padding: 11px 14px;
-      font-size: 0.92rem;
-      font-weight: 700;
-      width: auto;
-    }
-
-    .chip.active {
-      background: rgba(139, 92, 246, 0.2);
-      border-color: rgba(180, 147, 255, 0.75);
-      color: white;
-    }
-
-    .muted-card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: var(--radius-lg);
-      padding: 14px;
-      color: var(--muted);
-      line-height: 1.45;
-    }
-
-    .option-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .option-card {
-      padding: 14px;
-      border-radius: var(--radius-lg);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .option-rank {
-      width: 38px;
-      height: 38px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      background: rgba(139, 92, 246, 0.16);
-      color: #e9ddff;
-      font-weight: 800;
-      flex-shrink: 0;
-    }
-
-    .option-main {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .option-main p {
-      color: var(--muted);
-      margin-top: 4px;
-      font-size: 0.9rem;
-    }
-
-    .remove-btn {
-      width: auto;
-      border: 0;
-      background: rgba(255,255,255,0.06);
-      color: #ffd6e7;
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .add-row {
-      display: flex;
-      gap: 10px;
-    }
-
-    .add-row .text-input {
-      flex: 1;
-    }
-
-    .add-row .btn {
-      width: auto;
-      min-width: 96px;
-    }
-
-    .helper-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    .progress-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .progress-bar {
-      height: 10px;
-      width: 100%;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
-      transition: width 240ms ease;
-    }
-
-    .vote-card {
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .vote-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    .matchup-grid {
-      display: grid;
-      gap: 12px;
-    }
-
-    .choice-btn {
-      text-align: left;
-      padding: 18px;
-      border-radius: 22px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
-      color: var(--text);
-      cursor: pointer;
-      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
-    }
-
-    .choice-btn:hover {
-      border-color: rgba(180, 147, 255, 0.7);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.2);
-      transform: translateY(-1px);
-    }
-
-    .choice-btn small {
-      display: block;
-      color: #d5c8ff;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 800;
-      margin-bottom: 8px;
-      font-size: 0.74rem;
-    }
-
-    .choice-btn strong {
-      font-size: 1.08rem;
-      display: block;
-      margin-bottom: 6px;
-    }
-
-    .choice-btn span {
-      color: var(--muted);
-      line-height: 1.4;
-      display: block;
-    }
-
-    .vs-pill {
-      align-self: center;
-      padding: 8px 12px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 999px;
-      color: #f8d8e7;
-      font-size: 0.76rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-    }
-
-    .result-card {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .winner-card {
-      padding: 18px;
-      border-radius: 24px;
-      background:
-        radial-gradient(circle at top right, rgba(236,72,153,0.22), transparent 38%),
-        linear-gradient(180deg, rgba(139,92,246,0.18), rgba(255,255,255,0.05));
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-
-    .winner-badge {
-      display: inline-flex;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(34, 197, 94, 0.16);
-      color: #c7ffd7;
-      font-size: 0.78rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-
-    .winner-card p {
-      color: #d4daf7;
-      line-height: 1.5;
-      margin-top: 8px;
-    }
-
-    .ranking-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .ranking-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .ranking-item .place {
-      width: 34px;
-      height: 34px;
-      display: grid;
-      place-items: center;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.06);
-      color: #eceeff;
-      font-weight: 800;
-      flex-shrink: 0;
-    }
-
-    .ranking-copy {
-      flex: 1;
-    }
-
-    .ranking-copy span {
-      display: block;
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    .pill-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .tiny-pill {
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.06);
-      color: #ece7ff;
-      font-size: 0.82rem;
-      font-weight: 700;
-    }
-
-    .empty-note,
-    .error-note {
-      border-radius: 16px;
-      padding: 12px 14px;
-      font-size: 0.92rem;
-    }
-
-    .empty-note {
-      background: rgba(255,255,255,0.05);
-      color: var(--muted);
-    }
-
-    .error-note {
-      background: rgba(245, 158, 11, 0.12);
-      color: #ffdca1;
-      border: 1px solid rgba(245, 158, 11, 0.22);
-      display: none;
-    }
-
-    .error-note.show {
-      display: block;
-    }
-
-    .footer-copy {
-      text-align: center;
-      margin-top: 14px;
-      color: rgba(255,255,255,0.48);
-      font-size: 0.8rem;
-    }
-
-    @media (min-width: 520px) {
-      body {
-        padding-top: 28px;
-      }
-
-      .screen {
-        min-height: 812px;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="app-shell">
-    <div class="phone-frame">
-      <div class="status-bar">
-        <span>9:41</span>
-        <span>Pika</span>
-        <span>●●●</span>
-      </div>
-
-      <section class="screen active" id="screen-landing">
-        <div class="hero-card">
-          <div class="eyebrow">✨ Pairwise picks, zero overthinking</div>
-          <h1>Pika helps your group land on one great choice.</h1>
-          <p class="subtext" style="margin-top: 14px;">
-            Build a room, drop in ideas, and let quick head-to-head votes turn group indecision into a clear winner.
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pika Prototype Review</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="prototype-shell">
+      <aside class="review-rail">
+        <div class="brand-lockup">
+          <div class="brand-badge">Pika</div>
+          <p class="brand-purpose">
+            Turn your photos into playful animated moments.
           </p>
-
-          <div class="hero-grid">
-            <div class="mini-stat">
-              <strong>Fast</strong>
-              <span class="subtext">Tap through simple matchups instead of debating in circles.</span>
-            </div>
-            <div class="mini-stat">
-              <strong>Fair</strong>
-              <span class="subtext">Every option gets its shot before the final ranking appears.</span>
-            </div>
-          </div>
         </div>
 
-        <div class="panel stack">
-          <div>
-            <h2>Tonight’s decision, sorted.</h2>
-            <p class="subtext" style="margin-top: 8px;">
-              Try a sample room for choosing a team dinner spot with a few spicy contenders.
-            </p>
+        <nav class="flow-nav" aria-label="Prototype flow states">
+          <button class="flow-link is-active" data-screen="welcome">Welcome</button>
+          <button class="flow-link" data-screen="room-decision">Choose path</button>
+          <button class="flow-link" data-screen="create-room">Create room</button>
+          <button class="flow-link" data-screen="join-room">Join room</button>
+          <button class="flow-link" data-screen="host-lobby">Host lobby</button>
+          <button class="flow-link" data-screen="participant-lobby">Participant lobby</button>
+          <button class="flow-link" data-screen="matchup-intro">Matchup intro</button>
+          <button class="flow-link" data-screen="active-matchup">Active matchup</button>
+          <button class="flow-link" data-screen="submitted-waiting">Waiting</button>
+          <button class="flow-link" data-screen="between-matchups">Between rounds</button>
+          <button class="flow-link" data-screen="results">Results</button>
+          <button class="flow-link" data-screen="restart-pending">Restart pending</button>
+          <button class="flow-link" data-screen="system-empty">Empty room</button>
+          <button class="flow-link" data-screen="system-error">Network error</button>
+        </nav>
+
+        <section class="review-notes">
+          <h2>Review artifact</h2>
+          <p>
+            Standalone HTML prototype scaffold generated from the current top-level frontend app flow,
+            with additive launch-polish updates applied for onboarding clarity, cadence, and reveal.
+          </p>
+          <ul>
+            <li>Source of truth: <code>workspace/frontend/src/App.tsx</code></li>
+            <li>Styling basis: <code>workspace/frontend/src/App.css</code></li>
+            <li>Entry shell basis: <code>workspace/frontend/index.html</code></li>
+          </ul>
+        </section>
+      </aside>
+
+      <main class="device-stage">
+        <div class="device-chrome">
+          <div class="device-header">
+            <span class="camera-dot"></span>
+            <span class="device-title">Prototype review</span>
+            <span class="status-pill" id="statusPill">Welcome</span>
           </div>
 
-          <div class="pill-row">
-            <div class="tiny-pill">Friends</div>
-            <div class="tiny-pill">Dinner</div>
-            <div class="tiny-pill">Ranked reveal</div>
-          </div>
-        </div>
-
-        <div class="actions" style="margin-top: auto;">
-          <button class="btn btn-primary" id="start-flow-btn" type="button">Start a room</button>
-          <button class="btn btn-secondary" id="start-sample-btn" type="button">Jump into sample flow</button>
-        </div>
-
-        <div class="footer-copy">Prototype • local-only demo • no sign-in required</div>
-      </section>
-
-      <section class="screen" id="screen-room">
-        <div class="topbar">
-          <button class="btn btn-secondary" id="back-to-landing-btn" type="button">Back</button>
-          <div class="step-label">Step 1 of 3</div>
-        </div>
-
-        <div class="panel stack">
-          <div>
-            <h2>Create your room</h2>
-            <p class="subtext" style="margin-top: 8px;">
-              Give the room a name and choose how the vibe should feel when people vote.
-            </p>
-          </div>
-
-          <div class="form-stack">
-            <div class="field">
-              <label for="room-name-input">Room name</label>
-              <input
-                id="room-name-input"
-                class="text-input"
-                type="text"
-                maxlength="40"
-                placeholder="e.g. Friday dinner pick"
-              />
-            </div>
-
-            <div class="field">
-              <label>Voting mode</label>
-              <div class="chips" id="mode-chips">
-                <button class="chip active" data-mode="Quick fire" type="button">Quick fire</button>
-                <button class="chip" data-mode="Balanced" type="button">Balanced</button>
-                <button class="chip" data-mode="Deep dive" type="button">Deep dive</button>
+          <section class="screen is-visible" id="screen-welcome">
+            <div class="app-card hero-card">
+              <div class="eyebrow">Playful group ranking</div>
+              <h1>Turn indecision into a winner in minutes.</h1>
+              <p class="lede">
+                Pika helps groups rank choices fast through playful head-to-head matchups, then share
+                the result with everyone who weighed in.
+              </p>
+              <div class="cta-stack">
+                <button class="primary-action" data-goto="room-decision">Start a room</button>
+                <button class="ghost-action" data-goto="join-room">Join with a code</button>
               </div>
             </div>
+          </section>
 
-            <div class="muted-card">
-              <strong style="display:block; margin-bottom: 8px; color: #f2edff;">Mode preview</strong>
-              <span id="mode-description">
-                Quick fire keeps it snappy with fewer matchups and a fast reveal.
-              </span>
+          <section class="screen" id="screen-room-decision">
+            <div class="app-card">
+              <div class="eyebrow">Onboarding</div>
+              <h2>Start a room or jump into one already live.</h2>
+              <p class="lede">
+                Hosts set the prompt and options. Everyone else joins with a code and votes one
+                matchup at a time.
+              </p>
+              <div class="choice-grid">
+                <button class="choice-card" data-goto="create-room">
+                  <span class="choice-title">Create a room</span>
+                  <span class="choice-copy">Start a new ranking session, add your options, and invite the group.</span>
+                </button>
+                <button class="choice-card" data-goto="join-room">
+                  <span class="choice-title">Join a room</span>
+                  <span class="choice-copy">Enter a room code and jump straight into the current session.</span>
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
+          </section>
 
-        <div class="actions" style="margin-top: auto;">
-          <button class="btn btn-primary" id="continue-to-options-btn" type="button">Continue to options</button>
-        </div>
-      </section>
-
-      <section class="screen" id="screen-options">
-        <div class="topbar">
-          <button class="btn btn-secondary" id="back-to-room-btn" type="button">Back</button>
-          <div class="step-label">Step 2 of 3</div>
-        </div>
-
-        <div class="panel stack">
-          <div>
-            <h2 id="options-title">Add options</h2>
-            <p class="subtext" style="margin-top: 8px;">
-              Seeded with believable picks. Add your own or remove anything that doesn’t fit.
-            </p>
-          </div>
-
-          <div class="helper-row">
-            <span id="option-count-label">0 options</span>
-            <span>Need at least 2 to continue</span>
-          </div>
-
-          <div class="error-note" id="option-error">
-            Add at least two options before starting voting.
-          </div>
-
-          <div class="add-row">
-            <input
-              id="new-option-input"
-              class="text-input"
-              type="text"
-              maxlength="36"
-              placeholder="Add another option"
-            />
-            <button class="btn btn-secondary" id="add-option-btn" type="button">Add</button>
-          </div>
-
-          <div class="option-list" id="option-list"></div>
-          <div class="empty-note" id="empty-options-note" style="display:none;">
-            No options left. Add a couple of ideas to keep going.
-          </div>
-        </div>
-
-        <div class="footer-actions" style="margin-top: auto;">
-          <button class="btn btn-primary" id="start-voting-btn" type="button">Start voting</button>
-        </div>
-      </section>
-
-      <section class="screen" id="screen-vote">
-        <div class="topbar">
-          <button class="btn btn-secondary" id="back-to-options-from-vote-btn" type="button">Back</button>
-          <div class="step-label">Step 3 of 3</div>
-        </div>
-
-        <div class="vote-card">
-          <div>
-            <h2 id="vote-room-heading">Friday dinner pick</h2>
-            <p class="subtext" id="vote-mode-copy" style="margin-top: 8px;">
-              Quick fire mode • choose the stronger option in each matchup
-            </p>
-          </div>
-
-          <div class="progress-wrap">
-            <div class="helper-row">
-              <span id="progress-text">Matchup 1 of 1</span>
-              <span id="progress-percent">0%</span>
+          <section class="screen" id="screen-create-room">
+            <div class="app-card">
+              <div class="eyebrow">Create room</div>
+              <h2>Set up your ranking room</h2>
+              <p class="lede">Give the group one clear question, then add the options you want Pika to rank.</p>
+              <label class="field">
+                <span>Your name</span>
+                <input value="Maya" readonly />
+              </label>
+              <label class="field">
+                <span>Prompt</span>
+                <input value="Where should we go for dinner?" readonly />
+              </label>
+              <label class="field">
+                <span>Options</span>
+                <textarea readonly>Pizza Place
+Sushi Spot
+Taco Truck
+Burger Bar</textarea>
+              </label>
+              <button class="primary-action" data-goto="host-lobby">Create room</button>
             </div>
-            <div class="progress-bar">
-              <div class="progress-fill" id="progress-fill"></div>
+          </section>
+
+          <section class="screen" id="screen-join-room">
+            <div class="app-card">
+              <div class="eyebrow">Join room</div>
+              <h2>Enter the room code and you’re in.</h2>
+              <p class="lede">Pick the name your group will see, enter the code, and join the next matchup.</p>
+              <label class="field">
+                <span>Display name</span>
+                <input value="Jordan" readonly />
+              </label>
+              <label class="field">
+                <span>Room code</span>
+                <input class="code-input" value="PIKA42" readonly />
+              </label>
+              <button class="primary-action" data-goto="participant-lobby">Join room</button>
             </div>
-          </div>
+          </section>
 
-          <div class="vote-header">
-            <span id="vote-helper-copy">Tap what the group would rather do.</span>
-            <span id="remaining-copy">1 left</span>
-          </div>
+          <section class="screen" id="screen-host-lobby">
+            <div class="app-card">
+              <div class="eyebrow">Host lobby</div>
+              <div class="room-code-card">
+                <span class="room-code-label">Room code</span>
+                <strong>PIKA42</strong>
+              </div>
+              <h2>Where should we go for dinner?</h2>
+              <p class="lede">Your room is ready. Share the code, wait for everyone to join, then kick off the first matchup.</p>
+              <div class="participant-row">
+                <span class="participant-chip is-host">Maya · host</span>
+                <span class="participant-chip">Jordan</span>
+                <span class="participant-chip">Sam</span>
+                <span class="participant-chip">Tess</span>
+              </div>
+              <div class="option-list">
+                <div class="option-card">Pizza Place</div>
+                <div class="option-card">Sushi Spot</div>
+                <div class="option-card">Taco Truck</div>
+                <div class="option-card">Burger Bar</div>
+              </div>
+              <div class="cta-stack">
+                <button class="primary-action" data-goto="matchup-intro">Start matchups</button>
+                <button class="ghost-action" data-goto="results">Preview result reveal</button>
+              </div>
+            </div>
+          </section>
 
-          <div class="matchup-grid">
-            <button class="choice-btn" id="choice-a-btn" type="button">
-              <small>Option A</small>
-              <strong id="choice-a-title"></strong>
-              <span id="choice-a-meta"></span>
-            </button>
+          <section class="screen" id="screen-participant-lobby">
+            <div class="app-card">
+              <div class="eyebrow">Participant lobby</div>
+              <h2>You’re in.</h2>
+              <p class="lede">The host is gathering the room. Once matchups start, you’ll vote privately one choice at a time.</p>
+              <div class="room-code-card compact">
+                <span class="room-code-label">Room</span>
+                <strong>PIKA42</strong>
+              </div>
+              <div class="participant-row">
+                <span class="participant-chip is-host">Maya · host</span>
+                <span class="participant-chip is-self">Jordan · you</span>
+                <span class="participant-chip">Sam</span>
+                <span class="participant-chip">Tess</span>
+              </div>
+              <button class="ghost-action" data-goto="active-matchup">Skip to active matchup</button>
+            </div>
+          </section>
 
-            <div class="vs-pill">VS</div>
+          <section class="screen" id="screen-matchup-intro">
+            <div class="app-card">
+              <div class="eyebrow">Round 1 of 3</div>
+              <h2>Your first matchup is ready.</h2>
+              <p class="lede">
+                Vote quickly on what feels better. Pika keeps the room moving and stacks those picks
+                into a final ranking.
+              </p>
+              <div class="versus-preview">
+                <div class="versus-option">Pizza Place</div>
+                <span class="versus-separator">vs</span>
+                <div class="versus-option">Sushi Spot</div>
+              </div>
+              <button class="primary-action" data-goto="active-matchup">Begin voting</button>
+            </div>
+          </section>
 
-            <button class="choice-btn" id="choice-b-btn" type="button">
-              <small>Option B</small>
-              <strong id="choice-b-title"></strong>
-              <span id="choice-b-meta"></span>
-            </button>
-          </div>
+          <section class="screen" id="screen-active-matchup">
+            <div class="app-card">
+              <div class="eyebrow">Choose one</div>
+              <h2>Which feels better tonight?</h2>
+              <p class="lede">Pick your favorite in this head-to-head. The next matchup loads right after the room finishes.</p>
+              <div class="choice-grid">
+                <button class="vote-card" data-goto="submitted-waiting">
+                  <span class="vote-title">Pizza Place</span>
+                  <span class="vote-copy">Cozy, fast, easy crowd-pleaser.</span>
+                </button>
+                <button class="vote-card" data-goto="submitted-waiting">
+                  <span class="vote-title">Sushi Spot</span>
+                  <span class="vote-copy">Fresh, shareable, slightly more special.</span>
+                </button>
+              </div>
+              <div class="activity-feed">
+                <div class="feed-item"><span class="dot"></span> Sam is voting</div>
+                <div class="feed-item"><span class="dot"></span> Tess is voting</div>
+                <div class="feed-item"><span class="dot"></span> Maya voted</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" id="screen-submitted-waiting">
+            <div class="app-card center-card">
+              <div class="eyebrow">Vote received</div>
+              <h2>Nice pick.</h2>
+              <p class="lede">Your vote is locked. As soon as the room finishes, Pika rolls everyone into the next decision.</p>
+              <div class="progress-cluster">
+                <div class="progress-bar">
+                  <span style="width: 75%"></span>
+                </div>
+                <p class="muted">3 of 4 participants have voted.</p>
+              </div>
+              <button class="ghost-action" data-goto="between-matchups">Continue review</button>
+            </div>
+          </section>
+
+          <section class="screen" id="screen-between-matchups">
+            <div class="app-card center-card">
+              <div class="eyebrow">Next up</div>
+              <h2>Round complete</h2>
+              <p class="lede">That matchup is in. Pika is already lining up the next head-to-head from the room’s latest picks.</p>
+              <button class="primary-action" data-goto="results">See result reveal</button>
+            </div>
+          </section>
+
+          <section class="screen" id="screen-results">
+            <div class="app-card">
+              <div class="eyebrow">Results reveal</div>
+              <h2>Pizza Place wins tonight</h2>
+              <p class="lede">
+                Your group turned a messy decision into a clear ranking through fast, playful
+                head-to-head picks.
+              </p>
+
+              <div class="results-stack">
+                <div class="result-row is-winner">
+                  <span class="result-rank">1</span>
+                  <div>
+                    <strong>Pizza Place</strong>
+                    <p>Top finisher with the strongest head-to-head performance across the room.</p>
+                  </div>
+                </div>
+                <div class="result-row">
+                  <span class="result-rank">2</span>
+                  <div>
+                    <strong>Sushi Spot</strong>
+                    <p>Close second and the winner in most secondary matchups.</p>
+                  </div>
+                </div>
+                <div class="result-row">
+                  <span class="result-rank">3</span>
+                  <div>
+                    <strong>Taco Truck</strong>
+                    <p>Popular wildcard with split room support.</p>
+                  </div>
+                </div>
+                <div class="result-row">
+                  <span class="result-rank">4</span>
+                  <div>
+                    <strong>Burger Bar</strong>
+                    <p>Lower consensus this round.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="share-card">
+                <span class="share-label">Share line</span>
+                <strong>“Pizza Place won our Pika room tonight 🍕”</strong>
+              </div>
+
+              <div class="cta-stack">
+                <button class="primary-action" data-goto="restart-pending">Start another round</button>
+                <button class="ghost-action" data-goto="welcome">Back to start</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" id="screen-restart-pending">
+            <div class="app-card center-card">
+              <div class="eyebrow">Restart requested</div>
+              <h2>Waiting for the room</h2>
+              <p class="lede">Another round is ready to go as soon as everyone confirms they want back in.</p>
+              <div class="participant-row centered">
+                <span class="participant-chip is-host">Maya · ready</span>
+                <span class="participant-chip is-self">Jordan · ready</span>
+                <span class="participant-chip">Sam · pending</span>
+                <span class="participant-chip">Tess · pending</span>
+              </div>
+              <button class="ghost-action" data-goto="host-lobby">Return to lobby</button>
+            </div>
+          </section>
+
+          <section class="screen" id="screen-system-empty">
+            <div class="app-card center-card">
+              <div class="eyebrow">System state</div>
+              <h2>Room not found</h2>
+              <p class="lede">That code doesn’t map to an active room yet. Double-check it and try again.</p>
+              <button class="ghost-action" data-goto="join-room">Try another code</button>
+            </div>
+</section>
+
+          <section class="screen" id="screen-system-error">
+            <div class="app-card center-card">
+              <div class="eyebrow">System state</div>
+              <h2>Connection hiccup</h2>
+              <p class="lede">We couldn’t reach the room service. Retry, or keep reviewing the flow offline.</p>
+              <button class="ghost-action" data-goto="active-matchup">Back to matchup</button>
+            </div>
+          </section>
         </div>
-      </section>
-
-      <section class="screen" id="screen-result">
-        <div class="topbar">
-          <button class="btn btn-secondary" id="back-to-options-from-results-btn" type="button">Back</button>
-          <div class="step-label">Reveal</div>
-        </div>
-
-        <div class="result-card">
-          <div>
-            <h2 id="result-heading">Your ranking is in</h2>
-            <p class="subtext" id="result-subcopy" style="margin-top: 8px;">
-              Based on the matchups you just completed.
-            </p>
-          </div>
-
-          <div class="winner-card">
-            <div class="winner-badge">Top pick</div>
-            <h2 id="winner-title">Sora Sushi</h2>
-            <p id="winner-description"></p>
-          </div>
-
-          <div>
-            <h3 style="margin-bottom: 10px;">Full ranking</h3>
-            <div class="ranking-list" id="ranking-list"></div>
-          </div>
-        </div>
-
-        <div class="footer-actions">
-          <button class="btn btn-primary" id="restart-btn" type="button">Start over</button>
-          <button class="btn btn-secondary" id="results-back-to-options-btn" type="button">Back to options</button>
-        </div>
-      </section>
+      </main>
     </div>
-  </div>
 
-  <script>
-    const modeDescriptions = {
-      "Quick fire": "Quick fire keeps it snappy with fewer matchups and a fast reveal.",
-      "Balanced": "Balanced gives each option a little more airtime before ranking the results.",
-      "Deep dive": "Deep dive is best for close calls when your group wants extra confidence."
-    };
-
-    const optionDescriptions = {
-      "Sora Sushi": "Shareable rolls, quick service, and a place everyone already likes.",
-      "Luna Pasta Club": "Cozy neighborhood pasta with giant portions and low decision risk.",
-      "Taco Tempo": "Lively taco bar with solid veggie picks and excellent group energy.",
-      "Ember Pizza Lab": "Wood-fired pizza, easy split bills, and fast tables for groups.",
-      "Night Market Ramen": "Late-night ramen spot with bold broths and casual walk-in vibes.",
-      "Green Mango Thai": "Comforting curries, bright flavors, and good options for every spice level."
-    };
-
-    const seededOptions = [
-      "Sora Sushi",
-      "Luna Pasta Club",
-      "Taco Tempo",
-      "Ember Pizza Lab"
-    ];
-
-    const appState = {
-      roomName: "Friday dinner pick",
-      mode: "Quick fire",
-      options: [...seededOptions],
-      matchups: [],
-      currentMatchupIndex: 0,
-      scores: {},
-      rankedResults: []
-    };
-
-    const screens = {
-      landing: document.getElementById("screen-landing"),
-      room: document.getElementById("screen-room"),
-      options: document.getElementById("screen-options"),
-      vote: document.getElementById("screen-vote"),
-      result: document.getElementById("screen-result")
-    };
-
-    const roomNameInput = document.getElementById("room-name-input");
-    const modeChips = Array.from(document.querySelectorAll(".chip"));
-    const modeDescription = document.getElementById("mode-description");
-    const optionsTitle = document.getElementById("options-title");
-    const optionList = document.getElementById("option-list");
-    const optionCountLabel = document.getElementById("option-count-label");
-    const newOptionInput = document.getElementById("new-option-input");
-    const optionError = document.getElementById("option-error");
-    const emptyOptionsNote = document.getElementById("empty-options-note");
-
-    const voteRoomHeading = document.getElementById("vote-room-heading");
-    const voteModeCopy = document.getElementById("vote-mode-copy");
-    const progressText = document.getElementById("progress-text");
-    const progressPercent = document.getElementById("progress-percent");
-    const progressFill = document.getElementById("progress-fill");
-    const remainingCopy = document.getElementById("remaining-copy");
-    const choiceATitle = document.getElementById("choice-a-title");
-    const choiceAMeta = document.getElementById("choice-a-meta");
-    const choiceBTitle = document.getElementById("choice-b-title");
-    const choiceBMeta = document.getElementById("choice-b-meta");
-
-    const resultHeading = document.getElementById("result-heading");
-    const resultSubcopy = document.getElementById("result-subcopy");
-    const winnerTitle = document.getElementById("winner-title");
-    const winnerDescription = document.getElementById("winner-description");
-    const rankingList = document.getElementById("ranking-list");
-
-    function showScreen(name) {
-      Object.values(screens).forEach((screen) => screen.classList.remove("active"));
-      screens[name].classList.add("active");
-    }
-
-    function sanitizeRoomName(value) {
-      const trimmed = value.trim();
-      return trimmed || "Friday dinner pick";
-    }
-
-    function describeOption(optionName) {
-      return optionDescriptions[optionName] || "Fresh contender added to the room for this vote.";
-    }
-
-    function updateRoomBindings() {
-      roomNameInput.value = appState.roomName;
-      modeDescription.textContent = modeDescriptions[appState.mode];
-      modeChips.forEach((chip) => {
-        chip.classList.toggle("active", chip.dataset.mode === appState.mode);
-      });
-    }
-
-    function updateOptionsTitle() {
-      optionsTitle.textContent = appState.roomName + " • options";
-    }
-
-    function renderOptions() {
-      optionList.innerHTML = "";
-      optionCountLabel.textContent = appState.options.length + (appState.options.length === 1 ? " option" : " options");
-      emptyOptionsNote.style.display = appState.options.length ? "none" : "block";
-
-      appState.options.forEach((option, index) => {
-        const card = document.createElement("div");
-        card.className = "option-card";
-
-        const rank = document.createElement("div");
-        rank.className = "option-rank";
-        rank.textContent = index + 1;
-
-        const main = document.createElement("div");
-        main.className = "option-main";
-
-        const title = document.createElement("h3");
-        title.textContent = option;
-
-        const meta = document.createElement("p");
-        meta.textContent = describeOption(option);
-
-        main.appendChild(title);
-        main.appendChild(meta);
-
-        const remove = document.createElement("button");
-        remove.className = "remove-btn";
-        remove.type = "button";
-        remove.textContent = "Remove";
-        remove.addEventListener("click", () => {
-          appState.options.splice(index, 1);
-          optionError.classList.remove("show");
-          renderOptions();
-        });
-
-        card.appendChild(rank);
-        card.appendChild(main);
-        card.appendChild(remove);
-        optionList.appendChild(card);
-      });
-    }
-
-    function createMatchups(options) {
-      const pairs = [];
-      for (let i = 0; i < options.length; i += 1) {
-        for (let j = i + 1; j < options.length; j += 1) {
-          pairs.push([options[i], options[j]]);
-        }
-      }
-      return pairs;
-    }
-
-    function resetVotingState() {
-      appState.matchups = createMatchups(appState.options);
-      appState.currentMatchupIndex = 0;
-      appState.scores = {};
-      appState.options.forEach((option) => {
-        appState.scores[option] = 0;
-      });
-      appState.rankedResults = [];
-    }
-
-    function renderVoteScreen() {
-      voteRoomHeading.textContent = appState.roomName;
-      voteModeCopy.textContent = appState.mode + " mode • choose the stronger option in each matchup";
-
-      const total = appState.matchups.length;
-      const current = appState.currentMatchupIndex;
-      const pair = appState.matchups[current];
-
-      if (!pair) {
-        finalizeResults();
-        return;
-      }
-
-      const completed = current;
-      const percent = total ? Math.round((completed / total) * 100) : 100;
-
-      progressText.textContent = "Matchup " + (current + 1) + " of " + total;
-      progressPercent.textContent = percent + "%";
-      progressFill.style.width = percent + "%";
-      remainingCopy.textContent = (total - current) + " left";
-
-      choiceATitle.textContent = pair[0];
-      choiceAMeta.textContent = describeOption(pair[0]);
-      choiceBTitle.textContent = pair[1];
-      choiceBMeta.textContent = describeOption(pair[1]);
-    }
-
-    function voteFor(optionName) {
-      if (!(optionName in appState.scores)) {
-        return;
-      }
-      appState.scores[optionName] += 1;
-      appState.currentMatchupIndex += 1;
-
-      if (appState.currentMatchupIndex >= appState.matchups.length) {
-        finalizeResults();
-        return;
-      }
-
-      renderVoteScreen();
-    }
-
-    function finalizeResults() {
-      appState.rankedResults = [...appState.options]
-        .map((option, index) => ({
-          name: option,
-          score: appState.scores[option] || 0,
-          originalIndex: index
-        }))
-        .sort((a, b) => {
-          if (b.score !== a.score) {
-            return b.score - a.score;
-          }
-          return a.originalIndex - b.originalIndex;
-        });
-
-      renderResults();
-      showScreen("result");
-    }
-
-    function renderResults() {
-      const winner = appState.rankedResults[0];
-      resultHeading.textContent = appState.roomName + " is decided";
-      resultSubcopy.textContent = appState.matchups.length + " pairwise votes completed in " + appState.mode + " mode.";
-      winnerTitle.textContent = winner ? winner.name : "No winner yet";
-      winnerDescription.textContent = winner
-        ? describeOption(winner.name) + " It won " + winner.score + " matchup" + (winner.score === 1 ? "" : "s") + "."
-        : "Run voting to reveal a winner.";
-
-      rankingList.innerHTML = "";
-      appState.rankedResults.forEach((item, index) => {
-        const row = document.createElement("div");
-        row.className = "ranking-item";
-
-        const place = document.createElement("div");
-        place.className = "place";
-        place.textContent = index + 1;
-
-        const copy = document.createElement("div");
-        copy.className = "ranking-copy";
-
-        const title = document.createElement("strong");
-        title.textContent = item.name;
-
-        const meta = document.createElement("span");
-        meta.textContent = item.score + " win" + (item.score === 1 ? "" : "s") + " • " + describeOption(item.name);
-
-        copy.appendChild(title);
-        copy.appendChild(meta);
-        row.appendChild(place
-(place);
-        row.appendChild(copy);
-        rankingList.appendChild(row);
-      });
-    }
-
-    function goToOptions() {
-      updateOptionsTitle();
-      renderOptions();
-      showScreen("options");
-    }
-
-    document.getElementById("start-flow-btn").addEventListener("click", () => {
-      updateRoomBindings();
-      showScreen("room");
-    });
-
-    document.getElementById("start-sample-btn").addEventListener("click", () => {
-      appState.roomName = "Friday dinner pick";
-      appState.mode = "Quick fire";
-      appState.options = [...seededOptions];
-      updateRoomBindings();
-      goToOptions();
-    });
-
-    document.getElementById("back-to-landing-btn").addEventListener("click", () => {
-      showScreen("landing");
-    });
-
-    roomNameInput.addEventListener("input", (event) => {
-      appState.roomName = sanitizeRoomName(event.target.value);
-      updateOptionsTitle();
-    });
-
-    modeChips.forEach((chip) => {
-      chip.addEventListener("click", () => {
-        appState.mode = chip.dataset.mode;
-        updateRoomBindings();
-      });
-    });
-
-    document.getElementById("continue-to-options-btn").addEventListener("click", () => {
-      appState.roomName = sanitizeRoomName(roomNameInput.value);
-      updateRoomBindings();
-      appState.options = appState.options.length ? appState.options : [...seededOptions];
-      goToOptions();
-    });
-
-    function addOption() {
-      const nextOption = newOptionInput.value.trim();
-      if (!nextOption) {
-        return;
-      }
-
-      const exists = appState.options.some(
-        (option) => option.toLowerCase() === nextOption.toLowerCase()
-      );
-
-      if (!exists) {
-        appState.options.push(nextOption);
-      }
-
-      newOptionInput.value = "";
-      optionError.classList.remove("show");
-      renderOptions();
-    }
-
-    document.getElementById("add-option-btn").addEventListener("click", addOption);
-
-    newOptionInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        addOption();
-      }
-    });
-
-    document.getElementById("back-to-room-btn").addEventListener("click", () => {
-      updateRoomBindings();
-      showScreen("room");
-    });
-
-    document.getElementById("start-voting-btn").addEventListener("click", () => {
-      if (appState.options.length < 2) {
-        optionError.classList.add("show");
-        return;
-      }
-
-      optionError.classList.remove("show");
-      resetVotingState();
-      renderVoteScreen();
-      showScreen("vote");
-    });
-
-    document.getElementById("back-to-options-from-vote-btn").addEventListener("click", () => {
-      goToOptions();
-    });
-
-    document.getElementById("choice-a-btn").addEventListener("click", () => {
-      const pair = appState.matchups[appState.currentMatchupIndex];
-      if (pair) {
-        voteFor(pair[0]);
-      }
-    });
-
-    document.getElementById("choice-b-btn").addEventListener("click", () => {
-      const pair = appState.matchups[appState.currentMatchupIndex];
-      if (pair) {
-        voteFor(pair[1]);
-      }
-    });
-
-    document.getElementById("back-to-options-from-results-btn").addEventListener("click", () => {
-      goToOptions();
-    });
-
-    document.getElementById("results-back-to-options-btn").addEventListener("click", () => {
-      goToOptions();
-    });
-
-    document.getElementById("restart-btn").addEventListener("click", () => {
-      appState.roomName = "Friday dinner pick";
-      appState.mode = "Quick fire";
-      appState.options = [...seededOptions];
-      appState.matchups = [];
-      appState.currentMatchupIndex = 0;
-      appState.scores = {};
-      appState.rankedResults = [];
-      updateRoomBindings();
-      renderOptions();
-      showScreen("landing");
-    });
-
-    updateRoomBindings();
-    updateOptionsTitle();
-    renderOptions();
-  </script>
-</body>
+    <script src="./prototype.js"></script>
+  </body>
 </html>
