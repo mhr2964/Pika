@@ -1,7 +1,7 @@
 {
   "version": 1,
   "company": "Pika",
-  "updatedAt": "2026-04-30T01:16:00Z",
+  "updatedAt": "2026-04-30T01:22:46Z",
   "title": "Pika Ops Telemetry",
   "widgets": [
     {
@@ -10,54 +10,93 @@
       "title": "Leadership Status",
       "items": [
         {
-          "label": "Company",
-          "value": "Active"
+          "label": "Repo-connected status",
+          "value": "Resolved — configured GitHub URL present",
+          "tone": "positive",
+          "note": "Project metadata includes github_url: https://github.com/mhr2964/Pika.git"
         },
         {
-          "label": "Repo status",
-          "value": "Connected — GitHub URL is set in company context and repository connectivity is no longer an open dependency."
+          "label": "Current execution mode",
+          "value": "Daemon resumed; queued lanes restarted",
+          "tone": "positive",
+          "note": "CEO resumed execution and kept priorities aligned to the current push-ready baseline."
         },
         {
-          "label": "Execution mode",
-          "value": "Parallel company wave is active across engineering baseline, growth launch surfaces, and COO visibility cadence."
-        },
-        {
-          "label": "Leadership scan",
-          "value": "Ownership is clear, execution lanes are in flight, and the organization is operating toward a first push-capable baseline."
+          "label": "Next gate",
+          "value": "first push-ready baseline",
+          "tone": "attention",
+          "note": "Still the active company gate; no newer material gate is evidenced in the board or boss log."
         }
       ]
     },
     {
       "type": "section",
-      "id": "active-execution-lanes",
+      "id": "active-lanes",
       "title": "Active Execution Lanes",
       "items": [
         {
-          "label": "Engineering baseline/build",
-          "value": "Owner: CTO | Status: active — platform and devops are driving a clean repo baseline while frontend/backend continue the core room → ranking → results flow."
+          "label": "Engineering lane",
+          "value": "Platform + devops continue push-ready repo baseline work while backend remains aligned to the frozen /api/v1 contract and the approved frontend slice has now been pushed and accepted for this wave",
+          "tone": "active",
+          "note": "Frontend milestone: pushed 7c99645 to origin/main ('feat(frontend): finalize thin room standings and results slice'); CTO accepted the top-level frontend implementation as complete for this wave."
         },
         {
-          "label": "Growth launch surfaces",
-          "value": "Owner: Head of Growth | Status: active — brand and growth are finalizing waitlist, referral, and launch narrative assets in parallel."
+          "label": "Operations lane",
+          "value": "Pulse refreshes visibility now; archivist and efficiency update only after meaningful state changes land",
+          "tone": "active"
         },
         {
-          "label": "COO visibility cadence",
-          "value": "Owner: COO | Status: active — pulse, archivist, and efficiency are refreshing dashboard, memory, and operating-status visibility."
+          "label": "Prototype lane",
+          "value": "Head of Product continues additive prototype updates only where flows changed, preserving existing work",
+          "tone": "active"
+        },
+        {
+          "label": "Launch-readiness lane",
+          "value": "Head of Growth continues waitlist/referral and share-loop assets in parallel, coordinated with brand",
+          "tone": "active"
         }
       ]
     },
     {
       "type": "section",
-      "id": "next-gate",
-      "title": "Next Gate",
+      "id": "delivery-signals",
+      "title": "Delivery Signals",
       "items": [
         {
-          "label": "Gate",
-          "value": "first push-ready baseline"
+          "label": "Frontend status",
+          "value": "Pushed and accepted for current wave",
+          "tone": "positive",
+          "note": "Manager Push Request emitted, commit 7c99645 landed on origin/main, and CTO approved the three-screen slice as the frontend surface for this wave."
         },
         {
-          "label": "Readiness note",
-          "value": "Repo connectivity is resolved; remaining work is execution and artifact completion, not external setup."
+          "label": "Backend contract status",
+          "value": "Approved and frozen",
+          "tone": "positive",
+          "note": "CTO approved the backend /api/v1 room→ranking→results contract as the implementation baseline."
+        },
+        {
+          "label": "Repo baseline status",
+          "value": "Still in progress",
+          "tone": "attention",
+          "note": "Platform + devops remain the active owners of the broader push-ready repo baseline."
+        },
+        {
+          "label": "Brand readiness status",
+          "value": "Ready for narrow QA against current prototype source",
+          "tone": "neutral",
+          "note": "Frontend clarified the authoritative prototype source path for brand’s one-pass copy/tone review."
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "id": "status-note",
+      "title": "Status Note",
+      "items": [
+        {
+          "label": "Pulse synthesis",
+          "value": "Repo connectivity is resolved, the frontend wave has produced an accepted push, and the company remains in parallel execution toward the first push-ready baseline.",
+          "tone": "info"
         }
       ]
     }
